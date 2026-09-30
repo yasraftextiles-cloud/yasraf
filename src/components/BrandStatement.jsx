@@ -15,19 +15,20 @@ export default function BrandStatement() {
           fontWeight: 600,
           letterSpacing: '0.28em',
           textTransform: 'uppercase',
-          color: '#c5a880',
+          color: '#9c9489',
           display: 'block',
-          marginBottom: '1.2rem'
+          marginBottom: '1.2rem',
+          fontFamily: 'var(--font-sans)'
         }}>
           YASRAF ATELIER
         </span>
 
         <blockquote style={{
-          fontFamily: 'var(--font-serif)',
+          fontFamily: 'var(--font-editorial, "Cormorant Garamond", Georgia, serif)',
           fontSize: 'clamp(1.4rem, 2.8vw, 2.2rem)',
-          fontWeight: 400,
+          fontWeight: 300,
           lineHeight: 1.45,
-          color: '#141414',
+          color: '#67615c',
           letterSpacing: '0.01em',
           margin: '0 0 1.5rem 0'
         }}>

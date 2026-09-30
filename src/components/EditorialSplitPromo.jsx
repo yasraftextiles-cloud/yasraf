@@ -1,4 +1,5 @@
 import React from 'react';
+import { BRAND_CONFIG } from '../data/brandConfig';
 
 export default function EditorialSplitPromo({ onShopFestive }) {
   const handleShopNow = (e) => {
@@ -81,7 +82,7 @@ export default function EditorialSplitPromo({ onShopFestive }) {
               CHAT WITH US
             </h3>
             <a 
-              href="https://wa.me/923001234567?text=Hello%20Yasraf%20Team%2C%20I%20would%20like%20personal%20styling%20assistance." 
+              href={BRAND_CONFIG.getWhatsAppSupportUrl('Hello Yasraf Team, I would like personal styling assistance.')} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-[11px] uppercase tracking-[0.25em] font-medium text-white border-b border-white pb-0.5 hover:opacity-75 transition-opacity"

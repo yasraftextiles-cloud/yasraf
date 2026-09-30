@@ -18,6 +18,14 @@ import TrustBar from './components/TrustBar';
 import InstagramFeed from './components/InstagramFeed';
 import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
+import WhatsAppChannelModal from './components/WhatsAppChannelModal';
+
+// Dedicated Storefront Pages
+import ProductDetailPage from './pages/ProductDetailPage';
+import CollectionsPage from './pages/CollectionsPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import ShippingPolicyPage from './pages/ShippingPolicyPage';
 
 import CartDrawer from './components/CartDrawer';
 import QuickViewModal from './components/QuickViewModal';
@@ -75,6 +83,10 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Page Routing State ('home' | 'product' | 'collections' | 'about' | 'contact' | 'shipping')
+  const [currentPage, setCurrentPage] = useState('home');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   // Modals state
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
@@ -85,6 +97,79 @@ export default function App() {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [checkoutData, setCheckoutData] = useState(null);
   const [storyIndex, setStoryIndex] = useState(null);
+  const [isWhatsAppChannelOpen, setIsWhatsAppChannelOpen] = useState(false);
+
+  // Navigation Controller with History API & Hash Synchronization
+  const navigateTo = (page, param = null) => {
+    setCurrentPage(page);
+    if (page === 'product') {
+      const prod = param || products[0];
+      setSelectedProduct(prod);
+      window.history.pushState({ page, id: prod.id }, '', `#product/${prod.id}`);
+    } else if (page === 'collections') {
+      const cat = param || 'all';
+      setActiveCategory(cat);
+      window.history.pushState({ page, category: cat }, '', `#collections/${cat}`);
+    } else if (page === 'home') {
+      window.history.pushState({ page: 'home' }, '', window.location.pathname);
+    } else {
+      window.history.pushState({ page }, '', `#${page}`);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Synchronize browser forward/back buttons & initial URL hash
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const hash = window.location.hash.replace('#', '').trim();
+      if (hash.startsWith('product/')) {
+        const prodId = hash.replace('product/', '');
+        const found = products.find((p) => p.id === prodId);
+        if (found) {
+          setSelectedProduct(found);
+          setCurrentPage('product');
+          return;
+        }
+      } else if (hash.startsWith('collections/')) {
+        const cat = hash.replace('collections/', '');
+        setActiveCategory(cat || 'all');
+        setCurrentPage('collections');
+        return;
+      } else if (hash === 'collections') {
+        setCurrentPage('collections');
+        return;
+      } else if (hash === 'about') {
+        setCurrentPage('about');
+        return;
+      } else if (hash === 'contact') {
+        setCurrentPage('contact');
+        return;
+      } else if (hash === 'shipping') {
+        setCurrentPage('shipping');
+        return;
+      }
+      setCurrentPage('home');
+    };
+
+    handleUrlChange();
+    window.addEventListener('popstate', handleUrlChange);
+    return () => window.removeEventListener('popstate', handleUrlChange);
+  }, [products]);
+
+  // Auto-trigger Outcome-Driven WhatsApp Channel Popup gracefully after 4 seconds
+  useEffect(() => {
+    try {
+      const dismissed = sessionStorage.getItem('yasraf_wa_channel_popup');
+      if (!dismissed) {
+        const timer = setTimeout(() => {
+          setIsWhatsAppChannelOpen(true);
+        }, 4000);
+        return () => clearTimeout(timer);
+      }
+    } catch {
+      // fallback
+    }
+  }, []);
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState(null);
@@ -214,113 +299,154 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Single-Line Header & Navbar */}
+      {/* Main Single-Line Header & Navbar with Adaptive Theme */}
       <Header 
         cartCount={totalCartCount}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenVIPChannel={() => setIsWhatsAppChannelOpen(true)}
+        currentPage={currentPage}
+        onNavigateHome={() => navigateTo('home')}
+        onNavigateCollections={(cat) => navigateTo('collections', cat)}
+        onNavigatePage={(page) => navigateTo(page)}
       />
 
-      {/* 2. Large Hero Banner with Short Headline and Single CTA */}
-      <HeroSlider
-        onSelectCategory={(cat) => {
-          setActiveCategory(cat);
-          setSearchQuery('');
-          const el = document.getElementById('collections') || document.getElementById('new-arrivals');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+      {/* Main Page Rendering */}
+      <main className="flex-1 w-full">
+        {currentPage === 'home' && (
+          <>
+            {/* 1. Single Static 100vh Hero Banner Matching Jahaan */}
+            <HeroSlider
+              onSelectCategory={(cat) => navigateTo('collections', cat)}
+            />
 
-      {/* Circular "Shop by Collection" Editorial Carousel */}
-      <ShopByCollection 
-        onSelectCollection={(cat) => {
-          setActiveCategory(cat);
-          setSearchQuery('');
-          const el = document.getElementById('collections') || document.getElementById('new-arrivals');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+            {/* 2. Direct after Hero: Circular "Shop by Collection" Editorial Showcase */}
+            <ShopByCollection 
+              onSelectCollection={(cat) => navigateTo('collections', cat)}
+            />
 
-      {/* 3. New Arrivals Section */}
-      <NewArrivals
-        products={products}
-        currency={currency}
-        onQuickView={(prod) => setQuickViewProduct(prod)}
-        wishlistIds={wishlistIds}
-        onToggleWishlist={handleToggleWishlist}
-        onSelectCategory={(cat) => {
-          setActiveCategory(cat);
-          setSearchQuery('');
-        }}
-      />
+            {/* 3. New Arrivals: 4-Column Large Photo Product Grid Matching Jahaan */}
+            <NewArrivals
+              products={products}
+              currency={currency}
+              onQuickView={(prod) => navigateTo('product', prod)}
+              wishlistIds={wishlistIds}
+              onToggleWishlist={handleToggleWishlist}
+              onSelectCategory={(cat) => navigateTo('collections', cat)}
+            />
 
-      {/* Editorial Brand Storytelling Section */}
-      <BrandStory 
-        onOpenStory={() => {
-          const el = document.getElementById('collections') || document.getElementById('new-arrivals');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+            {/* Editorial Brand Storytelling Section */}
+            <BrandStory 
+              onOpenStory={() => navigateTo('about')}
+            />
 
-      {/* 3-Column Category Lookbook Showcase */}
-      <CategoryLookbook 
-        onSelectCategory={(cat) => {
-          setActiveCategory(cat);
-          setSearchQuery('');
-        }}
-      />
+            {/* 3-Column Category Lookbook Showcase */}
+            <CategoryLookbook 
+              onSelectCategory={(cat) => navigateTo('collections', cat)}
+            />
 
-      {/* Full-Width Cinematic Editorial Campaign Banner */}
-      <EditorialBanner />
+            {/* Full-Width Cinematic Editorial Campaign Banner */}
+            <EditorialBanner />
 
-      {/* Minimal Luxury Editorial Text Section */}
-      <EditorialStatement 
-        onViewCollection={() => {
-          const el = document.getElementById('collections') || document.getElementById('new-arrivals');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+            {/* Minimal Luxury Editorial Text Section */}
+            <EditorialStatement 
+              onViewCollection={() => navigateTo('collections', 'all')}
+            />
 
-      {/* Dual Editorial Split Campaign Showcase */}
-      <DualEditorialSplit />
+            {/* Dual Editorial Split Campaign Showcase */}
+            <DualEditorialSplit />
 
-      {/* New In: Time Out Luxury Product Showcase */}
-      <NewInCollection 
-        onQuickView={(prod) => setQuickViewProduct(prod)}
-      />
+            {/* New In: The Silk Edit Luxury Product Showcase */}
+            <NewInCollection 
+              onQuickView={(prod) => navigateTo('product', prod)}
+            />
 
-      {/* Editorial Dual Split Campaign & Styling Promo */}
-      <EditorialSplitPromo 
-        onShopFestive={() => {
-          setActiveCategory('festive');
-          const el = document.getElementById('collections') || document.getElementById('new-arrivals');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
-      />
+            {/* Editorial Dual Split Campaign & Styling Promo */}
+            <EditorialSplitPromo 
+              onShopFestive={() => navigateTo('collections', 'festive')}
+            />
 
-      {/* 4. One Elegant Brand Statement Section */}
-      <BrandStatement />
+            {/* One Elegant Brand Statement Section */}
+            <BrandStatement />
 
-      {/* 5. Customer Trust / Shipping / Returns (Compact) */}
-      <TrustBar />
+            {/* Customer Trust / Shipping / Returns (Compact) */}
+            <TrustBar />
 
-      {/* 6. Instagram / Social Editorial Section */}
-      <InstagramFeed />
+            {/* Instagram / Social Editorial Section */}
+            <InstagramFeed />
+          </>
+        )}
 
-      {/* 7. Master Clean Luxury Footer */}
+        {/* Dedicated Jahaan-Style Product Detail Page */}
+        {currentPage === 'product' && (
+          <ProductDetailPage
+            product={selectedProduct || products[0]}
+            allProducts={products}
+            currency={currency}
+            onAddToCart={handleAddToCart}
+            onBackToHome={() => navigateTo('home')}
+            onSelectProduct={(prod) => navigateTo('product', prod)}
+            onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+            isWishlisted={selectedProduct ? wishlistIds.includes(selectedProduct.id) : false}
+            onToggleWishlist={handleToggleWishlist}
+            onOpenCart={() => setIsCartOpen(true)}
+          />
+        )}
+
+        {/* Collections Catalog Page */}
+        {currentPage === 'collections' && (
+          <CollectionsPage
+            products={products}
+            currency={currency}
+            activeCategory={activeCategory}
+            onSelectCategory={(cat) => {
+              setActiveCategory(cat);
+              window.history.pushState({ page: 'collections', category: cat }, '', `#collections/${cat}`);
+            }}
+            onSelectProduct={(prod) => navigateTo('product', prod)}
+            onBackToHome={() => navigateTo('home')}
+            wishlistIds={wishlistIds}
+            onToggleWishlist={handleToggleWishlist}
+          />
+        )}
+
+        {/* About The Atelier Page */}
+        {currentPage === 'about' && (
+          <AboutPage
+            onBackToHome={() => navigateTo('home')}
+            onExploreCollections={() => navigateTo('collections', 'all')}
+          />
+        )}
+
+        {/* Client Concierge & Contact Page */}
+        {currentPage === 'contact' && (
+          <ContactPage
+            onBackToHome={() => navigateTo('home')}
+          />
+        )}
+
+        {/* Nationwide Shipping & Exchange Policy Page */}
+        {currentPage === 'shipping' && (
+          <ShippingPolicyPage
+            onBackToHome={() => navigateTo('home')}
+            onOpenConcierge={() => navigateTo('contact')}
+          />
+        )}
+      </main>
+
+      {/* Master Clean Luxury Footer with Official Social Links & No Location */}
       <Footer
         onOpenTrackOrder={() => setIsTrackOrderOpen(true)}
         onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-        onSelectCategory={(cat) => {
-          setActiveCategory(cat);
-          setSearchQuery('');
-          const el = document.getElementById('collections') || document.getElementById('new-arrivals');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }}
+        onSelectCategory={(cat) => navigateTo('collections', cat)}
+        onNavigatePage={(page) => navigateTo(page)}
+        onNavigateHome={() => navigateTo('home')}
       />
 
       {/* Floating VIP WhatsApp Assistance */}
-      <WhatsAppFloat />
+      <WhatsAppFloat 
+        onOpenChannelModal={() => setIsWhatsAppChannelOpen(true)}
+      />
 
       {/* Modals & Slide Drawers */}
       <CartDrawer
@@ -348,7 +474,10 @@ export default function App() {
           setIsCartOpen(true);
         }}
         allProducts={products}
-        onSelectProduct={(p) => setQuickViewProduct(p)}
+        onSelectProduct={(p) => {
+          setQuickViewProduct(null);
+          navigateTo('product', p);
+        }}
       />
 
       <SizeGuideModal
@@ -361,7 +490,10 @@ export default function App() {
         onClose={() => setIsSearchOpen(false)}
         products={products}
         currency={currency}
-        onSelectProduct={(prod) => setQuickViewProduct(prod)}
+        onSelectProduct={(prod) => {
+          setIsSearchOpen(false);
+          navigateTo('product', prod);
+        }}
       />
 
       <CheckoutModal
@@ -383,8 +515,8 @@ export default function App() {
         initialIndex={storyIndex || 0}
         onClose={() => setStoryIndex(null)}
         onSelectCategory={(cat) => {
-          setActiveCategory(cat);
           setStoryIndex(null);
+          navigateTo('collections', cat);
         }}
       />
 
@@ -403,6 +535,18 @@ export default function App() {
         onClose={() => setIsImageManagerOpen(false)}
         products={products}
         onUpdateProductImage={handleUpdateProductImage}
+      />
+
+      {/* Outcome-Driven WhatsApp Channel VIP Popup Modal */}
+      <WhatsAppChannelModal
+        isOpen={isWhatsAppChannelOpen}
+        onClose={() => {
+          setIsWhatsAppChannelOpen(false);
+          try {
+            sessionStorage.setItem('yasraf_wa_channel_popup', 'dismissed');
+          } catch {}
+        }}
+        onApplyVoucher={(code) => showToast(`Voucher "${code}" copied to clipboard!`)}
       />
     </div>
   );

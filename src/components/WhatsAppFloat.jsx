@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { BRAND_CONFIG } from '../data/brandConfig';
 
-export default function WhatsAppFloat() {
+export default function WhatsAppFloat({ onOpenChannelModal }) {
   const [showTooltip, setShowTooltip] = useState(true);
 
   return (
@@ -48,7 +48,29 @@ export default function WhatsAppFloat() {
           <strong style={{ color: '#1d4838', display: 'block', marginBottom: '2px' }}>
             VIP Fashion Concierge
           </strong>
-          Need help sizing or custom stitching? Chat with our team!
+          <span>Need styling advice or want our secret 10% drop voucher?</span>
+          {onOpenChannelModal && (
+            <button
+              onClick={onOpenChannelModal}
+              style={{
+                marginTop: '6px',
+                width: '100%',
+                padding: '4px 8px',
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                backgroundColor: '#f6ece4',
+                color: '#1a1814',
+                border: '1px solid rgba(197, 168, 128, 0.5)',
+                cursor: 'pointer',
+                display: 'block',
+                textAlign: 'center'
+              }}
+            >
+              Get 10% Off VIP Pass &rarr;
+            </button>
+          )}
         </div>
       )}
 

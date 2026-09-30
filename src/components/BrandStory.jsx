@@ -35,41 +35,48 @@ export default function BrandStory({ onOpenStory, onOpenLookbook }) {
             </div>
           </div>
 
-          {/* Right Column — Luxury Editorial Copy (45% / 5 cols) */}
-          <div className="lg:col-span-5 flex flex-col justify-center text-left pl-0 lg:pl-4">
+          {/* Right Column — Luxury Editorial Copy */}
+          <div className="lg:col-span-5 flex flex-col justify-center text-left pl-0 lg:pl-6">
             {/* Eyebrow */}
-            <span className="text-[11px] font-medium tracking-[0.25em] text-[#9c978f] uppercase mb-4">
-              THE YASRAF PHILOSOPHY
+            <span 
+              className="text-[11px] font-medium tracking-[0.22em] text-[#9c9489] uppercase mb-4"
+              style={{ fontFamily: 'var(--font-family-primary)' }}
+            >
+              ATELIER LAHORE
             </span>
 
-            {/* Headline */}
+            {/* Headline with Light Heading Color */}
             <h2 
-              className="font-serif text-3xl sm:text-4xl lg:text-5xl text-neutral-900 font-normal leading-[1.2] mb-6"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+              className="text-3xl sm:text-4xl lg:text-[46px] text-[#67615c] font-light leading-[1.18] mb-5 tracking-[-0.01em]"
+              style={{ fontFamily: 'var(--font-family-editorial)', color: '#67615c' }}
             >
-              For women who dare to{' '}
-              <span className="italic font-light">be different.</span>
+              For women who<br className="hidden sm:inline" /> embrace <span className="italic font-light text-[#857d74]">timeless grace.</span>
             </h2>
 
             {/* Brand Narrative */}
-            <p className="text-sm sm:text-[15px] text-neutral-600 font-light leading-relaxed mb-6 max-w-md">
-              Yasraf is crafted for the modern woman who balances timeless heritage with quiet confidence — effortless separates and formal couture designed for everyday luxury.
+            <p 
+              className="text-[13px] sm:text-[13.5px] text-[#78716a] font-normal leading-[24px] mb-6 max-w-md"
+              style={{ fontFamily: 'var(--font-family-primary)' }}
+            >
+              Yasraf is crafted for the discerning woman who values subtle artistry: artisanal lawn, hand-finished three-piece suits, and fluid silhouettes woven for celebratory days and everyday poise.
             </p>
 
             {/* Callout Quote */}
-            <div className="border-l border-neutral-300 pl-4 italic font-serif text-sm sm:text-[15px] text-neutral-500 mb-8"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+            <div 
+              className="border-l-2 border-[#dfc7a7] pl-4 italic text-[13.5px] text-[#78716a] mb-8"
+              style={{ fontFamily: 'var(--font-family-editorial)' }}
             >
-              “Every stitch tells a story of confidence and timeless elegance.”
+              Every weave tells a story of heritage, quiet luxury, and artful detail.
             </div>
 
             {/* CTA Link */}
             <a 
               href="#story" 
               onClick={handleCtaClick}
-              className="text-xs uppercase tracking-[0.25em] font-medium text-neutral-900 border-b border-neutral-900 pb-1 w-fit hover:opacity-70 transition-all flex items-center gap-2 group cursor-pointer"
+              className="text-[11.5px] uppercase tracking-[0.22em] font-medium text-[#67615c] border-b border-[#67615c]/60 pb-0.5 w-fit hover:text-[#1a1814] hover:border-[#1a1814] transition-all flex items-center gap-2 group cursor-pointer"
+              style={{ fontFamily: 'var(--font-family-primary)' }}
             >
-              <span>DISCOVER OUR STORY</span>
+              <span>DISCOVER THE ATELIER</span>
               <span className="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
             </a>
           </div>

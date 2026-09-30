@@ -17,9 +17,9 @@ export const BRAND_CONFIG = {
   // YASRAF WhatsApp number once available. All WhatsApp buttons site-wide
   // will immediately update.
   // --------------------------------------------------------------------------
-  whatsappNumber: '923000000000', // <-- PLACEHOLDER: Update here with real YASRAF number
-  whatsappDisplay: '+92 300 0000000', // <-- PLACEHOLDER display string
-  isWhatsAppPlaceholder: true,
+  whatsappNumber: '923024220514',
+  whatsappDisplay: '+92 302 4220514',
+  isWhatsAppPlaceholder: false,
 
   // Helper method for generating standardized WhatsApp order/inquiry links
   getWhatsAppOrderUrl: (product, size = 'Standard', color = 'Default') => {
@@ -33,12 +33,22 @@ export const BRAND_CONFIG = {
     return `https://wa.me/${phone}?text=${encodeURIComponent(query)}`;
   },
 
-  // Contact & Social information
-  contactEmail: 'contact@yasrafclothing.com', // placeholder
-  supportHours: 'Mon - Sat: 10:00 AM - 8:00 PM (PKT)',
-  boutiques: [
-    { city: 'Lahore', address: 'Gulberg III, MM Alam Road' },
-    { city: 'Karachi', address: 'Clifton & DHA Phase 6' },
-    { city: 'Islamabad', address: 'Blue Area' }
-  ]
+  // WhatsApp Channel Link (Can be customized to specific WhatsApp channel or automated VIP chat)
+  whatsappChannelUrl: 'https://whatsapp.com/channel/0029VaYasrafVIP',
+  getWhatsAppChannelUrl: () => {
+    return `https://wa.me/${BRAND_CONFIG.whatsappNumber}?text=${encodeURIComponent('Hello Yasraf Team! I would like to join the VIP WhatsApp Channel for early drop alerts, secret restocks, and to claim my 10% voucher code (YASRAF10).')}`;
+  },
+
+  // Official Social Media Channels
+  socialLinks: {
+    instagram: 'https://www.instagram.com/yasrafclothing',
+    facebook: 'https://www.facebook.com/profile.php?id=61590429044323',
+    tiktok: 'https://www.tiktok.com/@yasrafclothing',
+    snapchat: 'https://www.snapchat.com/@yasrafclothing',
+    whatsapp: 'https://wa.me/923024220514'
+  },
+
+  // Contact information
+  contactEmail: 'contact@yasrafclothing.com',
+  supportHours: 'Mon - Sat: 10:00 AM - 8:00 PM (PKT)'
 };

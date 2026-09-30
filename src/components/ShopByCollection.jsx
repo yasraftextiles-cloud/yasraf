@@ -3,39 +3,39 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const COLLECTIONS = [
   {
-    id: 'whispers-in-the-wind',
-    title: 'Whispers in the Wind',
+    id: 'silhouettes-of-dawn',
+    title: 'Silhouettes of Dawn',
     category: 'organza',
     image: '/images/collection-coastal-wind.jpg',
-    tag: 'COASTAL EDIT'
+    tag: 'SOLAR EDIT'
   },
   {
-    id: 'urban-edge',
-    title: 'Urban Edge',
+    id: 'modern-muse',
+    title: 'Modern Muse',
     category: 'pret',
     image: '/images/collection-monochrome-arch.jpg',
-    tag: 'AVANT-GARDE'
+    tag: 'ATELIER PRÊT'
   },
   {
-    id: 'flow',
-    title: 'Flow',
+    id: 'aura',
+    title: 'Aura',
     category: 'silk',
     image: '/images/collection-flow.jpg',
-    tag: 'STUDIO EDIT'
+    tag: 'SILK STUDIO'
   },
   {
-    id: 'ember-rose',
-    title: 'Ember Rose',
+    id: 'amber-bloom',
+    title: 'Amber Bloom',
     category: 'festive',
     image: '/images/collection-ember-rose.jpg',
-    tag: 'FESTIVE COUTURE'
+    tag: 'FESTIVE WEAVE'
   },
   {
-    id: 'the-story-she-became',
-    title: 'The Story She Became',
+    id: 'the-grace-she-carries',
+    title: 'The Grace She Carries',
     category: 'unstitched',
     image: '/images/collection-heritage.jpg',
-    tag: 'HERITAGE RAW SILK'
+    tag: 'HERITAGE CHINTZ'
   }
 ];
 
@@ -80,17 +80,20 @@ export default function ShopByCollection({ onSelectCollection }) {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
         <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-16">
           
-          {/* Left Side: Editorial Title Block (Stacked on Mobile, Pinned on Desktop) */}
+          {/* Left Side: Editorial Title Block with Soft Light Heading Color */}
           <div className="w-full lg:w-[280px] shrink-0 text-center lg:text-left">
-            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] font-medium text-neutral-500 block mb-2 lg:mb-3">
+            <span 
+              className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] font-medium text-[#9c9489] block mb-2 lg:mb-3"
+              style={{ fontFamily: 'var(--font-family-primary)' }}
+            >
               CURATED ATELIER
             </span>
             <h2 
-              className="text-4xl sm:text-5xl lg:text-[56px] text-neutral-900 font-normal leading-[1.08] tracking-tight mb-4 lg:mb-6"
-              style={{ fontFamily: '"Cormorant Garamond", Georgia, serif' }}
+              className="text-4xl sm:text-5xl lg:text-[54px] text-[#67615c] font-light leading-[1.08] tracking-tight mb-4 lg:mb-6"
+              style={{ fontFamily: 'var(--font-family-editorial)', color: '#67615c' }}
             >
               Shop by<br className="hidden lg:block" />{' '}
-              <span className="italic font-light">Collection</span>
+              <span className="italic font-light text-[#857d74]">Collection</span>
             </h2>
 
             {/* Slider Navigation Arrows (Desktop) */}
@@ -98,14 +101,14 @@ export default function ShopByCollection({ onSelectCollection }) {
               <button
                 onClick={() => scroll('left')}
                 aria-label="Previous Collection"
-                className="w-10 h-10 rounded-full border border-neutral-300/80 flex items-center justify-center text-neutral-800 hover:border-neutral-900 hover:text-black transition-colors cursor-pointer"
+                className="w-10 h-10 rounded-full border border-neutral-300/70 flex items-center justify-center text-[#67615c] hover:border-[#67615c] hover:text-[#1a1814] transition-colors cursor-pointer"
               >
                 <ArrowLeft size={16} />
               </button>
               <button
                 onClick={() => scroll('right')}
                 aria-label="Next Collection"
-                className="w-10 h-10 rounded-full border border-neutral-300/80 flex items-center justify-center text-neutral-800 hover:border-neutral-900 hover:text-black transition-colors cursor-pointer"
+                className="w-10 h-10 rounded-full border border-neutral-300/70 flex items-center justify-center text-[#67615c] hover:border-[#67615c] hover:text-[#1a1814] transition-colors cursor-pointer"
               >
                 <ArrowRight size={16} />
               </button>
@@ -127,7 +130,7 @@ export default function ShopByCollection({ onSelectCollection }) {
                   className="shrink-0 flex flex-col items-center cursor-pointer group select-none snap-start"
                 >
                   {/* Perfectly Round Circle Container */}
-                  <div className="rounded-full aspect-square w-36 sm:w-48 lg:w-60 overflow-hidden border border-neutral-200/60 shadow-sm relative bg-[#f4f1ea]">
+                  <div className="rounded-full aspect-square w-36 sm:w-48 lg:w-60 overflow-hidden border border-neutral-200/60 shadow-sm relative bg-[#ebe6e0]">
                     <img 
                       src={col.image} 
                       alt={col.title}
@@ -141,8 +144,8 @@ export default function ShopByCollection({ onSelectCollection }) {
 
                   {/* Centered Title Underneath Circle */}
                   <h3 
-                    className="mt-4 sm:mt-5 text-sm sm:text-base text-neutral-800 font-medium tracking-wide text-center transition-colors group-hover:text-black"
-                    style={{ fontFamily: '"Cormorant Garamond", Georgia, serif' }}
+                    className="mt-4 sm:mt-5 text-sm sm:text-base text-[#67615c] font-normal tracking-wide text-center transition-colors group-hover:text-[#1a1814]"
+                    style={{ fontFamily: 'var(--font-family-editorial)' }}
                   >
                     {col.title}
                   </h3>
@@ -151,9 +154,9 @@ export default function ShopByCollection({ onSelectCollection }) {
             </div>
 
             {/* Minimalist Horizontal Progress Bar Indicator */}
-            <div className="mt-6 sm:mt-8 w-32 sm:w-56 h-[2px] bg-neutral-200/90 rounded-full relative overflow-hidden mx-auto lg:mx-0">
+            <div className="mt-6 sm:mt-8 w-32 sm:w-56 h-[2px] bg-neutral-200/80 rounded-full relative overflow-hidden mx-auto lg:mx-0">
               <div 
-                className="h-full bg-neutral-900 rounded-full transition-all duration-150 ease-out"
+                className="h-full bg-[#8c867f] rounded-full transition-all duration-150 ease-out"
                 style={{ 
                   width: '35%',
                   marginLeft: `${scrollProgress * 65}%`

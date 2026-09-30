@@ -11,38 +11,81 @@
    ========================================================================== */
 
 :root {
-  /* Typography */
-  --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-sans: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Typography Foundations (Jahaan-Inspired Haute Couture) */
+  --font-family-primary: 'Jost', sans-serif;
+  --font-family-stack: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-family-editorial: 'Cormorant Garamond', Georgia, serif;
 
-  /* Color System */
-  --color-bg: #fcfbf9;
-  --color-surface: #ffffff;
-  --color-surface-subtle: #f7f4ee;
-  --color-surface-card: #f9f7f2;
-  --color-surface-dark: #121212;
-  --color-surface-dark-elevated: #1e1e1e;
+  /* Base Typography Tokens */
+  --font-size-base: 16px;
+  --font-weight-base: 400;
+  --font-line-height-base: 28.8px;
 
-  --color-text-main: #141414;
-  --color-text-muted: #6e6b66;
-  --color-text-light: #9c978f;
+  /* Typography Scale */
+  --font-size-xs: 11px;
+  --font-size-sm: 11.5px;
+  --font-size-md: 12px;
+  --font-size-lg: 12.5px;
+  --font-size-xl: 13px;
+  --font-size-2xl: 13.33px;
+  --font-size-3xl: 13.5px;
+  --font-size-4xl: 14px;
+
+  /* Color Palette */
+  --color-text-primary: #1a1814;
+  --color-text-secondary: #67615c;
+  --color-text-tertiary: #121212;
   --color-text-inverse: #ffffff;
+  --color-surface-base: #000000;
+  --color-surface-muted: #faf8f6;
+  --color-surface-raised: #ebe6e0;
+  --color-surface-strong: #2a2522;
+  --color-accent-terracotta: #b46146;
+  --color-accent-gold: #c5a880;
 
-  /* Luxury Gold & Accents */
-  --color-gold: #c5a880;
+  /* Spacing Scale */
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-3: 4px;
+  --space-4: 5px;
+  --space-5: 6px;
+  --space-6: 7px;
+  --space-7: 8px;
+  --space-8: 10px;
+
+  /* Radius & Motion Tokens */
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --motion-duration-instant: 100ms;
+  --motion-duration-fast: 200ms;
+  --motion-duration-normal: 450ms;
+
+  /* Compatibility Aliases for components */
+  --font-serif: var(--font-family-serif);
+  --font-display: var(--font-family-editorial);
+  --font-sans: var(--font-family-primary);
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-subtle: var(--color-surface-muted);
+  --color-surface-card: var(--color-surface-muted);
+  --color-surface-dark: var(--color-surface-strong);
+  --color-surface-dark-elevated: #1e1e1e;
+  --color-text-main: var(--color-text-primary);
+  --color-text-muted: var(--color-text-secondary);
+  --color-text-light: #9c978f;
+  --color-gold: var(--color-accent-gold);
   --color-gold-light: #dfc7a7;
   --color-gold-dark: #9f7f52;
   --color-gold-subtle: rgba(197, 168, 128, 0.12);
-
   --color-emerald: #1d4838;
   --color-emerald-light: #2c6e56;
   --color-ruby: #942929;
-  --color-terracotta: #b46146;
+  --color-terracotta: var(--color-accent-terracotta);
 
   /* Borders & Dividers */
-  --border-hairline: 1px solid rgba(20, 20, 20, 0.08);
-  --border-subtle: 1px solid rgba(20, 20, 20, 0.12);
+  --border-hairline: 1px solid rgba(26, 24, 20, 0.08);
+  --border-subtle: 1px solid rgba(26, 24, 20, 0.12);
   --border-gold: 1px solid rgba(197, 168, 128, 0.35);
   --border-dark: 1px solid rgba(255, 255, 255, 0.1);
 
@@ -79,14 +122,22 @@ html {
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-family-primary);
   background-color: var(--color-bg);
-  color: var(--color-text-main);
-  line-height: 1.6;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-base);
+  line-height: var(--font-line-height-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
   overflow-x: hidden;
+}
+
+/* WCAG 2.2 AA Focus Visible & Keyboard Accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
 }
 
 /* Headings */
@@ -415,3 +466,22 @@ img {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.animate-scaleUp {
+  animation: scaleUp 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+

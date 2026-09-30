@@ -29,3 +29,6 @@ dist-ssr
 *.pdf
 *.mhtml
 *.ics
+
+# Nested workspace copy
+yasraf/

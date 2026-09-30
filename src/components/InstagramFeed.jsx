@@ -41,10 +41,10 @@ export default function InstagramFeed() {
               <InstagramIcon size={14} /> #YasrafWomen Editorial
             </div>
             <h2 style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-editorial, "Cormorant Garamond", Georgia, serif)',
               fontSize: 'clamp(1.8rem, 3.2vw, 2.4rem)',
-              color: '#141414',
-              fontWeight: 400,
+              color: '#67615c',
+              fontWeight: 300,
               letterSpacing: '0.02em',
               margin: 0
             }}>
@@ -61,12 +61,12 @@ export default function InstagramFeed() {
               alignItems: 'center',
               gap: '0.4rem',
               fontSize: '0.78rem',
-              fontWeight: 600,
-              color: '#141414',
-              letterSpacing: '0.1em',
+              fontWeight: 500,
+              color: '#67615c',
+              letterSpacing: '0.12em',
               textTransform: 'uppercase',
               paddingBottom: '0.2rem',
-              borderBottom: '1px solid #141414'
+              borderBottom: '1px solid rgba(103, 97, 92, 0.5)'
             }}
           >
             Follow @YasrafClothing <ArrowUpRight size={14} />

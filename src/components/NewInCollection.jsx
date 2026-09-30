@@ -2,40 +2,40 @@ import React from 'react';
 
 const NEW_IN_PRODUCTS = [
   {
-    id: 'new-in-loom',
-    title: 'Loom',
+    id: 'new-in-mehraab',
+    title: 'Mehraab',
     category: '3-Piece Suit',
     price: 9890,
     priceFormatted: 'Rs. 9,890',
     image: '/images/new-in-loom.jpg',
-    description: 'Contemporary luxury ivory raw-silk relaxed three-piece suit with artisanal threadwork.'
+    description: 'Contemporary luxury ivory raw-silk relaxed three-piece suit with hand-finished cutwork accents.'
   },
   {
-    id: 'new-in-zephyr',
-    title: 'Zephyr',
+    id: 'new-in-gulzar',
+    title: 'Gulzar',
     category: 'Shrug & Co-ord',
     price: 11500,
     priceFormatted: 'Rs. 11,500',
     image: '/images/new-in-zephyr.jpg',
-    description: 'Flowing silk-linen shrug and tailored tunic in warm terracotta with tonal embroidery.'
+    description: 'Flowing modal-linen overlay and tailored tunic in warm terracotta with artisanal thread embroidery.'
   },
   {
-    id: 'new-in-nocturne',
-    title: 'Nocturne',
+    id: 'new-in-shab-e-noor',
+    title: 'Shab-e-Noor',
     category: 'Evening Prêt',
     price: 14200,
     priceFormatted: 'Rs. 14,200',
     image: '/images/new-in-nocturne.jpg',
-    description: 'Exquisite midnight-black luxury raw silk three-piece ensemble with intricate tonal neckline work.'
+    description: 'Exquisite midnight-obsidian raw silk three-piece ensemble adorned with subtle neckline artistry.'
   },
   {
-    id: 'new-in-solstice',
-    title: 'Solstice',
+    id: 'new-in-rawayat',
+    title: 'Rawayat',
     category: 'Signature Set',
     price: 12800,
     priceFormatted: 'Rs. 12,800',
     image: '/images/new-in-solstice.jpg',
-    description: 'Contemporary luxury pistachio sage-green silk co-ord set with delicate metallic threadwork.'
+    description: 'Luxe pistachio sage silk-blend co-ord set accented with refined metallic zari motifs.'
   }
 ];
 
@@ -73,58 +73,65 @@ export default function NewInCollection({ onQuickView, onDiscover }) {
 
   return (
     <section className="w-full bg-[#fbfaf8] py-16 sm:py-24 lg:py-28 border-b border-neutral-200/50">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+      <div className="max-w-[2000px] mx-auto px-2 sm:px-4 lg:px-8">
         
-        {/* Header Typography */}
-        <div className="text-center mb-12 sm:mb-16">
+        {/* Header Typography with Light Heading Color */}
+        <div className="text-center mb-8 sm:mb-12">
           <h2 
-            className="text-3xl sm:text-4xl lg:text-5xl text-neutral-900 font-normal tracking-tight mb-3"
-            style={{ fontFamily: '"Cormorant Garamond", Georgia, serif' }}
+            className="text-[28px] sm:text-[34px] lg:text-[38px] text-[#67615c] font-light tracking-tight mb-2"
+            style={{ fontFamily: 'var(--font-family-editorial)', color: '#67615c' }}
           >
-            New In: <span className="italic font-light">Time Out</span>
+            New In: <span className="italic font-light text-[#857d74]">The Silk Edit</span>
           </h2>
           <a 
             href="#collections" 
             onClick={handleDiscoverClick}
-            className="text-[11px] uppercase tracking-[0.25em] font-medium text-neutral-900 border-b border-neutral-900 pb-1 hover:opacity-70 transition-opacity inline-block cursor-pointer"
+            className="text-[11.5px] uppercase tracking-[0.18em] font-medium text-[#67615c] border-b border-[#67615c]/60 pb-[3px] hover:text-[#1a1814] hover:border-[#1a1814] transition-colors inline-block cursor-pointer"
+            style={{ fontFamily: 'var(--font-family-primary)' }}
           >
-            DISCOVER THE PRODUCTS
+            DISCOVER THE CAPSULE
           </a>
         </div>
 
-        {/* Responsive Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-6">
+        {/* Responsive Grid with 2/3 Aspect Ratio */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-3.5">
           {NEW_IN_PRODUCTS.map((product) => (
             <div 
               key={product.id}
               onClick={() => handleProductClick(product)}
-              className="group relative cursor-pointer overflow-hidden aspect-[3/4] bg-[#f4f1ea] shadow-sm"
+              className="group jm-card relative cursor-pointer overflow-hidden bg-[#ebe6e0] text-center"
+              style={{ aspectRatio: '2 / 3' }}
             >
               <img 
                 src={product.image} 
                 alt={product.title}
-                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-all duration-500 ease-out group-hover:opacity-[0.14] group-hover:scale-[1.02]"
                 loading="lazy"
               />
 
-              {/* Frosted / Light Semi-Transparent Hover Overlay */}
-              <div className="absolute inset-0 bg-white/80 backdrop-blur-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out flex flex-col items-center justify-center text-center p-6 z-10">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-neutral-500 font-medium mb-2">
-                  {product.category}
-                </span>
+              {/* Ghost Hover Overlay Matching Jahaan */}
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 p-4 sm:p-6 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-400 ease-out pointer-events-none">
                 <h3 
-                  className="text-2xl sm:text-3xl text-neutral-900 font-normal tracking-wide mb-2"
-                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif' }}
+                  className="text-[20px] sm:text-[22px] text-[#1a1814] font-normal leading-[1.25] tracking-normal max-w-[90%]"
+                  style={{ fontFamily: 'var(--font-family-editorial)' }}
                 >
                   {product.title}
                 </h3>
-                <p 
-                  className="text-base sm:text-lg text-neutral-800 font-serif mb-6"
-                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif' }}
+                <div 
+                  className="flex items-center justify-center gap-2 text-[13px] text-[#67615c] tracking-[0.04em]"
+                  style={{ fontFamily: 'var(--font-family-primary)' }}
                 >
-                  {product.priceFormatted}
-                </p>
-                <span className="text-[11px] uppercase tracking-[0.25em] font-medium text-neutral-900 border-b border-neutral-900 pb-1 hover:opacity-70 transition-opacity">
+                  <span className="font-normal text-[#1a1814]">
+                    {product.priceFormatted}
+                  </span>
+                  <span className="text-[11px] font-medium text-[#a4574b] tracking-[0.1em] uppercase">
+                    10% OFF
+                  </span>
+                </div>
+                <span 
+                  className="mt-1 pb-[3px] border-b border-[#1a1814] text-[11px] font-medium tracking-[0.18em] uppercase text-[#1a1814]"
+                  style={{ fontFamily: 'var(--font-family-primary)' }}
+                >
                   VIEW NOW
                 </span>
               </div>

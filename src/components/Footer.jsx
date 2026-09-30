@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, ArrowRight, ShieldCheck, Heart, Sparkles, Check } from 'lucide-react';
-import { InstagramIcon, FacebookIcon } from './SocialIcons';
+import { ArrowRight, Sparkles, Check } from 'lucide-react';
+import { InstagramIcon, FacebookIcon, TikTokIcon, SnapchatIcon, WhatsAppIcon } from './SocialIcons';
 import { BRAND_CONFIG } from '../data/brandConfig';
 
-export default function Footer({ onOpenTrackOrder, onOpenSizeGuide, onSelectCategory }) {
+export default function Footer({ 
+  onOpenTrackOrder, 
+  onOpenSizeGuide, 
+  onSelectCategory,
+  onNavigatePage,
+  onNavigateHome
+}) {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -116,41 +122,84 @@ export default function Footer({ onOpenTrackOrder, onOpenSizeGuide, onSelectCate
         }}>
           {/* Col 1: Brand Info */}
           <div>
-            <span style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '1.9rem',
-              letterSpacing: '0.22em',
-              fontWeight: 600,
-              color: '#ffffff',
-              display: 'block',
-              marginBottom: '0.3rem'
-            }}>
-              YASRAF
-            </span>
+            <button
+              onClick={() => onNavigateHome && onNavigateHome()}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                textAlign: 'left'
+              }}
+            >
+              <span style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '1.9rem',
+                letterSpacing: '0.22em',
+                fontWeight: 600,
+                color: '#ffffff',
+                display: 'block',
+                marginBottom: '0.3rem'
+              }}>
+                YASRAF
+              </span>
+            </button>
             <span style={{ fontSize: '0.62rem', color: '#c5a880', letterSpacing: '0.2em', textTransform: 'uppercase', display: 'block', marginBottom: '1.2rem' }}>
               {BRAND_CONFIG.subTagline}
             </span>
             <p style={{ fontSize: '0.84rem', color: '#9c978f', lineHeight: 1.65, marginBottom: '1.5rem' }}>
               Yasraf Clothing is Pakistan’s distinguished women’s fashion atelier, celebrating timeless Eastern silhouettes, refined craftsmanship, and contemporary ready-to-wear luxury.
             </p>
-            <div style={{ display: 'flex', gap: '0.8rem' }}>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
               <a 
-                href="https://instagram.com" 
+                href={BRAND_CONFIG.socialLinks.instagram} 
                 target="_blank" 
-                rel="noreferrer"
+                rel="noreferrer" 
                 aria-label="Instagram"
-                style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+                className="hover:bg-white hover:text-black transition-colors"
               >
-                <InstagramIcon size={17} />
+                <InstagramIcon size={16} />
               </a>
               <a 
-                href="https://facebook.com" 
+                href={BRAND_CONFIG.socialLinks.facebook} 
                 target="_blank" 
-                rel="noreferrer"
+                rel="noreferrer" 
                 aria-label="Facebook"
-                style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+                className="hover:bg-white hover:text-black transition-colors"
               >
-                <FacebookIcon size={17} />
+                <FacebookIcon size={16} />
+              </a>
+              <a 
+                href={BRAND_CONFIG.socialLinks.tiktok} 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="TikTok"
+                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+                className="hover:bg-white hover:text-black transition-colors"
+              >
+                <TikTokIcon size={15} />
+              </a>
+              <a 
+                href={BRAND_CONFIG.socialLinks.snapchat} 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="Snapchat"
+                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+                className="hover:bg-white hover:text-black transition-colors"
+              >
+                <SnapchatIcon size={15} />
+              </a>
+              <a 
+                href={BRAND_CONFIG.socialLinks.whatsapp} 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="WhatsApp"
+                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(37,211,102,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D366' }}
+                className="hover:bg-[#25D366] hover:text-white transition-colors"
+              >
+                <WhatsAppIcon size={16} />
               </a>
             </div>
           </div>
@@ -162,32 +211,32 @@ export default function Footer({ onOpenTrackOrder, onOpenSizeGuide, onSelectCate
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.84rem', color: '#9c978f' }}>
               <li>
-                <button onClick={() => onSelectCategory('new-in')} style={{ color: 'inherit', cursor: 'pointer' }}>
+                <button onClick={() => onSelectCategory('new-in')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   New In
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('ready-to-wear')} style={{ color: 'inherit', cursor: 'pointer' }}>
+                <button onClick={() => onSelectCategory('ready-to-wear')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   Ready to Wear
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('luxury-pret')} style={{ color: 'inherit', cursor: 'pointer' }}>
+                <button onClick={() => onSelectCategory('luxury-pret')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   Luxury Prêt
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('party-wear')} style={{ color: 'inherit', cursor: 'pointer' }}>
+                <button onClick={() => onSelectCategory('party-wear')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   Party Wear & Formals
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('winter-collection')} style={{ color: 'inherit', cursor: 'pointer' }}>
+                <button onClick={() => onSelectCategory('winter-collection')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   Winter Collection
                 </button>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('best-sellers')} style={{ color: 'inherit', cursor: 'pointer' }}>
+                <button onClick={() => onSelectCategory('best-sellers')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   Best Sellers
                 </button>
               </li>
@@ -201,39 +250,108 @@ export default function Footer({ onOpenTrackOrder, onOpenSizeGuide, onSelectCate
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.84rem', color: '#9c978f' }}>
               <li>
-                <button onClick={onOpenTrackOrder} style={{ color: '#c5a880', fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={onOpenTrackOrder} style={{ color: '#c5a880', fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   Track Your Order Online
                 </button>
               </li>
               <li>
-                <button onClick={onOpenSizeGuide} style={{ color: 'inherit', cursor: 'pointer' }}>
+                <button onClick={onOpenSizeGuide} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   Size Chart & Fitting Guide
                 </button>
               </li>
-              <li><span>Cash on Delivery Across Pakistan</span></li>
-              <li><span>Exchange Policy (7 Days)</span></li>
-              <li><span>Fabric Care Guidelines</span></li>
+              <li>
+                <button onClick={() => onNavigatePage && onNavigatePage('about')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                  The Atelier Story (About Us)
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigatePage && onNavigatePage('contact')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                  Client Concierge & Contact
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigatePage && onNavigatePage('shipping')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                  Delivery & Shipping Rates
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigatePage && onNavigatePage('shipping')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                  7-Day Exchange Policy
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Col 4: Boutiques & Contact */}
+          {/* Col 4: Official Social Channels */}
           <div>
             <h4 style={{ fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#ffffff', marginBottom: '1.2rem' }}>
-              Contact & Boutiques
+              Connect & Follow
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.82rem', color: '#9c978f' }}>
-              {BRAND_CONFIG.boutiques.map((b) => (
-                <div key={b.city} style={{ display: 'flex', gap: '0.5rem' }}>
-                  <MapPin size={16} style={{ color: '#c5a880', flexShrink: 0, marginTop: '2px' }} />
-                  <span><strong>{b.city}:</strong> {b.address}</span>
-                </div>
-              ))}
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem' }}>
-                <Phone size={16} style={{ color: '#c5a880', flexShrink: 0 }} />
-                <a href={BRAND_CONFIG.getWhatsAppSupportUrl()} target="_blank" rel="noreferrer" style={{ color: '#fff', textDecoration: 'none' }}>
-                  WhatsApp: {BRAND_CONFIG.whatsappDisplay}
-                </a>
-              </div>
+              <a 
+                href={BRAND_CONFIG.socialLinks.whatsapp} 
+                target="_blank" 
+                rel="noreferrer" 
+                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
+                className="hover:text-white transition-colors"
+              >
+                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(37,211,102,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D366' }}>
+                  <WhatsAppIcon size={15} />
+                </span>
+                <span><strong>WhatsApp:</strong> {BRAND_CONFIG.whatsappDisplay}</span>
+              </a>
+
+              <a 
+                href={BRAND_CONFIG.socialLinks.instagram} 
+                target="_blank" 
+                rel="noreferrer" 
+                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
+                className="hover:text-white transition-colors"
+              >
+                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                  <InstagramIcon size={14} />
+                </span>
+                <span><strong>Instagram:</strong> @yasrafclothing</span>
+              </a>
+
+              <a 
+                href={BRAND_CONFIG.socialLinks.facebook} 
+                target="_blank" 
+                rel="noreferrer" 
+                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
+                className="hover:text-white transition-colors"
+              >
+                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                  <FacebookIcon size={14} />
+                </span>
+                <span><strong>Facebook:</strong> Yasraf Clothing</span>
+              </a>
+
+              <a 
+                href={BRAND_CONFIG.socialLinks.tiktok} 
+                target="_blank" 
+                rel="noreferrer" 
+                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
+                className="hover:text-white transition-colors"
+              >
+                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                  <TikTokIcon size={14} />
+                </span>
+                <span><strong>TikTok:</strong> @yasrafclothing</span>
+              </a>
+
+              <a 
+                href={BRAND_CONFIG.socialLinks.snapchat} 
+                target="_blank" 
+                rel="noreferrer" 
+                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
+                className="hover:text-white transition-colors"
+              >
+                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                  <SnapchatIcon size={14} />
+                </span>
+                <span><strong>Snapchat:</strong> @yasrafclothing</span>
+              </a>
             </div>
           </div>
         </div>
