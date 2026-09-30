@@ -5,7 +5,8 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--include=optional"
 
 # Single Page Application (SPA) routing rule
 # Ensures direct links like /#collections, /#about or client-side paths resolve to index.html with HTTP 200
