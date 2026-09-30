@@ -144,12 +144,7 @@ export default function QuickViewModal({
         </button>
 
         {/* Product Details Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '2.5rem',
-          padding: '2.5rem'
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 p-5 sm:p-8 lg:p-10">
           {/* Left Column: Visual Photography */}
           <div>
             <div style={{

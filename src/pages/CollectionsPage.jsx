@@ -123,7 +123,7 @@ export default function CollectionsPage({
 
       {/* 3. Category Horizontal Pills Filter Bar */}
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mb-8">
-        <div className="flex items-center justify-center gap-2 overflow-x-auto scrollbar-none py-2 border-b border-neutral-200/60">
+        <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto scrollbar-none py-2 border-b border-neutral-200/60 -mx-4 px-4 sm:mx-0 sm:px-0">
           {NAV_CATEGORIES.map((cat) => (
             <button
               key={cat.id}

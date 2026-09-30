@@ -37,13 +37,16 @@ export default function BrandStatement() {
 
         <div style={{
           display: 'inline-flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
           alignItems: 'center',
-          gap: '1rem',
+          gap: '0.6rem 1rem',
           fontSize: '0.72rem',
-          letterSpacing: '0.2em',
+          letterSpacing: '0.18em',
           textTransform: 'uppercase',
           color: '#8c867f',
-          fontWeight: 500
+          fontWeight: 500,
+          padding: '0 0.5rem'
         }}>
           <span>FINE FABRICS</span>
           <span style={{ color: '#c5a880' }}>•</span>

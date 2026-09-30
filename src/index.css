@@ -166,10 +166,32 @@ button {
   color: inherit;
 }
 
+/* Responsive Image Defaults with Protection for Full-Bleed Containers */
 img {
   max-width: 100%;
-  height: auto;
   display: block;
+}
+
+/* Only set height: auto for content images that do not have explicit height classes or styles */
+img:not([class*="h-"]):not([style*="height"]):not([class*="hero-bg"]) {
+  height: auto;
+}
+
+/* Dedicated Full-Bleed Hero & Cover Image Utility */
+.hero-bg-cover {
+  position: absolute !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  max-width: none !important;
+  object-fit: cover !important;
+  object-position: center 22% !important;
 }
 
 /* Custom Scrollbar */

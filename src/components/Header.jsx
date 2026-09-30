@@ -54,15 +54,20 @@ export default function Header({
   };
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? '-translate-y-[38px]' : ''}`}>
+    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? '-translate-y-[36px] sm:-translate-y-[38px]' : ''}`}>
       {/* Top Announcement Bar — Clickable VIP Channel Link */}
       <div 
         onClick={onOpenVIPChannel}
-        className="bg-[#f6ece4] hover:bg-[#faede5] text-[#1a1814] text-[11px] font-medium h-[38px] flex items-center justify-center px-4 tracking-[0.16em] uppercase text-center transition-all duration-200 select-none cursor-pointer"
+        className="bg-[#f6ece4] hover:bg-[#faede5] text-[#1a1814] text-[10px] sm:text-[11px] font-medium h-[36px] sm:h-[38px] flex items-center justify-center px-3 sm:px-4 tracking-[0.12em] sm:tracking-[0.16em] uppercase text-center transition-all duration-200 select-none cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
         style={{ fontFamily: 'var(--font-family-primary)' }}
         title="Click to claim 10% Off VIP WhatsApp Pass"
       >
-        COMPLIMENTARY SHIPPING OVER RS. 4,990 &nbsp;|&nbsp; CLAIM 10% OFF ON WHATSAPP &rarr;
+        <span className="sm:hidden">
+          FREE SHIPPING OVER RS. 4,990 &nbsp;|&nbsp; 10% OFF ON WHATSAPP &rarr;
+        </span>
+        <span className="hidden sm:inline">
+          COMPLIMENTARY SHIPPING OVER RS. 4,990 &nbsp;|&nbsp; CLAIM 10% OFF ON WHATSAPP &rarr;
+        </span>
       </div>
 
       {/* Main Navigation Bar */}

@@ -6,16 +6,7 @@ export default function WhatsAppFloat({ onOpenChannelModal }) {
   const [showTooltip, setShowTooltip] = useState(true);
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: '1.8rem',
-      right: '1.8rem',
-      zIndex: 9000,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      gap: '0.6rem'
-    }}>
+    <div className="fixed bottom-4 right-4 sm:bottom-7 sm:right-7 z-[9000] flex flex-col items-end gap-2">
       {/* Tooltip speech bubble */}
       {showTooltip && (
         <div style={{

@@ -32,21 +32,12 @@ export default function Footer({
     }}>
       <div className="yasraf-container">
         {/* Top Newsletter Privilege Banner */}
-        <div style={{
-          backgroundColor: '#1a1a1a',
-          border: '1px solid rgba(197, 168, 128, 0.3)',
-          padding: '2.5rem 2rem',
-          marginBottom: '4.5rem',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '2rem',
-          alignItems: 'center'
-        }}>
+        <div className="bg-[#1a1a1a] border border-[#c5a880]/30 p-5 sm:p-8 lg:p-10 mb-12 sm:mb-16 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-center">
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#c5a880', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '0.3rem' }}>
               <Sparkles size={14} /> The Yasraf Circle Privileges
             </div>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.7rem', color: '#ffffff', marginBottom: '0.4rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.3rem, 2.5vw, 1.7rem)', color: '#ffffff', marginBottom: '0.4rem' }}>
               Subscribe For 10% Off Your First Order
             </h3>
             <p style={{ fontSize: '0.84rem', color: '#9c978f' }}>
@@ -69,7 +60,7 @@ export default function Footer({
                 <Check size={18} /> Welcome to the Circle! Use voucher <strong>YASRAF10</strong> at checkout for 10% off.
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: '0.5rem' }}>
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="email"
                   required
@@ -100,6 +91,7 @@ export default function Footer({
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '0.4rem',
                     transition: 'background 0.2s'
                   }}
@@ -114,12 +106,7 @@ export default function Footer({
         </div>
 
         {/* 4 Columns Links */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '3rem 2rem',
-          marginBottom: '4rem'
-        }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 sm:mb-16">
           {/* Col 1: Brand Info */}
           <div>
             <button

@@ -104,6 +104,29 @@ export default function ProductCard({
           </span>
         </div>
       </div>
+
+      {/* Mobile Title & Price (Visible on touch/mobile screens where hover does not exist) */}
+      <div className="mt-2.5 px-1 text-center md:hidden">
+        <h3 
+          className="text-[14px] text-[#1a1814] font-normal leading-tight tracking-wide"
+          style={{ fontFamily: 'var(--font-family-editorial)' }}
+        >
+          {singleTitle}
+        </h3>
+        <div 
+          className="mt-1 flex items-center justify-center gap-1.5 text-[11.5px] text-[#67615c]"
+          style={{ fontFamily: 'var(--font-family-primary)' }}
+        >
+          <span className="font-normal text-[#1a1814]">
+            {curr.symbol === 'Rs.' ? 'Rs. ' : curr.symbol}{convertedPrice}
+          </span>
+          {discountPercent > 0 && (
+            <span className="text-[10px] font-medium tracking-wide uppercase text-[#a4574b]">
+              {discountPercent}% OFF
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

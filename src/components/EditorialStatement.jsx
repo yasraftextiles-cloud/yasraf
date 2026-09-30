@@ -15,8 +15,8 @@ export default function EditorialStatement({ onViewCollection }) {
   };
 
   return (
-    <section className="w-full bg-[#fbfaf8] h-[300px] max-h-[300px] overflow-hidden py-6 sm:py-7 px-6 sm:px-8 lg:px-12 flex flex-col justify-between">
-      <div className="w-full max-w-[1240px] mx-auto h-full flex flex-col justify-between">
+    <section className="w-full bg-[#fbfaf8] min-h-[260px] py-8 sm:py-10 px-4 sm:px-8 lg:px-12 flex flex-col justify-between">
+      <div className="w-full max-w-[1240px] mx-auto flex flex-col justify-between gap-6">
         {/* Top Tri-Column Header Line */}
         <div className="flex items-center justify-between w-full border-b border-neutral-200/60 pb-2.5 sm:pb-3 flex-wrap">
           <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] font-medium text-[#9c9489] whitespace-nowrap">

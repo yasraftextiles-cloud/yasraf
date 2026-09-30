@@ -53,7 +53,7 @@ export default function InstagramFeed() {
           </div>
 
           <a
-            href="https://instagram.com"
+            href="https://www.instagram.com/yasrafclothing"
             target="_blank"
             rel="noreferrer"
             style={{
@@ -74,13 +74,8 @@ export default function InstagramFeed() {
         </div>
       </div>
 
-      {/* Edge-to-edge 6 Photo Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: '0.6rem',
-        padding: '0 0.6rem'
-      }}>
+      {/* Edge-to-edge 6 Photo Grid: 2-col on mobile, 3-col on tablet, 6-col on desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5 px-2 sm:px-4">
         {INSTA_POSTS.map((post) => (
           <div
             key={post.id}

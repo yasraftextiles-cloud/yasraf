@@ -96,44 +96,69 @@ export default function NewInCollection({ onQuickView, onDiscover }) {
         {/* Responsive Grid with 2/3 Aspect Ratio */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-3.5">
           {NEW_IN_PRODUCTS.map((product) => (
-            <div 
-              key={product.id}
-              onClick={() => handleProductClick(product)}
-              className="group jm-card relative cursor-pointer overflow-hidden bg-[#ebe6e0] text-center"
-              style={{ aspectRatio: '2 / 3' }}
-            >
-              <img 
-                src={product.image} 
-                alt={product.title}
-                className="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-all duration-500 ease-out group-hover:opacity-[0.14] group-hover:scale-[1.02]"
-                loading="lazy"
-              />
+            <div key={product.id} className="flex flex-col">
+              <div 
+                onClick={() => handleProductClick(product)}
+                className="group jm-card relative cursor-pointer overflow-hidden bg-[#ebe6e0] text-center w-full"
+                style={{ aspectRatio: '2 / 3' }}
+              >
+                <img 
+                  src={product.image} 
+                  alt={product.title}
+                  className="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-all duration-500 ease-out group-hover:opacity-[0.14] group-hover:scale-[1.02]"
+                  loading="lazy"
+                />
 
-              {/* Ghost Hover Overlay Matching Jahaan */}
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 p-4 sm:p-6 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-400 ease-out pointer-events-none">
+                {/* Ghost Hover Overlay Matching Jahaan */}
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 p-4 sm:p-6 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-400 ease-out pointer-events-none">
+                  <h3 
+                    className="text-[20px] sm:text-[22px] text-[#1a1814] font-normal leading-[1.25] tracking-normal max-w-[90%]"
+                    style={{ fontFamily: 'var(--font-family-editorial)' }}
+                  >
+                    {product.title}
+                  </h3>
+                  <div 
+                    className="flex items-center justify-center gap-2 text-[13px] text-[#67615c] tracking-[0.04em]"
+                    style={{ fontFamily: 'var(--font-family-primary)' }}
+                  >
+                    <span className="font-normal text-[#1a1814]">
+                      {product.priceFormatted}
+                    </span>
+                    <span className="text-[11px] font-medium text-[#a4574b] tracking-[0.1em] uppercase">
+                      10% OFF
+                    </span>
+                  </div>
+                  <span 
+                    className="mt-1 pb-[3px] border-b border-[#1a1814] text-[11px] font-medium tracking-[0.18em] uppercase text-[#1a1814]"
+                    style={{ fontFamily: 'var(--font-family-primary)' }}
+                  >
+                    VIEW NOW
+                  </span>
+                </div>
+              </div>
+
+              {/* Mobile Title & Price under card */}
+              <div 
+                onClick={() => handleProductClick(product)}
+                className="mt-2.5 px-1 text-center md:hidden cursor-pointer"
+              >
                 <h3 
-                  className="text-[20px] sm:text-[22px] text-[#1a1814] font-normal leading-[1.25] tracking-normal max-w-[90%]"
+                  className="text-[14px] text-[#1a1814] font-normal leading-tight tracking-wide"
                   style={{ fontFamily: 'var(--font-family-editorial)' }}
                 >
                   {product.title}
                 </h3>
                 <div 
-                  className="flex items-center justify-center gap-2 text-[13px] text-[#67615c] tracking-[0.04em]"
+                  className="mt-1 flex items-center justify-center gap-1.5 text-[11.5px] text-[#67615c]"
                   style={{ fontFamily: 'var(--font-family-primary)' }}
                 >
                   <span className="font-normal text-[#1a1814]">
                     {product.priceFormatted}
                   </span>
-                  <span className="text-[11px] font-medium text-[#a4574b] tracking-[0.1em] uppercase">
+                  <span className="text-[10px] font-medium tracking-wide uppercase text-[#a4574b]">
                     10% OFF
                   </span>
                 </div>
-                <span 
-                  className="mt-1 pb-[3px] border-b border-[#1a1814] text-[11px] font-medium tracking-[0.18em] uppercase text-[#1a1814]"
-                  style={{ fontFamily: 'var(--font-family-primary)' }}
-                >
-                  VIEW NOW
-                </span>
               </div>
             </div>
           ))}
