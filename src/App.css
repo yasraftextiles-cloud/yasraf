@@ -1,0 +1,48 @@
+/* App specific utility & layout overrides */
+
+.hide-mobile {
+  display: inline;
+}
+
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  .show-mobile {
+    display: flex !important;
+  }
+  .nav-desktop {
+    display: none !important;
+  }
+}
+
+@media (min-width: 861px) {
+  .nav-desktop {
+    display: flex !important;
+  }
+}
+
+/* Toast Notification */
+.toast-luxury {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #121212;
+  color: #ffffff;
+  padding: 0.85rem 1.6rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border-left: 3px solid #c5a880;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  z-index: 999999;
+  animation: fadeIn 0.3s ease-out;
+}
