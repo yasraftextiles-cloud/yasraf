@@ -10,16 +10,17 @@ echo Connecting to GitHub repository...
 echo Remote: https://github.com/yasraftextiles-cloud/yasraf.git
 echo.
 
-git.exe push -u origin main
+git push origin main
 
 echo.
 if %ERRORLEVEL% EQU 0 (
     echo ========================================================
-    echo  SUCCESS! Tamam files GitHub par upload ho chuki hain!
+    echo  SUCCESS! All changes have been pushed to GitHub!
     echo ========================================================
 ) else (
     echo ========================================================
-    echo  Kuch masla hua. Baraye meharbani upar ka error check karein.
+    echo  Authentication required or error occurred.
+    echo  Please check the message above and sign in to GitHub.
     echo ========================================================
 )
 echo.
