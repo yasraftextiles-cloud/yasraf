@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import ProductCard from './ProductCard';
 import ProductFilters, { PRICE_RANGES } from './ProductFilters';
-import { SlidersHorizontal, X, RotateCcw, Check, Sparkles } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 import { NAV_CATEGORIES } from '../data/products';
 
 export default function ProductGrid({
@@ -67,11 +67,13 @@ export default function ProductGrid({
   const filteredProducts = useMemo(() => {
     let list = [...products];
 
-    // 1. Category Filter
+    // 1. Category & Collections Filter (Product appears in every selected collection)
     if (activeCategory && activeCategory !== 'all') {
       list = list.filter((p) => {
-        if (activeCategory === 'best-sellers') return p.isBestSeller;
-        if (activeCategory === 'new-in') return p.isNew;
+        const inCollections = Array.isArray(p.collections) && p.collections.includes(activeCategory);
+        if (inCollections) return true;
+        if (activeCategory === 'best-sellers') return Boolean(p.isBestSeller || inCollections);
+        if (activeCategory === 'new-in') return Boolean(p.isNew || inCollections);
         if (activeCategory === 'ready-to-wear') return p.category === 'ready-to-wear';
         if (activeCategory === 'luxury-pret') return p.category === 'luxury-pret';
         if (activeCategory === 'party-wear') return p.category === 'party-wear';
@@ -152,10 +154,10 @@ export default function ProductGrid({
         list.sort((a, b) => b.price - a.price);
         break;
       case 'popularity':
-        list.sort((a, b) => ((b.isBestSeller ? 1 : 0) * 100 + b.reviewsCount) - ((a.isBestSeller ? 1 : 0) * 100 + a.reviewsCount));
+        list.sort((a, b) => ((b.isBestSeller ? 1 : 0) * 100 + (b.reviewsCount || 0)) - ((a.isBestSeller ? 1 : 0) * 100 + (a.reviewsCount || 0)));
         break;
       case 'rating':
-        list.sort((a, b) => b.rating - a.rating);
+        list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'newest':
         list.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));

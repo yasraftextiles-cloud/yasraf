@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   CheckCircle, 
@@ -10,55 +10,142 @@ import {
   ArrowRight, 
   Lock,
   AlertCircle,
-  MessageCircle
+  MessageCircle,
+  MapPin,
+  UserCheck
 } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
 import { BRAND_CONFIG } from '../data/brandConfig';
+import { createOrder } from '../services/supabaseService';
+import { useAuth } from '../context/AuthContext';
 
-export default function CheckoutModal({ isOpen, onClose, checkoutData, onOrderSuccess }) {
-  if (!isOpen || !checkoutData) return null;
+export default function CheckoutModal({ 
+  isOpen, 
+  onClose, 
+  checkoutData, 
+  onOrderSuccess,
+  onNavigateLogin,
+  onNavigateAccount
+}) {
+  const { user, profile, addresses, defaultAddress } = useAuth();
 
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
     address: '',
-    city: 'Lahore',
-    province: 'Punjab',
+    city: '',
+    province: '',
     postalCode: '',
     notes: '',
-    paymentMethod: 'cod' // 'cod' is active. 'card' and 'wallet' are prepared for future integrations.
+    paymentMethod: 'cod' // Confirmed: Cash on Delivery (COD) only
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const idempotencyKeyRef = useRef(null);
 
-  const curr = CURRENCIES[checkoutData.currency] || CURRENCIES.PKR;
+  // Auto pre-fill from user profile and default saved address
+  useEffect(() => {
+    if (isOpen) {
+      idempotencyKeyRef.current = null;
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress.id);
+        setFormData(prev => ({
+          ...prev,
+          fullName: defaultAddress.full_name || prev.fullName,
+          email: user?.email || prev.email,
+          phone: defaultAddress.phone || prev.phone,
+          address: defaultAddress.address_line1 + (defaultAddress.address_line2 ? `, ${defaultAddress.address_line2}` : '') || prev.address,
+          city: defaultAddress.city || prev.city,
+          province: defaultAddress.province || prev.province,
+          postalCode: defaultAddress.postal_code || prev.postalCode
+        }));
+      } else if (user) {
+        setFormData(prev => ({
+          ...prev,
+          fullName: profile?.full_name || user?.user_metadata?.full_name || prev.fullName,
+          email: user?.email || prev.email,
+          phone: profile?.phone || user?.user_metadata?.phone || prev.phone
+        }));
+      }
+    }
+  }, [isOpen, defaultAddress, user, profile]);
+
+  if (!isOpen || !checkoutData) return null;
+
+  const curr = CURRENCIES[checkoutData?.currency] || CURRENCIES.PKR;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    idempotencyKeyRef.current = null; // Payload changed, generate new key on next attempt
+    if (errorMessage) setErrorMessage(null);
   };
 
-  const handleSubmitOrder = (e) => {
+  const handleSubmitOrder = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
+    setErrorMessage(null);
 
-    // Simulate order placement
-    setTimeout(() => {
-      setIsProcessing(false);
-      const randomOrderId = `YAS-${Math.floor(100000 + Math.random() * 900000)}`;
+    // Preserve checkout idempotency key across retries of the same request
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : `ord_${Date.now()}_${Math.random().toString(36).substring(2)}${Math.random().toString(36).substring(2)}`;
+    }
+    const idempotencyKey = idempotencyKeyRef.current;
+
+    try {
+      const result = await createOrder({
+        customer: formData,
+        items: checkoutData.cartItems,
+        paymentMethod: formData.paymentMethod,
+        idempotencyKey
+      });
+
+      if (!result.success) {
+        setErrorMessage(result.error || 'Unable to place order. Please review your details and try again.');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Order succeeded: reset key
+      idempotencyKeyRef.current = null;
+
       const order = {
-        orderId: randomOrderId,
+        orderId: result.order_id,
+        trackingToken: result.tracking_token,
         date: new Date().toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' }),
         items: checkoutData.cartItems,
-        total: checkoutData.total,
+        total: result.total || checkoutData.total,
         customer: formData,
-        estDelivery: '2 - 3 Working Days (via TCS / Leopards Express)'
+        estDelivery: result.estimated_delivery || '2 - 3 Working Days (via TCS / Leopards Express)'
       };
+
+      // Save credentials locally for seamless tracking on this device
+      if (result.tracking_token) {
+        try {
+          localStorage.setItem('yasraf_last_order', JSON.stringify({
+            orderId: result.order_id,
+            trackingToken: result.tracking_token,
+            phone: formData.phone
+          }));
+        } catch (e) {
+          // ignore storage error
+        }
+      }
+
       setCompletedOrder(order);
       if (onOrderSuccess) onOrderSuccess(order);
-    }, 1200);
+    } catch (err) {
+      console.error('Checkout error:', err);
+      setErrorMessage(err.message || 'An unexpected error occurred during checkout.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -133,6 +220,19 @@ export default function CheckoutModal({ isOpen, onClose, checkoutData, onOrderSu
                 <span style={{ fontSize: '0.8rem', color: '#7a756f' }}>Order Reference:</span>
                 <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#141414' }}>{completedOrder.orderId}</span>
               </div>
+              {completedOrder.trackingToken && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', padding: '0.6rem 0', borderBottom: '1px solid #eee' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#7a756f' }}>Private Tracking Token:</span>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#a4574b', fontFamily: 'monospace', letterSpacing: '0.04em' }}>
+                      {completedOrder.trackingToken}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '0.68rem', color: '#8c867f' }}>
+                    (Saved to this device. Keep this safe to track your order without revealing personal data.)
+                  </span>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0', borderBottom: '1px solid #eee' }}>
                 <span style={{ fontSize: '0.8rem', color: '#7a756f' }}>Customer:</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#141414' }}>{completedOrder.customer.fullName} ({completedOrder.customer.phone})</span>
@@ -157,13 +257,28 @@ export default function CheckoutModal({ isOpen, onClose, checkoutData, onOrderSu
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
                 onClick={onClose}
                 className="btn-luxury"
               >
                 Back To Shopping
               </button>
+
+              {user && onNavigateAccount && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onNavigateAccount('orders', completedOrder.orderId);
+                  }}
+                  className="btn-luxury"
+                  style={{ backgroundColor: '#1a1814', color: '#ffffff', borderColor: '#1a1814' }}
+                >
+                  View in My Account &rarr;
+                </button>
+              )}
+
               <a
                 href={BRAND_CONFIG.getWhatsAppSupportUrl(`Assalam-o-Alaikum YASRAF Clothing! I just placed an order. Order Reference: ${completedOrder.orderId}. Customer: ${completedOrder.customer.fullName}.`)}
                 target="_blank"
@@ -198,6 +313,23 @@ export default function CheckoutModal({ isOpen, onClose, checkoutData, onOrderSu
               Shipping & Order Confirmation
             </h2>
 
+            {errorMessage && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                backgroundColor: '#fdf2f2',
+                border: '1px solid #f8b4b4',
+                color: '#9b1c1c',
+                padding: '0.85rem 1rem',
+                marginBottom: '1.5rem',
+                fontSize: '0.85rem'
+              }}>
+                <AlertCircle size={18} style={{ shrink: 0 }} />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmitOrder}>
               <div style={{
                 display: 'grid',
@@ -207,9 +339,95 @@ export default function CheckoutModal({ isOpen, onClose, checkoutData, onOrderSu
               }}>
                 {/* Left: Contact & Address */}
                 <div>
-                  <h4 style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1rem', color: '#141414' }}>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.8rem', color: '#141414' }}>
                     1. Contact & Shipping Address
                   </h4>
+
+                  {/* Guest Sign-In Notice */}
+                  {!user && onNavigateLogin && (
+                    <div style={{
+                      backgroundColor: '#faf8f6',
+                      border: '1px solid #e8e2d9',
+                      padding: '0.65rem 0.9rem',
+                      marginBottom: '1rem',
+                      fontSize: '0.78rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      color: '#666057'
+                    }}>
+                      <span>Have a Yasraf account?</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onNavigateLogin('checkout');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#1a1814',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          fontSize: 'inherit',
+                          padding: 0
+                        }}
+                      >
+                        Sign in for saved addresses &rarr;
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Authenticated Saved Address Selector */}
+                  {user && addresses && addresses.length > 0 && (
+                    <div style={{
+                      backgroundColor: '#faf8f6',
+                      border: '1px solid #e8e2d9',
+                      padding: '0.75rem 0.9rem',
+                      marginBottom: '1rem'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: '#1a1814', marginBottom: '0.5rem' }}>
+                        <MapPin size={13} style={{ color: '#c5a880' }} /> Choose Saved Address:
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                        {addresses.map(addr => {
+                          const isSelected = selectedAddressId === addr.id || (formData.city === addr.city && formData.address.includes(addr.address_line1));
+                          return (
+                            <button
+                              key={addr.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedAddressId(addr.id);
+                                idempotencyKeyRef.current = null;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  fullName: addr.full_name,
+                                  phone: addr.phone,
+                                  address: addr.address_line1 + (addr.address_line2 ? `, ${addr.address_line2}` : ''),
+                                  city: addr.city,
+                                  province: addr.province,
+                                  postalCode: addr.postal_code || ''
+                                }));
+                              }}
+                              style={{
+                                padding: '0.35rem 0.65rem',
+                                fontSize: '0.72rem',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                cursor: 'pointer',
+                                backgroundColor: isSelected ? '#1a1814' : '#ffffff',
+                                color: isSelected ? '#ffffff' : '#4a4642',
+                                border: isSelected ? '1px solid #1a1814' : '1px solid #d5cfc4'
+                              }}
+                            >
+                              {addr.label} ({addr.city}) {addr.is_default ? '★' : ''}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                     <div>
@@ -277,43 +495,38 @@ export default function CheckoutModal({ isOpen, onClose, checkoutData, onOrderSu
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#4a4642', marginBottom: '0.3rem' }}>
-                          City *
+                          City / Town *
                         </label>
-                        <select
+                        <input
+                          type="text"
                           name="city"
+                          required
+                          placeholder="e.g. Lahore, Karachi"
                           value={formData.city}
                           onChange={handleInputChange}
-                          style={{ width: '100%', padding: '0.65rem 0.8rem', border: '1px solid #d5cfc4', fontSize: '0.85rem', outline: 'none', background: '#fff' }}
-                        >
-                          <option value="Lahore">Lahore</option>
-                          <option value="Karachi">Karachi</option>
-                          <option value="Islamabad">Islamabad</option>
-                          <option value="Rawalpindi">Rawalpindi</option>
-                          <option value="Faisalabad">Faisalabad</option>
-                          <option value="Multan">Multan</option>
-                          <option value="Peshawar">Peshawar</option>
-                          <option value="Sialkot">Sialkot</option>
-                          <option value="Gujranwala">Gujranwala</option>
-                          <option value="Quetta">Quetta</option>
-                          <option value="Other City">Other City (Nationwide)</option>
-                        </select>
+                          style={{ width: '100%', padding: '0.65rem 0.8rem', border: '1px solid #d5cfc4', fontSize: '0.85rem', outline: 'none' }}
+                        />
                       </div>
 
                       <div>
                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#4a4642', marginBottom: '0.3rem' }}>
-                          Province *
+                          Province / Territory *
                         </label>
                         <select
                           name="province"
+                          required
                           value={formData.province}
                           onChange={handleInputChange}
                           style={{ width: '100%', padding: '0.65rem 0.8rem', border: '1px solid #d5cfc4', fontSize: '0.85rem', outline: 'none', background: '#fff' }}
                         >
+                          <option value="">Select Territory *</option>
                           <option value="Punjab">Punjab</option>
                           <option value="Sindh">Sindh</option>
                           <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
                           <option value="Balochistan">Balochistan</option>
-                          <option value="Islamabad Capital">Islamabad Capital</option>
+                          <option value="Islamabad Capital Territory">Islamabad Capital Territory</option>
+                          <option value="Azad Jammu & Kashmir">Azad Jammu & Kashmir</option>
+                          <option value="Gilgit-Baltistan">Gilgit-Baltistan</option>
                         </select>
                       </div>
                     </div>

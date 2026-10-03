@@ -152,18 +152,18 @@ h1, h2, h3, h4 {
   font-family: var(--font-serif);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
-  color: inherit;
+  button {
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+  }
 }
 
 /* Responsive Image Defaults with Protection for Full-Bleed Containers */
@@ -352,6 +352,201 @@ img:not([class*="h-"]):not([style*="height"]):not([class*="hero-bg"]) {
 .btn-luxury-outline-gold:hover {
   background-color: var(--color-gold);
   color: #121212;
+}
+
+/* ==========================================================================
+   YASRAF ATELIER ADMIN LUXURY DESIGN SYSTEM
+   ========================================================================== */
+
+/* Primary Action Buttons (Add New Dress, Save, Publish, Update, Confirm) */
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #1a1814;
+  color: #ffffff;
+  border: 1px solid #1a1814;
+  font-family: var(--font-family-primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  padding: 0.65rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0;
+}
+.admin-btn-primary:hover:not(:disabled) {
+  background-color: #c5a880;
+  color: #1a1814;
+  border-color: #c5a880;
+  box-shadow: 0 3px 8px rgba(197, 168, 128, 0.35);
+}
+.admin-btn-primary:active:not(:disabled) {
+  background-color: #bfa178;
+  color: #1a1814;
+  border-color: #bfa178;
+  transform: scale(0.99);
+}
+.admin-btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #c5a880;
+}
+.admin-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* Secondary Action Buttons (Cancel, Back, Filter buttons, subtle actions) */
+.admin-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #faf8f6;
+  color: #1a1814;
+  border: 1px solid #ebe6e0;
+  font-family: var(--font-family-primary);
+  font-size: 11.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0.65rem 1.25rem;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0;
+}
+.admin-btn-secondary:hover:not(:disabled) {
+  background-color: #f0eae1;
+  border-color: #c5a880;
+  color: #1a1814;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.admin-btn-secondary:active:not(:disabled) {
+  background-color: #e5ded3;
+  color: #1a1814;
+  transform: scale(0.99);
+}
+.admin-btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #c5a880;
+}
+.admin-btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* Danger / Delete Action Buttons */
+.admin-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #721c24;
+  color: #ffffff;
+  border: 1px solid #721c24;
+  font-family: var(--font-family-primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0.65rem 1.25rem;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0;
+}
+.admin-btn-danger:hover:not(:disabled) {
+  background-color: #521319;
+  border-color: #521319;
+  box-shadow: 0 2px 8px rgba(114, 28, 36, 0.3);
+}
+.admin-btn-danger:active:not(:disabled) {
+  transform: scale(0.99);
+}
+.admin-btn-danger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #721c24;
+}
+.admin-btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* Icon Buttons: Edit */
+.admin-icon-btn-edit {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ebe6e0;
+  background-color: #ffffff;
+  color: #524d47;
+  border-radius: 2px;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  cursor: pointer;
+}
+.admin-icon-btn-edit:hover:not(:disabled) {
+  background-color: rgba(197, 168, 128, 0.2);
+  border-color: #c5a880;
+  color: #1a1814;
+}
+.admin-icon-btn-edit:active:not(:disabled) {
+  background-color: rgba(197, 168, 128, 0.3);
+  transform: scale(0.96);
+}
+.admin-icon-btn-edit:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #c5a880;
+}
+.admin-icon-btn-edit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Icon Buttons: Delete */
+.admin-icon-btn-delete {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ebe6e0;
+  background-color: #ffffff;
+  color: #8c867f;
+  border-radius: 2px;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  cursor: pointer;
+}
+.admin-icon-btn-delete:hover:not(:disabled) {
+  background-color: #fdf2f2;
+  border-color: #f5c6cb;
+  color: #c0392b;
+}
+.admin-icon-btn-delete:active:not(:disabled) {
+  background-color: #fadbd8;
+  transform: scale(0.96);
+}
+.admin-icon-btn-delete:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #c0392b;
+}
+.admin-icon-btn-delete:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Subtle Shimmer & Animations */

@@ -8,7 +8,7 @@ export const BRAND_CONFIG = {
   tagline: 'Elegance in Every Stitch',
   subTagline: "Luxury Prêt & Women's Eastern Fashion",
   currencyBase: 'PKR',
-  freeShippingThreshold: 3500,
+  freeShippingThreshold: 4990,
   standardShippingFee: 250,
 
   // --------------------------------------------------------------------------
@@ -33,10 +33,10 @@ export const BRAND_CONFIG = {
     return `https://wa.me/${phone}?text=${encodeURIComponent(query)}`;
   },
 
-  // WhatsApp Channel Link (Can be customized to specific WhatsApp channel or automated VIP chat)
-  whatsappChannelUrl: 'https://whatsapp.com/channel/0029VaYasrafVIP',
+  // WhatsApp Channel Link
+  whatsappChannelUrl: 'https://whatsapp.com/channel/0029VbE5FWq8kyyW1WA1K83c',
   getWhatsAppChannelUrl: () => {
-    return `https://wa.me/${BRAND_CONFIG.whatsappNumber}?text=${encodeURIComponent('Hello Yasraf Team! I would like to join the VIP WhatsApp Channel for early drop alerts, secret restocks, and to claim my 10% voucher code (YASRAF10).')}`;
+    return 'https://whatsapp.com/channel/0029VbE5FWq8kyyW1WA1K83c';
   },
 
   // Official Social Media Channels

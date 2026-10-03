@@ -237,7 +237,12 @@ export default function Footer({
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.84rem', color: '#9c978f' }}>
               <li>
-                <button onClick={onOpenTrackOrder} style={{ color: '#c5a880', fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <button onClick={() => onNavigatePage && onNavigatePage('account')} style={{ color: '#c5a880', fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                  My Account & Orders
+                </button>
+              </li>
+              <li>
+                <button onClick={onOpenTrackOrder} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
                   Track Your Order Online
                 </button>
               </li>
@@ -361,6 +366,20 @@ export default function Footer({
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ fontSize: '0.72rem', color: '#9c978f' }}>Cash on Delivery Available Nationwide</span>
+            <button
+              onClick={() => onNavigatePage && onNavigatePage('admin')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#7a756f',
+                fontSize: '0.72rem',
+                cursor: 'pointer',
+                textDecoration: 'underline'
+              }}
+              title="Atelier Admin Portal"
+            >
+              Admin Atelier
+            </button>
           </div>
         </div>
       </div>

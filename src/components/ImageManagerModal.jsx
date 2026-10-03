@@ -7,10 +7,10 @@ export default function ImageManagerModal({
   products,
   onUpdateProductImage
 }) {
-  if (!isOpen) return null;
-
   const [copiedPath, setCopiedPath] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState(products[0]?.id || 'yas-001');
+  const [selectedProductId, setSelectedProductId] = useState(products?.[0]?.id || 'yas-001');
+
+  if (!isOpen) return null;
 
   const folderPath = "c:\\Users\\hp\\Documents\\yasraf\\public\\products";
 

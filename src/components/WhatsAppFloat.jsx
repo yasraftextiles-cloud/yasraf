@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { MessageCircle, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { BRAND_CONFIG } from '../data/brandConfig';
+import { WhatsAppIcon } from './SocialIcons';
 
 export default function WhatsAppFloat({ onOpenChannelModal }) {
   const [showTooltip, setShowTooltip] = useState(true);
@@ -20,7 +21,7 @@ export default function WhatsAppFloat({ onOpenChannelModal }) {
           lineHeight: 1.4,
           position: 'relative',
           animation: 'fadeIn 0.3s ease-out',
-          borderRadius: '2px'
+          borderRadius: '4px'
         }}>
           <button
             onClick={() => setShowTooltip(false)}
@@ -69,32 +70,14 @@ export default function WhatsAppFloat({ onOpenChannelModal }) {
       <a
         href={BRAND_CONFIG.getWhatsAppSupportUrl('Hello YASRAF Clothing! I would like assistance with your women\'s collection.')}
         target="_blank"
-        rel="noreferrer"
-        aria-label="WhatsApp VIP Concierge"
-        style={{
-          width: '54px',
-          height: '54px',
-          borderRadius: '50%',
-          backgroundColor: '#25D366',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 8px 25px rgba(37, 211, 102, 0.45)',
-          transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-          cursor: 'pointer'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.1)';
-          e.currentTarget.style.boxShadow = '0 12px 30px rgba(37, 211, 102, 0.6)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 8px 25px rgba(37, 211, 102, 0.45)';
-        }}
+        rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        className="w-14 h-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
       >
-        <MessageCircle size={28} />
+        <WhatsAppIcon size={30} color="#ffffff" className="w-[30px] h-[30px] fill-white" />
       </a>
     </div>
   );
 }
+
+export { WhatsAppFloat as WhatsAppButton, WhatsAppFloat as FloatingWhatsApp };

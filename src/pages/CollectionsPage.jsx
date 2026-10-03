@@ -43,11 +43,13 @@ export default function CollectionsPage({
   const filteredProducts = useMemo(() => {
     let list = [...products];
 
-    // Category
+    // Category & Collections (Product appears in every selected collection)
     if (activeCategory && activeCategory !== 'all') {
       list = list.filter((p) => {
-        if (activeCategory === 'best-sellers') return p.isBestSeller;
-        if (activeCategory === 'new-in') return p.isNew;
+        const inCollections = Array.isArray(p.collections) && p.collections.includes(activeCategory);
+        if (inCollections) return true;
+        if (activeCategory === 'best-sellers') return Boolean(p.isBestSeller || inCollections);
+        if (activeCategory === 'new-in') return Boolean(p.isNew || inCollections);
         if (activeCategory === 'ready-to-wear') return p.category === 'ready-to-wear';
         if (activeCategory === 'luxury-pret') return p.category === 'luxury-pret';
         if (activeCategory === 'party-wear') return p.category === 'party-wear';

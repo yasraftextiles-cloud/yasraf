@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Heart, ShoppingBag, MessageCircle, Ruler, Check, ChevronDown, 
+  Heart, ShoppingBag, Ruler, Check, ChevronDown, 
   Truck, ShieldCheck, RefreshCw, ArrowLeft, Share2, Sparkles 
 } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
 import { BRAND_CONFIG } from '../data/brandConfig';
 import ProductCard from '../components/ProductCard';
+import { WhatsAppIcon } from '../components/SocialIcons';
 
 export default function ProductDetailPage({
   product,
@@ -278,11 +279,12 @@ export default function ProductDetailPage({
                 {(product.sizes || ['XS', 'S', 'M', 'L', 'XL', 'Unstitched']).map((sz) => (
                   <button
                     key={sz}
+                    type="button"
                     onClick={() => setSelectedSize(sz)}
-                    className={`min-w-[46px] h-10 px-3 flex items-center justify-center text-[12px] font-medium tracking-[0.06em] border transition-all cursor-pointer ${
+                    className={`min-w-[46px] h-10 px-3.5 flex items-center justify-center text-[12px] uppercase tracking-[0.08em] border cursor-pointer select-none transition-all ${
                       selectedSize === sz
-                        ? 'border-[#1a1814] bg-[#1a1814] text-white shadow-sm'
-                        : 'border-[#ebe6e0] bg-white text-[#67615c] hover:border-[#1a1814] hover:text-[#1a1814]'
+                        ? 'bg-black text-white font-medium shadow-sm ring-1 ring-black border-black'
+                        : 'border-neutral-200 bg-[#faf8f6] text-[#67615c] hover:border-black hover:text-black hover:bg-white transition-all'
                     }`}
                     style={{ fontFamily: 'var(--font-family-primary)' }}
                   >
@@ -294,22 +296,24 @@ export default function ProductDetailPage({
 
             {/* Quantity Selector & Action Buttons */}
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-3">
-                {/* Quantity Pill */}
-                <div className="flex items-center border border-[#ebe6e0] bg-white h-[48px] px-3 gap-3">
+              <div className="flex items-stretch gap-3">
+                {/* Quantity Counter */}
+                <div className="flex items-center border border-neutral-200 bg-white px-1 shadow-2xs">
                   <button
+                    type="button"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="text-lg text-[#67615c] hover:text-[#1a1814] px-1 cursor-pointer"
+                    className="w-9 h-9 flex items-center justify-center text-base text-[#67615c] hover:text-black hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer rounded-none select-none"
                     aria-label="Decrease quantity"
                   >
                     -
                   </button>
-                  <span className="text-[13px] font-medium w-6 text-center select-none">
+                  <span className="text-[13px] font-medium w-8 text-center select-none text-black">
                     {quantity}
                   </span>
                   <button
+                    type="button"
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="text-lg text-[#67615c] hover:text-[#1a1814] px-1 cursor-pointer"
+                    className="w-9 h-9 flex items-center justify-center text-base text-[#67615c] hover:text-black hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer rounded-none select-none"
                     aria-label="Increase quantity"
                   >
                     +
@@ -318,26 +322,28 @@ export default function ProductDetailPage({
 
                 {/* Primary Add to Bag Button */}
                 <button
+                  type="button"
                   onClick={() => {
                     handleAdd();
                     if (onOpenCart) onOpenCart();
                   }}
-                  className="flex-1 h-[48px] bg-[#1a1814] hover:bg-[#33302c] text-white flex items-center justify-center gap-2 text-[12px] font-semibold tracking-[0.18em] uppercase transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                  className="flex-1 py-4 px-6 border border-black bg-white text-black font-medium tracking-[0.2em] text-xs uppercase flex items-center justify-center gap-2.5 hover:bg-black hover:text-white transition-colors duration-200 cursor-pointer shadow-sm"
                   style={{ fontFamily: 'var(--font-family-primary)' }}
                 >
-                  <ShoppingBag size={16} />
+                  <ShoppingBag size={16} strokeWidth={2} className="shrink-0 transition-colors duration-200" />
                   <span>ADD TO BAG</span>
                 </button>
               </div>
 
               {/* Direct WhatsApp Ordering Button */}
               <button
+                type="button"
                 onClick={handleDirectWhatsAppOrder}
-                className="w-full h-[48px] bg-[#25D366] hover:bg-[#20ba59] text-white flex items-center justify-center gap-2 text-[12px] font-semibold tracking-[0.16em] uppercase transition-all duration-200 cursor-pointer shadow-sm"
+                className="w-full py-4 px-6 bg-[#25D366] text-white border-0 shadow-md font-medium tracking-[0.15em] text-xs uppercase flex items-center justify-center gap-2 hover:bg-[#20ba5a] active:scale-[0.99] transition-all duration-200 hover:shadow-lg cursor-pointer"
                 style={{ fontFamily: 'var(--font-family-primary)' }}
               >
-                <MessageCircle size={17} />
-                <span>ORDER VIA WHATSAPP • QUICK CHECKOUT</span>
+                <WhatsAppIcon size={18} color="white" className="shrink-0" />
+                <span>ORDER VIA WHATSAPP · QUICK CHECKOUT</span>
               </button>
             </div>
 

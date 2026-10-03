@@ -3,27 +3,8 @@ import { X, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { STORIES } from '../data/products';
 
 export default function StoryModal({ isOpen, initialIndex = 0, onClose, onSelectCategory }) {
-  if (!isOpen) return null;
-
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [progress, setProgress] = useState(0);
-
-  const storyItem = STORIES[currentIndex] || STORIES[0];
-  const story = storyItem.stories[0];
-
-  useEffect(() => {
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          handleNext();
-          return 0;
-        }
-        return prev + 2;
-      });
-    }, 100);
-    return () => clearInterval(interval);
-  }, [currentIndex]);
 
   const handleNext = () => {
     if (currentIndex < STORIES.length - 1) {
@@ -38,6 +19,26 @@ export default function StoryModal({ isOpen, initialIndex = 0, onClose, onSelect
       setCurrentIndex((prev) => prev - 1);
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          handleNext();
+          return 0;
+        }
+        return prev + 2;
+      });
+    }, 100);
+    return () => clearInterval(interval);
+  }, [currentIndex, isOpen]);
+
+  if (!isOpen) return null;
+
+  const storyItem = STORIES[currentIndex] || STORIES[0];
+  const story = storyItem.stories[0];
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ padding: 0 }}>

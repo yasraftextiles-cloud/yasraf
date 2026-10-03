@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Check, Copy, ArrowRight } from 'lucide-react';
 import { BRAND_CONFIG } from '../data/brandConfig';
+import { WhatsAppIcon } from './SocialIcons';
 
 export default function WhatsAppChannelModal({ isOpen, onClose, onApplyVoucher }) {
   const [copied, setCopied] = useState(false);
@@ -99,16 +100,22 @@ export default function WhatsAppChannelModal({ isOpen, onClose, onApplyVoucher }
           </button>
         </div>
 
-        {/* Primary Action Button */}
-        <button
-          type="button"
-          onClick={handleJoinChannel}
-          className="w-full bg-[#1a1814] hover:bg-[#33302c] text-white py-3.5 px-4 text-[11.5px] font-semibold tracking-[0.18em] uppercase transition-all duration-200 cursor-pointer mb-3 flex items-center justify-center gap-2"
+        {/* Primary Action Button / Link */}
+        <a
+          href="https://whatsapp.com/channel/0029VbE5FWq8kyyW1WA1K83c"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => {
+            handleCopyCode();
+            onClose();
+          }}
+          className="w-full bg-[#25D366] hover:bg-[#20ba5a] text-white py-3.5 px-4 text-[11.5px] font-medium tracking-[0.2em] uppercase transition-colors duration-200 shadow-md hover:shadow-lg cursor-pointer mb-3 flex items-center justify-center gap-2.5 no-underline"
           style={{ fontFamily: 'var(--font-family-primary)' }}
         >
+          <WhatsAppIcon size={16} color="#ffffff" className="shrink-0 text-white" aria-hidden="true" />
           <span>JOIN WHATSAPP CHANNEL</span>
-          <ArrowRight size={14} />
-        </button>
+          <ArrowRight size={14} className="text-white shrink-0" />
+        </a>
 
         {/* Subtle Dismiss Link */}
         <button

@@ -17,26 +17,54 @@ export default function HeroSlider({ onSelectCategory }) {
       style={{ height: '100dvh', minHeight: '100dvh' }}
       aria-label="Yasraf Luxury Campaign"
     >
-      {/* Single Static Hero Image: Two girls sitting on the table/bench */}
-      <img
-        src="/hero-banner.jpg"
-        alt="Yasraf Campaign — Two models sitting"
-        fetchPriority="high"
-        loading="eager"
-        decoding="async"
-        className="hero-bg-cover absolute inset-0 w-full h-full object-cover object-[center_22%]"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center 22%'
-        }}
-      />
+      {/* Responsive Luxury Campaign Hero Background with WebP & Screen-Size Breakpoints */}
+      <picture className="absolute inset-0 w-full h-full pointer-events-none">
+        {/* Mobile Viewports (< 768px): Tailored 3:4 portrait composition */}
+        <source
+          media="(max-width: 767px)"
+          type="image/webp"
+          srcSet="/hero-banner-mobile.webp"
+        />
+        <source
+          media="(max-width: 767px)"
+          type="image/jpeg"
+          srcSet="/hero-banner-mobile.jpg"
+        />
+
+        {/* Desktop 4K & High-DPI Displays (>= 768px): 3840x2160 and 1920x1080 srcset */}
+        <source
+          media="(min-width: 768px)"
+          type="image/webp"
+          srcSet="/hero-banner-desktop-4k.webp 3840w, /hero-banner-desktop.webp 1920w"
+          sizes="100vw"
+        />
+        <source
+          media="(min-width: 768px)"
+          type="image/jpeg"
+          srcSet="/hero-banner-desktop-4k.jpg 3840w, /hero-banner-desktop.jpg 1920w"
+          sizes="100vw"
+        />
+
+        {/* Universal Fallback Image */}
+        <img
+          src="/hero-banner.jpg"
+          alt="Yasraf Luxury Atelier Campaign — Draped in Poetic Grace"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          className="hero-bg-cover w-full h-full object-cover object-[center_28%] sm:object-[center_22%]"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+      </picture>
 
       {/* Black Overlay on Hero Image for Deep Contrast & Luxury Editorial Feel */}
       <div 

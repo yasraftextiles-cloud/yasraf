@@ -1,33 +1,67 @@
-import React, { useState } from 'react';
-import { X, Search, CheckCircle, Clock, Truck, Package, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Search, CheckCircle, Clock, Truck, Package, MapPin, Loader2, KeyRound, ShieldAlert } from 'lucide-react';
+import { trackOrder } from '../services/supabaseService.js';
 
 export default function TrackOrderModal({ isOpen, onClose }) {
-  const [orderQuery, setOrderQuery] = useState('');
+  const [orderId, setOrderId] = useState('');
+  const [authCredential, setAuthCredential] = useState('');
   const [trackedOrder, setTrackedOrder] = useState(null);
   const [searched, setSearched] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  // Automatically load last order credentials from local storage for seamless user experience
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const saved = localStorage.getItem('yasraf_last_order');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.orderId && !orderId) setOrderId(parsed.orderId);
+          if (parsed.trackingToken && !authCredential) setAuthCredential(parsed.trackingToken);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleTrack = (e) => {
+  const handleTrack = async (e) => {
     e.preventDefault();
+    if (!orderId.trim() || !authCredential.trim()) {
+      setErrorMessage('Please enter both your Order ID and secret Tracking Token.');
+      return;
+    }
+
+    if (authCredential.trim().length < 32) {
+      setErrorMessage('The tracking token must be a valid cryptographic token (at least 32 characters).');
+      return;
+    }
+
+    setIsSearching(true);
     setSearched(true);
-    // Simulate lookup
-    if (orderQuery.trim().length > 3) {
-      setTrackedOrder({
-        orderId: orderQuery.toUpperCase().startsWith('YAS-') ? orderQuery.toUpperCase() : `YAS-${orderQuery.toUpperCase()}`,
-        status: 'Dispatched via TCS Express',
-        courierTracking: 'TCS-78923412',
-        origin: 'Yasraf Central Atelier, Lahore',
-        destination: 'Karachi, Pakistan',
-        currentStep: 3, // 1: Placed, 2: Inspected/Stitched, 3: Dispatched, 4: Delivered
-        datePlaced: '22 Sep 2026',
-        estDelivery: 'Tomorrow by 4:00 PM',
-        items: [
-          { title: 'Firouzeh Emerald Embroidered Festive Kalidar', qty: 1, size: 'Stitched - M' }
-        ]
+    setErrorMessage(null);
+
+    try {
+      const liveOrder = await trackOrder({
+        orderId: orderId.trim(),
+        trackingToken: authCredential.trim()
       });
-    } else {
+
+      if (liveOrder) {
+        setTrackedOrder(liveOrder);
+      } else {
+        setTrackedOrder(null);
+        setErrorMessage('Order not found or tracking token invalid.');
+      }
+    } catch (err) {
+      console.warn('Track order lookup error:', err);
       setTrackedOrder(null);
+      setErrorMessage(err.message || 'Unable to track order. Please check your credentials.');
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -71,7 +105,7 @@ export default function TrackOrderModal({ isOpen, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#c5a880', marginBottom: '0.3rem' }}>
           <Truck size={18} />
           <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-            Live Shipment Tracker
+            Secure Shipment Tracker
           </span>
         </div>
 
@@ -79,34 +113,81 @@ export default function TrackOrderModal({ isOpen, onClose }) {
           Track Your Yasraf Order
         </h3>
         <p style={{ color: '#6e6b66', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-          Enter your Order Tracking ID (e.g. <code>YAS-9821</code>) or phone number to check status.
+          To protect patron privacy, enter your <strong>Order ID</strong> alongside your 48-character <strong>Tracking Token</strong> received upon order confirmation.
         </p>
 
         {/* Input Form */}
-        <form onSubmit={handleTrack} style={{ display: 'flex', gap: '0.6rem', marginBottom: '2rem' }}>
-          <input
-            type="text"
-            required
-            placeholder="Enter Order # or Tracking Code (Try: YAS-9821)"
-            value={orderQuery}
-            onChange={(e) => setOrderQuery(e.target.value)}
-            style={{
-              flex: 1,
-              padding: '0.75rem 1rem',
-              border: '1px solid #d5cfc4',
-              fontSize: '0.9rem',
-              outline: 'none',
-              textTransform: 'uppercase'
-            }}
-          />
+        <form onSubmit={handleTrack} style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.8rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.8rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#6e6b66', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem' }}>
+                Order ID *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. YAS-2610-123456"
+                value={orderId}
+                onChange={(e) => { setOrderId(e.target.value); if (errorMessage) setErrorMessage(null); }}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  border: '1px solid #d5cfc4',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  textTransform: 'uppercase'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: '#6e6b66', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.3rem' }}>
+                Secret Tracking Token *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Paste 48-character tracking token"
+                value={authCredential}
+                onChange={(e) => { setAuthCredential(e.target.value); if (errorMessage) setErrorMessage(null); }}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  border: '1px solid #d5cfc4',
+                  fontSize: '0.9rem',
+                  outline: 'none'
+                }}
+              />
+            </div>
+          </div>
+
           <button
             type="submit"
             className="btn-luxury"
-            style={{ padding: '0.75rem 1.6rem' }}
+            disabled={isSearching}
+            style={{ padding: '0.8rem 1.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%' }}
           >
-            Track
+            {isSearching ? <Loader2 size={16} className="animate-spin" /> : 'Track Shipment'}
           </button>
         </form>
+
+        {/* Error Alert */}
+        {errorMessage && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            backgroundColor: '#fdf2f2',
+            border: '1px solid #f8b4b4',
+            color: '#9b1c1c',
+            padding: '0.85rem 1rem',
+            marginBottom: '1.5rem',
+            fontSize: '0.85rem'
+          }}>
+            <ShieldAlert size={18} style={{ flexShrink: 0 }} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         {/* Tracked Details */}
         {searched && trackedOrder && (
@@ -121,65 +202,79 @@ export default function TrackOrderModal({ isOpen, onClose }) {
                 <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#141414' }}>{trackedOrder.orderId}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '0.7rem', color: '#8c867f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Courier CN</span>
-                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1d4838' }}>{trackedOrder.courierTracking}</div>
+                <span style={{ fontSize: '0.7rem', color: '#8c867f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Date Placed</span>
+                <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#141414' }}>{trackedOrder.datePlaced}</div>
               </div>
             </div>
 
-            {/* Stepper */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '0.5rem',
-              position: 'relative',
-              marginBottom: '1.8rem'
-            }}>
-              {steps.map((st) => {
-                const isPassed = st.num <= trackedOrder.currentStep;
-                const isCurrent = st.num === trackedOrder.currentStep;
-                return (
-                  <div key={st.num} style={{ textAlign: 'center' }}>
-                    <div style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      margin: '0 auto 0.4rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: isPassed ? '#1d4838' : '#e6dfd5',
-                      color: isPassed ? '#ffffff' : '#888',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      boxShadow: isCurrent ? '0 0 0 4px rgba(29, 72, 56, 0.2)' : 'none'
-                    }}>
-                      {isPassed ? <CheckCircle size={16} /> : st.num}
+            {/* Stepper Progress */}
+            <div style={{ marginBottom: '1.8rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', position: 'relative' }}>
+                {steps.map((st) => {
+                  const isDone = st.num <= (trackedOrder.currentStep || 1);
+                  const isCurrent = st.num === (trackedOrder.currentStep || 1);
+                  return (
+                    <div key={st.num} style={{ textAlign: 'center' }}>
+                      <div style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        backgroundColor: isDone ? '#1d4838' : '#e8e4de',
+                        color: isDone ? '#ffffff' : '#8c867f',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto 0.4rem',
+                        border: isCurrent ? '2px solid #c5a880' : 'none'
+                      }}>
+                        {isDone ? <CheckCircle size={14} /> : st.num}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: isCurrent ? 700 : 500, color: isCurrent ? '#141414' : '#7a756f' }}>
+                        {st.label}
+                      </div>
+                      <div style={{ fontSize: '0.62rem', color: '#9e9992', marginTop: '2px' }}>
+                        {st.desc}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '0.74rem', fontWeight: isCurrent ? 700 : 500, color: isCurrent ? '#141414' : '#6e6b66' }}>
-                      {st.label}
-                    </div>
-                    <div style={{ fontSize: '0.62rem', color: '#8c867f' }}>
-                      {st.desc}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '0.6rem 0', borderTop: '1px solid #eee' }}>
-              <span style={{ color: '#7a756f' }}>Expected Arrival:</span>
-              <strong style={{ color: '#1d4838' }}>{trackedOrder.estDelivery}</strong>
+            {/* Logistics Status Minimal Card */}
+            <div style={{ backgroundColor: '#ffffff', border: '1px solid #ebe6df', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.82rem', marginBottom: '1.2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Clock size={16} color="#c5a880" />
+                <span><strong>Status:</strong> {trackedOrder.status}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Truck size={16} color="#c5a880" />
+                <span><strong>Courier Tracking:</strong> {trackedOrder.courierTracking}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <MapPin size={16} color="#c5a880" />
+                <span><strong>Destination City:</strong> {trackedOrder.destinationCity}, {trackedOrder.destinationProvince}</span>
+              </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '0.6rem 0' }}>
-              <span style={{ color: '#7a756f' }}>Transit Route:</span>
-              <span>{trackedOrder.origin} → {trackedOrder.destination}</span>
-            </div>
-          </div>
-        )}
 
-        {searched && !trackedOrder && (
-          <div style={{ textAlign: 'center', padding: '1.5rem', backgroundColor: '#fff5f5', border: '1px solid #ffd8d8', color: '#942929', fontSize: '0.85rem' }}>
-            No parcel found for tracking reference <strong>"{orderQuery}"</strong>. Please verify the code or contact WhatsApp concierge.
+            {/* Minimal Items List (No sensitive financial totals) */}
+            {trackedOrder.items && trackedOrder.items.length > 0 && (
+              <div>
+                <span style={{ fontSize: '0.72rem', color: '#8c867f', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem' }}>
+                  Enclosed Items ({trackedOrder.items.length})
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {trackedOrder.items.map((it, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', padding: '0.4rem 0', borderBottom: '1px dashed #eee' }}>
+                      <span style={{ color: '#141414' }}>{it.title}</span>
+                      <span style={{ color: '#7a756f', fontSize: '0.75rem' }}>Size: {it.size} &bull; Qty: {it.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

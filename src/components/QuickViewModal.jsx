@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
 import { BRAND_CONFIG } from '../data/brandConfig';
+import { WhatsAppIcon } from './SocialIcons';
 
 export default function QuickViewModal({
   product,
@@ -26,10 +27,8 @@ export default function QuickViewModal({
   allProducts = [],
   onSelectProduct
 }) {
-  if (!isOpen || !product) return null;
-
-  const [activeImage, setActiveImage] = useState(product.image);
-  const [selectedSize, setSelectedSize] = useState(product.sizes ? product.sizes[0] : 'Standard');
+  const [activeImage, setActiveImage] = useState(product?.image || '');
+  const [selectedSize, setSelectedSize] = useState(product?.sizes ? product.sizes[0] : 'Standard');
   const [quantity, setQuantity] = useState(1);
   const [addedSuccess, setAddedSuccess] = useState(false);
 
@@ -41,6 +40,8 @@ export default function QuickViewModal({
       setAddedSuccess(false);
     }
   }, [product]);
+
+  if (!isOpen || !product) return null;
 
   const curr = CURRENCIES[currency] || CURRENCIES.PKR;
   const convertedPrice = Math.round(product.price * curr.rate).toLocaleString();
@@ -479,18 +480,22 @@ export default function QuickViewModal({
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '0.5rem',
-                  padding: '0.75rem',
-                  backgroundColor: '#f5faf6',
-                  border: '1px solid #c2e5cf',
-                  color: '#1c733f',
-                  fontSize: '0.75rem',
+                  padding: '0.85rem',
+                  backgroundColor: '#25D366',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '0.76rem',
                   fontWeight: 600,
                   textDecoration: 'none',
-                  letterSpacing: '0.04em'
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  boxShadow: '0 2px 8px rgba(37,211,102,0.25)',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease'
                 }}
               >
-                <MessageCircle size={16} />
-                <span>Order On WhatsApp • Quick Assistance</span>
+                <WhatsAppIcon size={17} color="white" />
+                <span>ORDER VIA WHATSAPP · QUICK CHECKOUT</span>
               </a>
             </div>
 
