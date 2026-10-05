@@ -198,34 +198,64 @@ export default function Footer({
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.84rem', color: '#9c978f' }}>
               <li>
-                <button onClick={() => onSelectCategory('new-in')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="#new-in" 
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('new-in'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   New In
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('ready-to-wear')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="#ready-to-wear" 
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('ready-to-wear'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Ready to Wear
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('luxury-pret')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="#luxury-pret" 
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('luxury-pret'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Luxury Prêt
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('party-wear')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="#party-wear" 
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('party-wear'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Party Wear & Formals
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('winter-collection')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="#winter-collection" 
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('winter-collection'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Winter Collection
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('best-sellers')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="#best-sellers" 
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('best-sellers'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Best Sellers
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -237,39 +267,74 @@ export default function Footer({
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.84rem', color: '#9c978f' }}>
               <li>
-                <button onClick={() => onNavigatePage && onNavigatePage('account')} style={{ color: '#c5a880', fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="/account" 
+                  onClick={(e) => { e.preventDefault(); onNavigatePage && onNavigatePage('account'); }} 
+                  style={{ color: '#c5a880', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:underline"
+                >
                   My Account & Orders
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={onOpenTrackOrder} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="#track-order" 
+                  onClick={(e) => { e.preventDefault(); onOpenTrackOrder(); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Track Your Order Online
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={onOpenSizeGuide} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="#size-guide" 
+                  onClick={(e) => { e.preventDefault(); onOpenSizeGuide(); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Size Chart & Fitting Guide
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigatePage && onNavigatePage('about')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="/about" 
+                  onClick={(e) => { e.preventDefault(); onNavigatePage && onNavigatePage('about'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   The Atelier Story (About Us)
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigatePage && onNavigatePage('contact')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="/contact" 
+                  onClick={(e) => { e.preventDefault(); onNavigatePage && onNavigatePage('contact'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Client Concierge & Contact
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigatePage && onNavigatePage('shipping')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="/shipping" 
+                  onClick={(e) => { e.preventDefault(); onNavigatePage && onNavigatePage('shipping'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   Delivery & Shipping Rates
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigatePage && onNavigatePage('shipping')} style={{ color: 'inherit', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                <a 
+                  href="/shipping" 
+                  onClick={(e) => { e.preventDefault(); onNavigatePage && onNavigatePage('shipping'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
                   7-Day Exchange Policy
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -358,7 +423,7 @@ export default function Footer({
           justifyContent: 'space-between',
           gap: '1.2rem',
           fontSize: '0.78rem',
-          color: '#7a756f'
+          color: '#9c978f'
         }}>
           <div>
             © {new Date().getFullYear()} <strong>{BRAND_CONFIG.name.toUpperCase()}</strong>. All Rights Reserved. Crafted with authentic Pakistani craftsmanship.
@@ -371,7 +436,7 @@ export default function Footer({
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#7a756f',
+                color: '#9c978f',
                 fontSize: '0.72rem',
                 cursor: 'pointer',
                 textDecoration: 'underline'

@@ -34,16 +34,12 @@ export default function ProductCard({
   })();
 
   return (
-    <div 
-      className="jm-card group relative block w-full text-center cursor-pointer select-none"
-      onClick={() => onQuickView && onQuickView(product)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          if (onQuickView) onQuickView(product);
-        }
+    <a 
+      href={`#product-${product.id}`}
+      className="jm-card group relative block w-full text-center cursor-pointer select-none no-underline text-inherit"
+      onClick={(e) => {
+        e.preventDefault();
+        if (onQuickView) onQuickView(product);
       }}
       aria-label={`View ${singleTitle}`}
     >
@@ -57,6 +53,9 @@ export default function ProductCard({
           src={product.image}
           alt={product.title}
           loading="lazy"
+          decoding="async"
+          width="400"
+          height="600"
           className="absolute inset-0 w-full h-full object-cover object-[center_18%] transition-all duration-500 ease-out group-hover:opacity-[0.14] group-hover:scale-[1.02]"
         />
 
@@ -127,6 +126,6 @@ export default function ProductCard({
           )}
         </div>
       </div>
-    </div>
+    </a>
   );
 }

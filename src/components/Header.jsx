@@ -320,7 +320,7 @@ export default function Header({
 
             {/* Drawer Links */}
             <div className="flex-1 overflow-y-auto py-6 px-6 space-y-5">
-              <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#8c867f] pb-2 border-b border-gray-100">
+              <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#6b655e] pb-2 border-b border-gray-100">
                 Collections
               </div>
               {navItems.map((item) => (
@@ -336,42 +336,48 @@ export default function Header({
 
               {/* Client Account Section in Mobile Menu */}
               <div className="pt-4 border-t border-gray-100 space-y-3">
-                <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#8c867f]">
+                <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#6b655e]">
                   Client Account
                 </div>
                 {user ? (
                   <div className="space-y-2">
                     <div className="text-xs text-[#1a1814] pb-1">
                       Signed in as <strong className="block text-sm font-semibold text-[#1a1814]">{clientName}</strong>
-                      <span className="text-[11px] text-[#8c867f] block truncate">{user.email}</span>
+                      <span className="text-[11px] text-[#6b655e] block truncate">{user.email}</span>
                     </div>
-                    <button
-                      onClick={() => {
+                    <a
+                      href="/account"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsMobileMenuOpen(false);
                         if (onNavigatePage) onNavigatePage('account');
                       }}
                       className="block text-[13px] font-medium text-gray-700 hover:text-black text-left w-full cursor-pointer py-1"
                     >
                       My Account Overview
-                    </button>
-                    <button
-                      onClick={() => {
+                    </a>
+                    <a
+                      href="/account?tab=orders"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsMobileMenuOpen(false);
                         if (onNavigatePage) onNavigatePage('account', 'orders');
                       }}
                       className="block text-[13px] font-medium text-gray-700 hover:text-black text-left w-full cursor-pointer py-1"
                     >
                       My Orders & Tracking
-                    </button>
-                    <button
-                      onClick={() => {
+                    </a>
+                    <a
+                      href="/account?tab=addresses"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsMobileMenuOpen(false);
                         if (onNavigatePage) onNavigatePage('account', 'addresses');
                       }}
                       className="block text-[13px] font-medium text-gray-700 hover:text-black text-left w-full cursor-pointer py-1"
                     >
                       Saved Delivery Addresses
-                    </button>
+                    </a>
                     <button
                       onClick={() => {
                         setIsMobileMenuOpen(false);
@@ -384,59 +390,69 @@ export default function Header({
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2 pt-1">
-                    <button
-                      onClick={() => {
+                    <a
+                      href="/login"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsMobileMenuOpen(false);
                         if (onNavigatePage) onNavigatePage('login');
                       }}
                       className="w-full text-center py-2.5 px-3 bg-[#1a1814] text-white text-xs font-semibold uppercase tracking-wider cursor-pointer"
                     >
                       Sign In to Account
-                    </button>
-                    <button
-                      onClick={() => {
+                    </a>
+                    <a
+                      href="/register"
+                      onClick={(e) => {
+                        e.preventDefault();
                         setIsMobileMenuOpen(false);
                         if (onNavigatePage) onNavigatePage('register');
                       }}
                       className="w-full text-center py-2.5 px-3 border border-[#1a1814] text-[#1a1814] text-xs font-semibold uppercase tracking-wider cursor-pointer"
                     >
                       Create Atelier Account
-                    </button>
+                    </a>
                   </div>
                 )}
               </div>
 
               <div className="pt-4 border-t border-gray-100 space-y-4">
-                <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#8c867f]">
+                <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#6b655e]">
                   Atelier & Care
                 </div>
-                <button
-                  onClick={() => {
+                <a
+                  href="/about"
+                  onClick={(e) => {
+                    e.preventDefault();
                     setIsMobileMenuOpen(false);
                     if (onNavigatePage) onNavigatePage('about');
                   }}
                   className="block text-[13px] font-medium text-gray-700 hover:text-black text-left w-full cursor-pointer"
                 >
                   The Atelier Story
-                </button>
-                <button
-                  onClick={() => {
+                </a>
+                <a
+                  href="/contact"
+                  onClick={(e) => {
+                    e.preventDefault();
                     setIsMobileMenuOpen(false);
                     if (onNavigatePage) onNavigatePage('contact');
                   }}
                   className="block text-[13px] font-medium text-gray-700 hover:text-black text-left w-full cursor-pointer"
                 >
                   Client Concierge & Contact
-                </button>
-                <button
-                  onClick={() => {
+                </a>
+                <a
+                  href="/shipping"
+                  onClick={(e) => {
+                    e.preventDefault();
                     setIsMobileMenuOpen(false);
                     if (onNavigatePage) onNavigatePage('shipping');
                   }}
                   className="block text-[13px] font-medium text-gray-700 hover:text-black text-left w-full cursor-pointer"
                 >
                   Delivery & 7-Day Exchange
-                </button>
+                </a>
               </div>
             </div>
 

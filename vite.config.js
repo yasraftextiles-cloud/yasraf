@@ -64,6 +64,17 @@ export default defineConfig({
     react(),
     backendApiPlugin()
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            return 'react-vendor';
+          }
+        }
+      }
+    }
+  },
   server: {
     watch: {
       ignored: ['**/.agents/**', '**/.git/**', '**/scratch/**', '**/.system_generated/**']

@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import './App.css';
 import { PRODUCTS as DEFAULT_PRODUCTS } from './data/products';
 import { getProducts } from './services/supabaseService';
-import AdminPage from './admin/AdminPage';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { 
@@ -29,32 +28,35 @@ import TrustBar from './components/TrustBar';
 import InstagramFeed from './components/InstagramFeed';
 import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
-import WhatsAppChannelModal from './components/WhatsAppChannelModal';
 
-// Dedicated Storefront Pages
-import ProductDetailPage from './pages/ProductDetailPage';
-import CollectionsPage from './pages/CollectionsPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import ShippingPolicyPage from './pages/ShippingPolicyPage';
+// Code-split Secondary Storefront Pages & Admin
+const AdminPage = lazy(() => import('./admin/AdminPage'));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
+const CollectionsPage = lazy(() => import('./pages/CollectionsPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const ShippingPolicyPage = lazy(() => import('./pages/ShippingPolicyPage'));
 
-// Customer Auth & Account Pages
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import ResetPasswordPage from './pages/auth/ResetPasswordPage';
-import AuthCallbackPage from './pages/auth/AuthCallbackPage';
-import AccountPage from './pages/account/AccountPage';
+// Code-split Customer Auth & Account Pages
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
+const AuthCallbackPage = lazy(() => import('./pages/auth/AuthCallbackPage'));
+const AccountPage = lazy(() => import('./pages/account/AccountPage'));
 
 import CartDrawer from './components/CartDrawer';
-import QuickViewModal from './components/QuickViewModal';
-import SizeGuideModal from './components/SizeGuideModal';
-import SearchModal from './components/SearchModal';
-import CheckoutModal from './components/CheckoutModal';
-import TrackOrderModal from './components/TrackOrderModal';
-import StoryModal from './components/StoryModal';
-import WishlistModal from './components/WishlistModal';
-import ImageManagerModal from './components/ImageManagerModal';
+
+// Code-split Heavy Modals (Loaded on-demand when activated)
+const QuickViewModal = lazy(() => import('./components/QuickViewModal'));
+const SizeGuideModal = lazy(() => import('./components/SizeGuideModal'));
+const SearchModal = lazy(() => import('./components/SearchModal'));
+const CheckoutModal = lazy(() => import('./components/CheckoutModal'));
+const TrackOrderModal = lazy(() => import('./components/TrackOrderModal'));
+const StoryModal = lazy(() => import('./components/StoryModal'));
+const WishlistModal = lazy(() => import('./components/WishlistModal'));
+const ImageManagerModal = lazy(() => import('./components/ImageManagerModal'));
+const WhatsAppChannelModal = lazy(() => import('./components/WhatsAppChannelModal'));
 
 import { Check } from 'lucide-react';
 
@@ -513,16 +515,21 @@ function AppContent() {
     }
   };
 
-  // Outcome-Driven WhatsApp Channel Popup
+  // Outcome-Driven WhatsApp Channel Popup (Triggered on active scroll engagement, NOT blocking initial paint)
   useEffect(() => {
     try {
       const dismissed = sessionStorage.getItem('yasraf_wa_channel_popup');
-      if (!dismissed) {
-        const timer = setTimeout(() => {
+      if (dismissed) return;
+
+      const handleScrollEngagement = () => {
+        if (window.scrollY > 500) {
           setIsWhatsAppChannelOpen(true);
-        }, 4000);
-        return () => clearTimeout(timer);
-      }
+          window.removeEventListener('scroll', handleScrollEngagement);
+        }
+      };
+
+      window.addEventListener('scroll', handleScrollEngagement, { passive: true });
+      return () => window.removeEventListener('scroll', handleScrollEngagement);
     } catch {}
   }, []);
 
@@ -532,12 +539,14 @@ function AppContent() {
   // If viewing Admin Atelier Dashboard
   if (currentPage === 'admin') {
     return (
-      <AdminPage 
-        onBackToStore={() => {
-          refreshCatalog();
-          navigateTo('home');
-        }} 
-      />
+      <Suspense fallback={<div className="min-h-screen bg-[#121212] flex items-center justify-center text-[#c5a880] font-serif">Loading Atelier Portal...</div>}>
+        <AdminPage 
+          onBackToStore={() => {
+            refreshCatalog();
+            navigateTo('home');
+          }} 
+        />
+      </Suspense>
     );
   }
 
@@ -565,153 +574,155 @@ function AppContent() {
 
       {/* Main Page Rendering */}
       <main className="flex-1 w-full">
-        {currentPage === 'home' && (
-          <>
-            <HeroSlider onSelectCategory={(cat) => navigateTo('collections', cat)} />
-            <ShopByCollection onSelectCollection={(cat) => navigateTo('collections', cat)} />
-            <NewArrivals
+        <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center text-[#c5a880]"><div className="w-6 h-6 border-2 border-[#c5a880] border-t-transparent rounded-full animate-spin" /></div>}>
+          {currentPage === 'home' && (
+            <>
+              <HeroSlider onSelectCategory={(cat) => navigateTo('collections', cat)} />
+              <ShopByCollection onSelectCollection={(cat) => navigateTo('collections', cat)} />
+              <NewArrivals
+                products={products}
+                currency={currency}
+                onQuickView={(prod) => navigateTo('product', prod)}
+                wishlistIds={wishlistIds}
+                onToggleWishlist={handleToggleWishlist}
+                onSelectCategory={(cat) => navigateTo('collections', cat)}
+              />
+              <BrandStory onOpenStory={() => navigateTo('about')} />
+              <CategoryLookbook onSelectCategory={(cat) => navigateTo('collections', cat)} />
+              <EditorialBanner />
+              <EditorialStatement onViewCollection={() => navigateTo('collections', 'all')} />
+              <DualEditorialSplit />
+              <NewInCollection onQuickView={(prod) => navigateTo('product', prod)} />
+              <EditorialSplitPromo onShopFestive={() => navigateTo('collections', 'festive')} />
+              <BrandStatement />
+              <TrustBar />
+              <InstagramFeed />
+            </>
+          )}
+
+          {/* Dedicated Product Detail Page */}
+          {currentPage === 'product' && (
+            <ProductDetailPage
+              product={selectedProduct || products[0]}
+              allProducts={products}
+              currency={currency}
+              onAddToCart={handleAddToCart}
+              onBackToHome={() => navigateTo('home')}
+              onSelectProduct={(prod) => navigateTo('product', prod)}
+              onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+              isWishlisted={selectedProduct ? wishlistIds.includes(selectedProduct.id) : false}
+              onToggleWishlist={handleToggleWishlist}
+              onOpenCart={() => setIsCartOpen(true)}
+            />
+          )}
+
+          {/* Collections Catalog Page */}
+          {currentPage === 'collections' && (
+            <CollectionsPage
               products={products}
               currency={currency}
-              onQuickView={(prod) => navigateTo('product', prod)}
+              activeCategory={activeCategory}
+              onSelectCategory={(cat) => {
+                setActiveCategory(cat);
+                window.history.pushState({ page: 'collections', category: cat }, '', `#collections/${cat}`);
+              }}
+              onSelectProduct={(prod) => navigateTo('product', prod)}
+              onBackToHome={() => navigateTo('home')}
               wishlistIds={wishlistIds}
               onToggleWishlist={handleToggleWishlist}
-              onSelectCategory={(cat) => navigateTo('collections', cat)}
             />
-            <BrandStory onOpenStory={() => navigateTo('about')} />
-            <CategoryLookbook onSelectCategory={(cat) => navigateTo('collections', cat)} />
-            <EditorialBanner />
-            <EditorialStatement onViewCollection={() => navigateTo('collections', 'all')} />
-            <DualEditorialSplit />
-            <NewInCollection onQuickView={(prod) => navigateTo('product', prod)} />
-            <EditorialSplitPromo onShopFestive={() => navigateTo('collections', 'festive')} />
-            <BrandStatement />
-            <TrustBar />
-            <InstagramFeed />
-          </>
-        )}
+          )}
 
-        {/* Dedicated Product Detail Page */}
-        {currentPage === 'product' && (
-          <ProductDetailPage
-            product={selectedProduct || products[0]}
-            allProducts={products}
-            currency={currency}
-            onAddToCart={handleAddToCart}
-            onBackToHome={() => navigateTo('home')}
-            onSelectProduct={(prod) => navigateTo('product', prod)}
-            onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-            isWishlisted={selectedProduct ? wishlistIds.includes(selectedProduct.id) : false}
-            onToggleWishlist={handleToggleWishlist}
-            onOpenCart={() => setIsCartOpen(true)}
-          />
-        )}
-
-        {/* Collections Catalog Page */}
-        {currentPage === 'collections' && (
-          <CollectionsPage
-            products={products}
-            currency={currency}
-            activeCategory={activeCategory}
-            onSelectCategory={(cat) => {
-              setActiveCategory(cat);
-              window.history.pushState({ page: 'collections', category: cat }, '', `#collections/${cat}`);
-            }}
-            onSelectProduct={(prod) => navigateTo('product', prod)}
-            onBackToHome={() => navigateTo('home')}
-            wishlistIds={wishlistIds}
-            onToggleWishlist={handleToggleWishlist}
-          />
-        )}
-
-        {/* Customer Auth Pages */}
-        {currentPage === 'login' && (
-          <LoginPage
-            onLoginSuccess={handleLoginSuccess}
-            onNavigateRegister={() => navigateTo('register')}
-            onNavigateForgotPassword={() => navigateTo('forgot-password')}
-            onBackToStore={() => navigateTo('home')}
-            redirectTarget={redirectAfterLogin}
-          />
-        )}
-
-        {currentPage === 'register' && (
-          <RegisterPage
-            onRegisterSuccess={handleLoginSuccess}
-            onNavigateLogin={() => navigateTo('login')}
-            onBackToStore={() => navigateTo('home')}
-            redirectTarget={redirectAfterLogin}
-          />
-        )}
-
-        {currentPage === 'forgot-password' && (
-          <ForgotPasswordPage
-            onNavigateLogin={() => navigateTo('login')}
-            onBackToStore={() => navigateTo('home')}
-          />
-        )}
-
-        {currentPage === 'reset-password' && (
-          <ResetPasswordPage
-            onResetSuccess={() => navigateTo('account')}
-            onBackToStore={() => navigateTo('home')}
-          />
-        )}
-
-        {currentPage === 'auth-callback' && (
-          <AuthCallbackPage
-            onNavigateLogin={() => navigateTo('login')}
-            onNavigateResetPassword={() => navigateTo('reset-password')}
-            onNavigateAccount={() => navigateTo('account')}
-            onBackToStore={() => navigateTo('home')}
-          />
-        )}
-
-        {/* Customer Account Area */}
-        {currentPage === 'account' && (
-          user ? (
-            <AccountPage
-              onNavigateHome={() => navigateTo('home')}
-              onNavigateCollections={() => navigateTo('collections', 'all')}
-              onAddToCart={handleAddToCart}
-              onOpenCart={() => setIsCartOpen(true)}
-              catalogProducts={products}
-              initialTab={accountParams.tab || 'overview'}
-              initialOrderId={accountParams.orderId}
-              showToast={showToast}
-            />
-          ) : (
+          {/* Customer Auth Pages */}
+          {currentPage === 'login' && (
             <LoginPage
               onLoginSuccess={handleLoginSuccess}
               onNavigateRegister={() => navigateTo('register')}
               onNavigateForgotPassword={() => navigateTo('forgot-password')}
               onBackToStore={() => navigateTo('home')}
-              redirectTarget={null}
+              redirectTarget={redirectAfterLogin}
             />
-          )
-        )}
+          )}
 
-        {/* About The Atelier Page */}
-        {currentPage === 'about' && (
-          <AboutPage
-            onBackToHome={() => navigateTo('home')}
-            onExploreCollections={() => navigateTo('collections', 'all')}
-          />
-        )}
+          {currentPage === 'register' && (
+            <RegisterPage
+              onRegisterSuccess={handleLoginSuccess}
+              onNavigateLogin={() => navigateTo('login')}
+              onBackToStore={() => navigateTo('home')}
+              redirectTarget={redirectAfterLogin}
+            />
+          )}
 
-        {/* Client Concierge & Contact Page */}
-        {currentPage === 'contact' && (
-          <ContactPage
-            onBackToHome={() => navigateTo('home')}
-          />
-        )}
+          {currentPage === 'forgot-password' && (
+            <ForgotPasswordPage
+              onNavigateLogin={() => navigateTo('login')}
+              onBackToStore={() => navigateTo('home')}
+            />
+          )}
 
-        {/* Nationwide Shipping & Exchange Policy Page */}
-        {currentPage === 'shipping' && (
-          <ShippingPolicyPage
-            onBackToHome={() => navigateTo('home')}
-            onOpenConcierge={() => navigateTo('contact')}
-          />
-        )}
+          {currentPage === 'reset-password' && (
+            <ResetPasswordPage
+              onResetSuccess={() => navigateTo('account')}
+              onBackToStore={() => navigateTo('home')}
+            />
+          )}
+
+          {currentPage === 'auth-callback' && (
+            <AuthCallbackPage
+              onNavigateLogin={() => navigateTo('login')}
+              onNavigateResetPassword={() => navigateTo('reset-password')}
+              onNavigateAccount={() => navigateTo('account')}
+              onBackToStore={() => navigateTo('home')}
+            />
+          )}
+
+          {/* Customer Account Area */}
+          {currentPage === 'account' && (
+            user ? (
+              <AccountPage
+                onNavigateHome={() => navigateTo('home')}
+                onNavigateCollections={() => navigateTo('collections', 'all')}
+                onAddToCart={handleAddToCart}
+                onOpenCart={() => setIsCartOpen(true)}
+                catalogProducts={products}
+                initialTab={accountParams.tab || 'overview'}
+                initialOrderId={accountParams.orderId}
+                showToast={showToast}
+              />
+            ) : (
+              <LoginPage
+                onLoginSuccess={handleLoginSuccess}
+                onNavigateRegister={() => navigateTo('register')}
+                onNavigateForgotPassword={() => navigateTo('forgot-password')}
+                onBackToStore={() => navigateTo('home')}
+                redirectTarget={null}
+              />
+            )
+          )}
+
+          {/* About The Atelier Page */}
+          {currentPage === 'about' && (
+            <AboutPage
+              onBackToHome={() => navigateTo('home')}
+              onExploreCollections={() => navigateTo('collections', 'all')}
+            />
+          )}
+
+          {/* Client Concierge & Contact Page */}
+          {currentPage === 'contact' && (
+            <ContactPage
+              onBackToHome={() => navigateTo('home')}
+            />
+          )}
+
+          {/* Nationwide Shipping & Exchange Policy Page */}
+          {currentPage === 'shipping' && (
+            <ShippingPolicyPage
+              onBackToHome={() => navigateTo('home')}
+              onOpenConcierge={() => navigateTo('contact')}
+            />
+          )}
+        </Suspense>
       </main>
 
       {/* Luxury Footer with Customer Account Integration */}
@@ -728,7 +739,7 @@ function AppContent() {
         onOpenChannelModal={() => setIsWhatsAppChannelOpen(true)}
       />
 
-      {/* Modals & Slide Drawers */}
+      {/* Modals & Slide Drawers (Lazy Loaded On-Demand) */}
       <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
@@ -739,122 +750,141 @@ function AppContent() {
         currency={currency}
       />
 
-      <QuickViewModal
-        product={quickViewProduct}
-        isOpen={!!quickViewProduct}
-        onClose={() => setQuickViewProduct(null)}
-        currency={currency}
-        onAddToCart={handleAddToCart}
-        onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-        isWishlisted={quickViewProduct ? wishlistIds.includes(quickViewProduct.id) : false}
-        onToggleWishlist={handleToggleWishlist}
-        onDirectBuyNow={(prod) => {
-          handleAddToCart(prod);
-          setQuickViewProduct(null);
-          setIsCartOpen(true);
-        }}
-        allProducts={products}
-        onSelectProduct={(p) => {
-          setQuickViewProduct(null);
-          navigateTo('product', p);
-        }}
-      />
+      <Suspense fallback={null}>
+        {quickViewProduct && (
+          <QuickViewModal
+            product={quickViewProduct}
+            isOpen={!!quickViewProduct}
+            onClose={() => setQuickViewProduct(null)}
+            currency={currency}
+            onAddToCart={handleAddToCart}
+            onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+            isWishlisted={quickViewProduct ? wishlistIds.includes(quickViewProduct.id) : false}
+            onToggleWishlist={handleToggleWishlist}
+            onDirectBuyNow={(prod) => {
+              handleAddToCart(prod);
+              setQuickViewProduct(null);
+              setIsCartOpen(true);
+            }}
+            allProducts={products}
+            onSelectProduct={(p) => {
+              setQuickViewProduct(null);
+              navigateTo('product', p);
+            }}
+          />
+        )}
 
-      <SizeGuideModal
-        isOpen={isSizeGuideOpen}
-        onClose={() => setIsSizeGuideOpen(false)}
-      />
+        {isSizeGuideOpen && (
+          <SizeGuideModal
+            isOpen={isSizeGuideOpen}
+            onClose={() => setIsSizeGuideOpen(false)}
+          />
+        )}
 
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        products={products}
-        currency={currency}
-        onSelectProduct={(prod) => {
-          setIsSearchOpen(false);
-          navigateTo('product', prod);
-        }}
-      />
+        {isSearchOpen && (
+          <SearchModal
+            isOpen={isSearchOpen}
+            onClose={() => setIsSearchOpen(false)}
+            products={products}
+            currency={currency}
+            onSelectProduct={(prod) => {
+              setIsSearchOpen(false);
+              navigateTo('product', prod);
+            }}
+          />
+        )}
 
-      <CheckoutModal
-        isOpen={!!checkoutData}
-        onClose={() => setCheckoutData(null)}
-        checkoutData={checkoutData}
-        onOrderSuccess={async () => {
-          // Prevent pending cart writes from restoring purchased items after checkout
-          cartSyncSeqRef.current++;
-          isCheckoutActiveRef.current = true;
+        {checkoutData && (
+          <CheckoutModal
+            isOpen={!!checkoutData}
+            onClose={() => setCheckoutData(null)}
+            checkoutData={checkoutData}
+            onOrderSuccess={async () => {
+              // Prevent pending cart writes from restoring purchased items after checkout
+              cartSyncSeqRef.current++;
+              isCheckoutActiveRef.current = true;
 
-          setCartItems([]);
-          try {
-            localStorage.removeItem('yasraf_cart');
-          } catch {}
+              setCartItems([]);
+              try {
+                localStorage.removeItem('yasraf_cart');
+              } catch {}
 
-          if (user) {
-            try {
-              await clearCustomerCart(user.id);
-              // Reload server cart after successful checkout to verify empty state
-              const { items: reloadedItems } = await fetchCustomerCart(user.id, products);
-              setCartItems(reloadedItems || []);
-            } catch (reloadErr) {
-              console.warn('[App] Post-checkout cart reload warning:', reloadErr);
-            }
-          }
+              if (user) {
+                try {
+                  await clearCustomerCart(user.id);
+                  // Reload server cart after successful checkout to verify empty state
+                  const { items: reloadedItems } = await fetchCustomerCart(user.id, products);
+                  setCartItems(reloadedItems || []);
+                } catch (reloadErr) {
+                  console.warn('[App] Post-checkout cart reload warning:', reloadErr);
+                }
+              }
 
-          setTimeout(() => {
-            isCheckoutActiveRef.current = false;
-          }, 1500);
-        }}
-        onNavigateLogin={(target) => {
-          setRedirectAfterLogin(target || 'checkout');
-          navigateTo('login');
-        }}
-        onNavigateAccount={(tab, orderId) => navigateTo('account', { tab, orderId })}
-      />
+              setTimeout(() => {
+                isCheckoutActiveRef.current = false;
+              }, 1500);
+            }}
+            onNavigateLogin={(target) => {
+              setRedirectAfterLogin(target || 'checkout');
+              navigateTo('login');
+            }}
+            onNavigateAccount={(tab, orderId) => navigateTo('account', { tab, orderId })}
+          />
+        )}
 
-      <TrackOrderModal
-        isOpen={isTrackOrderOpen}
-        onClose={() => setIsTrackOrderOpen(false)}
-      />
+        {isTrackOrderOpen && (
+          <TrackOrderModal
+            isOpen={isTrackOrderOpen}
+            onClose={() => setIsTrackOrderOpen(false)}
+          />
+        )}
 
-      <StoryModal
-        isOpen={storyIndex !== null}
-        initialIndex={storyIndex || 0}
-        onClose={() => setStoryIndex(null)}
-        onSelectCategory={(cat) => {
-          setStoryIndex(null);
-          navigateTo('collections', cat);
-        }}
-      />
+        {storyIndex !== null && (
+          <StoryModal
+            isOpen={storyIndex !== null}
+            initialIndex={storyIndex || 0}
+            onClose={() => setStoryIndex(null)}
+            onSelectCategory={(cat) => {
+              setStoryIndex(null);
+              navigateTo('collections', cat);
+            }}
+          />
+        )}
 
-      <WishlistModal
-        isOpen={isWishlistOpen}
-        onClose={() => setIsWishlistOpen(false)}
-        wishlistProducts={wishlistedProducts}
-        onRemoveWishlist={handleRemoveWishlistId}
-        onAddToCart={handleAddToCart}
-        currency={currency}
-      />
+        {isWishlistOpen && (
+          <WishlistModal
+            isOpen={isWishlistOpen}
+            onClose={() => setIsWishlistOpen(false)}
+            wishlistProducts={wishlistedProducts}
+            onRemoveWishlist={handleRemoveWishlistId}
+            onAddToCart={handleAddToCart}
+            currency={currency}
+          />
+        )}
 
-      {/* Custom Photos Manager Modal */}
-      <ImageManagerModal
-        isOpen={isImageManagerOpen}
-        onClose={() => setIsImageManagerOpen(false)}
-        products={products}
-        onUpdateProductImage={handleUpdateProductImage}
-      />
+        {isImageManagerOpen && (
+          <ImageManagerModal
+            isOpen={isImageManagerOpen}
+            onClose={() => setIsImageManagerOpen(false)}
+            products={products}
+            onUpdateProductImage={handleUpdateProductImage}
+          />
+        )}
 
-      {/* Outcome-Driven WhatsApp Channel VIP Popup Modal */}
-      <WhatsAppChannelModal
-        isOpen={isWhatsAppChannelOpen}
-        onClose={() => {
-          setIsWhatsAppChannelOpen(false);
-          try {
-            sessionStorage.setItem('yasraf_wa_channel_popup', 'dismissed');
-          } catch {}
-        }}
-        onApplyVoucher={(code) => showToast(`Voucher "${code}" copied to clipboard!`)}
-      />
+        {/* Outcome-Driven WhatsApp Channel VIP Popup Modal */}
+        {isWhatsAppChannelOpen && (
+          <WhatsAppChannelModal
+            isOpen={isWhatsAppChannelOpen}
+            onClose={() => {
+              setIsWhatsAppChannelOpen(false);
+              try {
+                sessionStorage.setItem('yasraf_wa_channel_popup', 'dismissed');
+              } catch {}
+            }}
+            onApplyVoucher={(code) => showToast(`Voucher "${code}" copied to clipboard!`)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }
