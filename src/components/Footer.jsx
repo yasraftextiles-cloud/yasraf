@@ -199,7 +199,7 @@ export default function Footer({
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.84rem', color: '#9c978f' }}>
               <li>
                 <a 
-                  href="#new-in" 
+                  href="/collections/new-in" 
                   onClick={(e) => { e.preventDefault(); onSelectCategory('new-in'); }} 
                   style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
                   className="hover:text-white transition-colors"
@@ -209,7 +209,7 @@ export default function Footer({
               </li>
               <li>
                 <a 
-                  href="#ready-to-wear" 
+                  href="/collections/ready-to-wear" 
                   onClick={(e) => { e.preventDefault(); onSelectCategory('ready-to-wear'); }} 
                   style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
                   className="hover:text-white transition-colors"
@@ -219,7 +219,7 @@ export default function Footer({
               </li>
               <li>
                 <a 
-                  href="#luxury-pret" 
+                  href="/collections/luxury-pret" 
                   onClick={(e) => { e.preventDefault(); onSelectCategory('luxury-pret'); }} 
                   style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
                   className="hover:text-white transition-colors"
@@ -229,7 +229,7 @@ export default function Footer({
               </li>
               <li>
                 <a 
-                  href="#party-wear" 
+                  href="/collections/party-wear" 
                   onClick={(e) => { e.preventDefault(); onSelectCategory('party-wear'); }} 
                   style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
                   className="hover:text-white transition-colors"
@@ -239,7 +239,7 @@ export default function Footer({
               </li>
               <li>
                 <a 
-                  href="#winter-collection" 
+                  href="/collections/winter-collection" 
                   onClick={(e) => { e.preventDefault(); onSelectCategory('winter-collection'); }} 
                   style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
                   className="hover:text-white transition-colors"
@@ -249,7 +249,7 @@ export default function Footer({
               </li>
               <li>
                 <a 
-                  href="#best-sellers" 
+                  href="/collections/best-sellers" 
                   onClick={(e) => { e.preventDefault(); onSelectCategory('best-sellers'); }} 
                   style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
                   className="hover:text-white transition-colors"

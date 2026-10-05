@@ -61,7 +61,7 @@ export default function HeroSlider({ onSelectCategory }) {
         {/* Universal Fallback Image with Intrinsic Dimensions & High Priority */}
         <img
           src="/hero-banner.jpg"
-          alt="Yasraf Luxury Atelier Campaign — Draped in Poetic Grace"
+          alt="YASRAF Textiles Luxury Campaign — Premium Women's Clothing in Pakistan"
           width="800"
           height="1000"
           fetchPriority="high"
@@ -99,6 +99,7 @@ export default function HeroSlider({ onSelectCategory }) {
           className="text-[#fcfaf7] text-3xl sm:text-5xl md:text-6xl lg:text-[58px] font-normal leading-[1.1] tracking-normal drop-shadow-[0_2px_24px_rgba(0,0,0,0.5)]"
           style={{ fontFamily: 'var(--font-family-editorial)', color: '#fcfaf7' }}
         >
+          <span className="sr-only">Premium Women's Fashion by YASRAF Textiles — </span>
           Draped in <span className="italic font-light text-[#f7ede1]">Poetic Grace</span>
         </h1>
 
@@ -107,10 +108,10 @@ export default function HeroSlider({ onSelectCategory }) {
           style={{ fontFamily: 'var(--font-family-primary)' }}
         >
           <a
-            href="#collections"
+            href="/collections/the-edit"
             onClick={(e) => {
               e.preventDefault();
-              handleCta('collections');
+              handleCta('the-edit');
             }}
             className="text-[#fcfaf7] text-[11.5px] sm:text-[12px] font-medium tracking-[0.18em] uppercase border-b border-[#fcfaf7] pb-0.5 hover:opacity-60 transition-opacity cursor-pointer"
           >
@@ -118,10 +119,10 @@ export default function HeroSlider({ onSelectCategory }) {
           </a>
           <span className="text-[#fcfaf7]/70 select-none text-[12px] font-light">/</span>
           <a
-            href="#new-arrivals"
+            href="/collections/new-in"
             onClick={(e) => {
               e.preventDefault();
-              handleCta('new-arrivals');
+              handleCta('new-in');
             }}
             className="text-[#fcfaf7] text-[11.5px] sm:text-[12px] font-medium tracking-[0.18em] uppercase border-b border-[#fcfaf7] pb-0.5 hover:opacity-60 transition-opacity cursor-pointer"
           >

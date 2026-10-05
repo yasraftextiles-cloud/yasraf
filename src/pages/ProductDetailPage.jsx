@@ -94,21 +94,34 @@ export default function ProductDetailPage({
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-3 border-b border-neutral-200/50 mb-6 sm:mb-10">
         <div className="flex items-center justify-between text-[11.5px] uppercase tracking-[0.14em] text-[#8c867f]">
           <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap">
-            <button 
-              onClick={onBackToHome}
+            <a 
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onBackToHome) onBackToHome();
+              }}
               className="hover:text-[#1a1814] transition-colors cursor-pointer flex items-center gap-1"
             >
               <ArrowLeft size={13} /> Back to Store
-            </button>
+            </a>
             <span>/</span>
-            <button 
-              onClick={onBackToHome} 
+            <a 
+              href="/" 
+              onClick={(e) => {
+                e.preventDefault();
+                if (onBackToHome) onBackToHome();
+              }}
               className="hover:text-[#1a1814] transition-colors cursor-pointer"
             >
               Home
-            </button>
+            </a>
             <span>/</span>
-            <span className="text-[#67615c]">{product.categoryLabel || 'Collections'}</span>
+            <a
+              href={`/collections/${product.category || 'all'}`}
+              className="text-[#67615c] hover:text-[#1a1814] transition-colors"
+            >
+              {product.categoryLabel || 'Collections'}
+            </a>
             <span>/</span>
             <span className="text-[#1a1814] font-medium truncate max-w-[180px] sm:max-w-none">
               {product.title}
@@ -147,7 +160,7 @@ export default function ProductDetailPage({
                   >
                     <img 
                       src={img} 
-                      alt={`${product.title} view ${idx + 1}`}
+                      alt={`${product.title} — Detail View ${idx + 1}`}
                       className="w-full h-full object-cover object-[center_18%]"
                       loading="lazy"
                     />
@@ -161,7 +174,7 @@ export default function ProductDetailPage({
               <div className="w-full aspect-[2/3] relative overflow-hidden">
                 <img 
                   src={images[selectedImage] || product.image} 
-                  alt={product.title}
+                  alt={`${product.title} — Luxury Women's Clothing Pakistan | YASRAF Textiles`}
                   className="w-full h-full object-cover object-[center_18%] transition-transform duration-700 ease-out group-hover:scale-105"
                   fetchPriority="high"
                 />

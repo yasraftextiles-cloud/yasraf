@@ -8,8 +8,27 @@
   NODE_VERSION = "22"
   NPM_FLAGS = "--include=optional"
 
+# Canonical Domain Enforcement (301 Permanent Redirects)
+[[redirects]]
+  from = "https://www.yasraftextiles.com/*"
+  to = "https://yasraftextiles.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.yasraftextiles.com/*"
+  to = "https://yasraftextiles.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://yasraftextiles.com/*"
+  to = "https://yasraftextiles.com/:splat"
+  status = 301
+  force = true
+
 # Single Page Application (SPA) routing rule
-# Ensures direct links like /#collections, /#about or client-side paths resolve to index.html with HTTP 200
+# Ensures direct links like /collections/ready-to-wear, /products/:slug, /about resolve to index.html with HTTP 200
 [[redirects]]
   from = "/*"
   to = "/index.html"

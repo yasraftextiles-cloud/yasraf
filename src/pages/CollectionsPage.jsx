@@ -3,6 +3,7 @@ import ProductCard from '../components/ProductCard';
 import ProductFilters, { PRICE_RANGES } from '../components/ProductFilters';
 import { SlidersHorizontal, ArrowLeft } from 'lucide-react';
 import { NAV_CATEGORIES } from '../data/products';
+import { COLLECTION_SEO_DATA } from '../utils/seo';
 
 export default function CollectionsPage({
   products = [],
@@ -89,6 +90,7 @@ export default function CollectionsPage({
   }, [products, activeCategory, selectedPriceRange, selectedSizes, selectedFabrics, sortBy]);
 
   const activeCategoryObj = NAV_CATEGORIES.find((c) => c.id === activeCategory) || { label: 'All Collections' };
+  const colData = COLLECTION_SEO_DATA[activeCategory] || COLLECTION_SEO_DATA['all'];
 
   return (
     <div className="w-full bg-[#ffffff] min-h-screen text-[#1a1814] pt-24 sm:pt-28 pb-20">
@@ -96,19 +98,23 @@ export default function CollectionsPage({
       {/* 1. Breadcrumbs */}
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-3 border-b border-neutral-200/50 mb-6">
         <div className="flex items-center gap-2 text-[11.5px] uppercase tracking-[0.14em] text-[#8c867f]">
-          <button 
-            onClick={onBackToHome}
+          <a 
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              if (onBackToHome) onBackToHome();
+            }}
             className="hover:text-[#1a1814] transition-colors cursor-pointer flex items-center gap-1"
           >
             <ArrowLeft size={13} /> Back to Home
-          </button>
+          </a>
           <span>/</span>
-          <span className="text-[#1a1814] font-medium">{activeCategoryObj.label}</span>
+          <span className="text-[#1a1814] font-medium">{colData.h1 || activeCategoryObj.label}</span>
         </div>
       </div>
 
       {/* 2. Collection Header */}
-      <div className="text-center max-w-xl mx-auto px-4 mb-8 sm:mb-12">
+      <div className="text-center max-w-2xl mx-auto px-4 mb-8 sm:mb-12">
         <span className="text-[10.5px] uppercase tracking-[0.24em] font-medium text-[#8c867f] block mb-2">
           YASRAF ATELIER
         </span>
@@ -116,10 +122,10 @@ export default function CollectionsPage({
           className="text-3xl sm:text-4xl lg:text-[44px] text-[#67615c] font-light tracking-tight leading-tight mb-3"
           style={{ fontFamily: 'var(--font-family-editorial)' }}
         >
-          {activeCategoryObj.label}
+          {colData.h1}
         </h1>
-        <p className="text-xs sm:text-[13px] text-[#78716a] font-light leading-relaxed">
-          Discover hand-finished luxury lawn, unstitched three-piece suits, and contemporary ready-to-wear ensembles.
+        <p className="text-xs sm:text-[13px] text-[#78716a] font-light leading-relaxed max-w-lg mx-auto">
+          {colData.intro}
         </p>
       </div>
 
@@ -127,9 +133,13 @@ export default function CollectionsPage({
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mb-8">
         <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto scrollbar-none py-2 border-b border-neutral-200/60 -mx-4 px-4 sm:mx-0 sm:px-0">
           {NAV_CATEGORIES.map((cat) => (
-            <button
+            <a
               key={cat.id}
-              onClick={() => onSelectCategory && onSelectCategory(cat.id)}
+              href={cat.id === 'all' ? '/collections' : `/collections/${cat.id}`}
+              onClick={(e) => {
+                e.preventDefault();
+                if (onSelectCategory) onSelectCategory(cat.id);
+              }}
               className={`px-3.5 py-1.5 text-[11.5px] uppercase tracking-[0.14em] font-medium transition-all whitespace-nowrap cursor-pointer ${
                 activeCategory === cat.id
                   ? 'border-b-2 border-[#1a1814] text-[#1a1814]'
@@ -138,7 +148,7 @@ export default function CollectionsPage({
               style={{ fontFamily: 'var(--font-family-primary)' }}
             >
               {cat.shortLabel || cat.label}
-            </button>
+            </a>
           ))}
         </div>
       </div>

@@ -3,10 +3,11 @@
 // ==========================================================================
 
 export const BRAND_CONFIG = {
-  name: 'YASRAF Clothing',
+  name: 'YASRAF Textiles',
   shortName: 'YASRAF',
+  productionDomain: 'https://yasraftextiles.com',
   tagline: 'Elegance in Every Stitch',
-  subTagline: "Luxury Prêt & Women's Eastern Fashion",
+  subTagline: "Premium Women's Clothing in Pakistan",
   currencyBase: 'PKR',
   freeShippingThreshold: 4990,
   standardShippingFee: 250,
@@ -49,6 +50,6 @@ export const BRAND_CONFIG = {
   },
 
   // Contact information
-  contactEmail: 'contact@yasrafclothing.com',
+  contactEmail: 'contact@yasraftextiles.com',
   supportHours: 'Mon - Sat: 10:00 AM - 8:00 PM (PKT)'
 };

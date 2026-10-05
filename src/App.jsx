@@ -36,6 +36,7 @@ const CollectionsPage = lazy(() => import('./pages/CollectionsPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const ShippingPolicyPage = lazy(() => import('./pages/ShippingPolicyPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Code-split Customer Auth & Account Pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -44,6 +45,8 @@ const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
 const AuthCallbackPage = lazy(() => import('./pages/auth/AuthCallbackPage'));
 const AccountPage = lazy(() => import('./pages/account/AccountPage'));
+
+import { updateDocumentSeo, findProductBySlug, getProductSlug } from './utils/seo';
 
 import CartDrawer from './components/CartDrawer';
 
@@ -362,13 +365,13 @@ function AppContent() {
     showToast('Product photo updated successfully!');
   };
 
-  // Navigation Controller with History API & Hash Synchronization
+  // Navigation Controller with History API & Dynamic SEO Routing
   const navigateTo = (page, param = null) => {
     // Protected Account Route: Prompt Login if Unauthenticated
     if (page === 'account' && !user) {
       setRedirectAfterLogin('account');
       setCurrentPage('login');
-      window.history.pushState({ page: 'login' }, '', '/#login');
+      window.history.pushState({ page: 'login' }, '', '/login');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -380,97 +383,142 @@ function AppContent() {
     } else if (page === 'product') {
       const prod = param || products[0];
       setSelectedProduct(prod);
-      window.history.pushState({ page, id: prod.id }, '', `/#product/${prod.id}`);
+      const slug = getProductSlug(prod);
+      window.history.pushState({ page: 'product', id: prod.id, slug }, '', `/products/${slug}`);
     } else if (page === 'collections') {
       const cat = param || 'all';
       setActiveCategory(cat);
-      window.history.pushState({ page, category: cat }, '', `/#collections/${cat}`);
+      const path = cat === 'all' ? '/collections' : `/collections/${cat}`;
+      window.history.pushState({ page: 'collections', category: cat }, '', path);
     } else if (page === 'account') {
       const tab = typeof param === 'string' ? param : (param?.tab || 'overview');
       const orderId = param?.orderId || null;
       setAccountParams({ tab, orderId });
       const query = orderId ? `&order=${orderId}` : '';
-      window.history.pushState({ page: 'account', tab, orderId }, '', `/#account?tab=${tab}${query}`);
+      window.history.pushState({ page: 'account', tab, orderId }, '', `/account?tab=${tab}${query}`);
     } else if (page === 'home') {
       window.history.pushState({ page: 'home' }, '', '/');
+    } else if (page === 'about') {
+      window.history.pushState({ page: 'about' }, '', '/about');
+    } else if (page === 'contact') {
+      window.history.pushState({ page: 'contact' }, '', '/contact');
+    } else if (page === 'shipping') {
+      window.history.pushState({ page: 'shipping' }, '', '/shipping');
+    } else if (page === 'login') {
+      window.history.pushState({ page: 'login' }, '', '/login');
+    } else if (page === 'register') {
+      window.history.pushState({ page: 'register' }, '', '/register');
+    } else if (page === 'forgot-password') {
+      window.history.pushState({ page: 'forgot-password' }, '', '/forgot-password');
+    } else if (page === 'reset-password') {
+      window.history.pushState({ page: 'reset-password' }, '', '/reset-password');
     } else {
-      window.history.pushState({ page }, '', `/#${page}`);
+      window.history.pushState({ page }, '', `/${page}`);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handle URL Hash Synchronization
+  // Handle URL Synchronization for Clean Canonical URLs, History API, and legacy hashes
   useEffect(() => {
     const handleUrlChange = () => {
-      const pathname = window.location.pathname.toLowerCase();
+      const pathname = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
       const rawHash = window.location.hash.replace(/^#\/?/, '').trim();
       const hash = rawHash.toLowerCase();
 
-      if (pathname === '/admin' || pathname.startsWith('/admin') || hash === 'admin' || hash.startsWith('admin')) {
+      // 1. Admin
+      if (pathname === '/admin' || pathname.startsWith('/admin/') || hash === 'admin' || hash.startsWith('admin/')) {
         setCurrentPage('admin');
         return;
       }
 
-      if (hash === 'login') {
+      // 2. Auth & Utility Pages (Pathname or Hash)
+      if (pathname === '/login' || hash === 'login') {
         setCurrentPage('login');
         return;
       }
-      if (hash === 'register') {
+      if (pathname === '/register' || hash === 'register') {
         setCurrentPage('register');
         return;
       }
-      if (hash === 'forgot-password') {
+      if (pathname === '/forgot-password' || hash === 'forgot-password') {
         setCurrentPage('forgot-password');
         return;
       }
-      if (hash.startsWith('reset-password') || hash.includes('type=recovery')) {
+      if (pathname === '/reset-password' || hash.startsWith('reset-password') || hash.includes('type=recovery')) {
         setCurrentPage('reset-password');
         return;
       }
-      if (hash.startsWith('auth-callback') || hash.includes('access_token=') || hash.includes('error=')) {
+      if (pathname === '/auth-callback' || pathname === '/auth/callback' || hash.startsWith('auth-callback') || hash.includes('access_token=') || hash.includes('error=')) {
         setCurrentPage('auth-callback');
         return;
       }
-      if (hash.startsWith('account')) {
-        const queryIdx = rawHash.indexOf('?');
-        let tab = 'overview';
-        let orderId = null;
-        if (queryIdx !== -1) {
-          const searchParams = new URLSearchParams(rawHash.slice(queryIdx));
-          tab = searchParams.get('tab') || 'overview';
-          orderId = searchParams.get('order') || null;
-        }
+      if (pathname === '/account' || hash.startsWith('account')) {
+        const searchParams = new URLSearchParams(window.location.search || (rawHash.includes('?') ? rawHash.slice(rawHash.indexOf('?')) : ''));
+        const tab = searchParams.get('tab') || 'overview';
+        const orderId = searchParams.get('order') || null;
         setAccountParams({ tab, orderId });
         setCurrentPage('account');
         return;
       }
 
-      if (hash.startsWith('product/')) {
-        const prodId = rawHash.replace(/^product\//i, '');
-        const found = products.find((p) => p.id === prodId);
+      // 3. Products: /products/:slug or /product/:id or hash #product/...
+      if (pathname.startsWith('/products/') || pathname.startsWith('/product/') || hash.startsWith('product/')) {
+        const slugOrId = pathname.startsWith('/products/') 
+          ? pathname.replace(/^\/products\//, '')
+          : pathname.startsWith('/product/')
+            ? pathname.replace(/^\/product\//, '')
+            : rawHash.replace(/^product\//i, '');
+        
+        const found = findProductBySlug(products, slugOrId);
         if (found) {
           setSelectedProduct(found);
           setCurrentPage('product');
           return;
+        } else if (products && products.length > 0) {
+          setCurrentPage('404');
+          return;
         }
-      } else if (hash.startsWith('collections/')) {
-        const cat = rawHash.replace(/^collections\//i, '');
+      }
+
+      // 4. Collections: /collections or /collections/:category or hash #collections/...
+      if (pathname === '/collections' || pathname.startsWith('/collections/') || hash === 'collections' || hash.startsWith('collections/')) {
+        let cat = 'all';
+        if (pathname.startsWith('/collections/')) {
+          cat = decodeURIComponent(pathname.replace(/^\/collections\//, ''));
+        } else if (hash.startsWith('collections/')) {
+          cat = decodeURIComponent(rawHash.replace(/^collections\//i, ''));
+        }
         setActiveCategory(cat || 'all');
         setCurrentPage('collections');
         return;
-      } else if (hash === 'collections') {
-        setCurrentPage('collections');
-        return;
-      } else if (hash === 'about') {
+      }
+
+      // 5. Static Public Pages
+      if (pathname === '/about' || hash === 'about') {
         setCurrentPage('about');
         return;
-      } else if (hash === 'contact') {
+      }
+      if (pathname === '/contact' || hash === 'contact') {
         setCurrentPage('contact');
         return;
-      } else if (hash === 'shipping') {
+      }
+      if (pathname === '/shipping' || hash === 'shipping') {
         setCurrentPage('shipping');
         return;
       }
+
+      // 6. Homepage
+      if (pathname === '/' && (!rawHash || rawHash === '')) {
+        setCurrentPage('home');
+        return;
+      }
+
+      // 7. Unknown route -> 404
+      if (pathname !== '/') {
+        setCurrentPage('404');
+        return;
+      }
+
       setCurrentPage('home');
     };
 
@@ -482,6 +530,16 @@ function AppContent() {
       window.removeEventListener('hashchange', handleUrlChange);
     };
   }, [products]);
+
+  // Synchronize dynamic SEO metadata, canonicals, robots, and JSON-LD on route changes
+  useEffect(() => {
+    updateDocumentSeo({
+      page: currentPage,
+      product: selectedProduct,
+      category: activeCategory,
+      currency
+    });
+  }, [currentPage, selectedProduct, activeCategory, currency]);
 
   // Login Success Callback preserving destination
   const handleLoginSuccess = (targetOverride = null, authUser = null) => {
@@ -624,7 +682,8 @@ function AppContent() {
               activeCategory={activeCategory}
               onSelectCategory={(cat) => {
                 setActiveCategory(cat);
-                window.history.pushState({ page: 'collections', category: cat }, '', `#collections/${cat}`);
+                const path = cat === 'all' ? '/collections' : `/collections/${cat}`;
+                window.history.pushState({ page: 'collections', category: cat }, '', path);
               }}
               onSelectProduct={(prod) => navigateTo('product', prod)}
               onBackToHome={() => navigateTo('home')}
@@ -720,6 +779,14 @@ function AppContent() {
             <ShippingPolicyPage
               onBackToHome={() => navigateTo('home')}
               onOpenConcierge={() => navigateTo('contact')}
+            />
+          )}
+
+          {/* Atelier 404 Error Page */}
+          {currentPage === '404' && (
+            <NotFoundPage
+              onBackToHome={() => navigateTo('home')}
+              onExploreCollections={(cat) => navigateTo('collections', cat || 'all')}
             />
           )}
         </Suspense>

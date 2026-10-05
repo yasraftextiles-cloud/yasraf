@@ -1,5 +1,6 @@
 import React from 'react';
 import { CURRENCIES } from '../data/products';
+import { getProductSlug } from '../utils/seo';
 
 export default function ProductCard({ 
   product, 
@@ -33,9 +34,11 @@ export default function ProductCard({
     return product.title.replace(/-e-/gi, ' ').replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/)[0] || 'Layrell';
   })();
 
+  const productSlug = getProductSlug(product);
+
   return (
     <a 
-      href={`#product-${product.id}`}
+      href={`/products/${productSlug}`}
       className="jm-card group relative block w-full text-center cursor-pointer select-none no-underline text-inherit"
       onClick={(e) => {
         e.preventDefault();
@@ -51,7 +54,7 @@ export default function ProductCard({
         {/* Full-bleed Product Image: Drops opacity to 0.14 on hover exactly like Jahaan! */}
         <img
           src={product.image}
-          alt={product.title}
+          alt={`${product.title} — Women's Clothing Pakistan | YASRAF Textiles`}
           loading="lazy"
           decoding="async"
           width="400"

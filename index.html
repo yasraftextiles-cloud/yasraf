@@ -4,35 +4,70 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='serif' fill='%23121212'>Y</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>YASRAF Clothing | Luxury Prêt & Women's Eastern Fashion</title>
-    <meta name="description" content="YASRAF Clothing — Premium Pakistani women's ready-to-wear fashion, luxury prêt, bespoke lawn, and festive couture. Cash on Delivery available nationwide across Pakistan." />
-    <meta name="keywords" content="YASRAF Clothing, Pakistani fashion, women prêt, luxury lawn, festive couture, ready to wear, party wear" />
+    <title>YASRAF Textiles | Premium Women's Clothing in Pakistan</title>
+    <meta name="description" content="Shop YASRAF Textiles for elegant women's clothing in Pakistan. Discover ready to wear, unstitched, festive, winter and premium collections crafted for timeless style." />
+    <meta name="keywords" content="women's clothing Pakistan, Pakistani women's clothing, ladies dresses Pakistan, women's fashion Pakistan, ready to wear dresses Pakistan, unstitched suits Pakistan, winter collection women Pakistan, festive wear Pakistan, luxury pret Pakistan, YASRAF Textiles" />
 
-    <!-- Open Graph / Social Sharing -->
+    <!-- Canonical URL for SEO -->
+    <link rel="canonical" href="https://yasraftextiles.com/" />
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="YASRAF Clothing | Luxury Prêt & Women's Eastern Fashion" />
-    <meta property="og:description" content="Discover exquisite Pakistani women's luxury prêt, embroidered suits, and ready-to-wear collections from YASRAF Clothing." />
-    <meta property="og:site_name" content="YASRAF Clothing" />
+    <meta property="og:title" content="YASRAF Textiles | Premium Women's Clothing in Pakistan" />
+    <meta property="og:description" content="Shop YASRAF Textiles for elegant women's clothing in Pakistan. Discover ready to wear, unstitched, festive, winter and premium collections crafted for timeless style." />
+    <meta property="og:site_name" content="YASRAF Textiles" />
+    <meta property="og:url" content="https://yasraftextiles.com/" />
+    <meta property="og:image" content="https://yasraftextiles.com/hero-banner.jpg" />
 
-    <!-- JSON-LD Structured Data for Fashion Brand & Store -->
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="YASRAF Textiles | Premium Women's Clothing in Pakistan" />
+    <meta name="twitter:description" content="Shop YASRAF Textiles for elegant women's clothing in Pakistan. Discover ready to wear, unstitched, festive, winter and premium collections crafted for timeless style." />
+    <meta name="twitter:image" content="https://yasraftextiles.com/hero-banner.jpg" />
+
+    <!-- JSON-LD Structured Data: Organization & WebSite Schemas -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "ClothingStore",
-      "name": "YASRAF Clothing",
-      "description": "Premium Pakistani women's ready-to-wear fashion and luxury prêt atelier.",
-      "currenciesAccepted": "PKR, USD, AED, GBP, SAR",
-      "priceRange": "Rs. 6,000 - Rs. 20,000",
-      "paymentAccepted": "Cash on Delivery",
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "PK"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://yasraftextiles.com/#organization",
+          "name": "YASRAF Textiles",
+          "url": "https://yasraftextiles.com/",
+          "logo": "https://yasraftextiles.com/hero-banner.jpg",
+          "description": "Distinguished Pakistani women's clothing brand specializing in ready-to-wear, unstitched, luxury prêt, and festive couture.",
+          "sameAs": [
+            "https://www.instagram.com/yasrafclothing",
+            "https://www.facebook.com/profile.php?id=61590429044323",
+            "https://www.tiktok.com/@yasrafclothing",
+            "https://www.snapchat.com/@yasrafclothing"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+92-302-4220514",
+            "contactType": "customer service",
+            "areaServed": "PK",
+            "availableLanguage": ["en", "ur"]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://yasraftextiles.com/#website",
+          "name": "YASRAF Textiles",
+          "url": "https://yasraftextiles.com/",
+          "publisher": {
+            "@id": "https://yasraftextiles.com/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://yasraftextiles.com/collections?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
     }
     </script>
-    
-    <!-- Canonical URL for SEO -->
-    <link rel="canonical" href="https://yasraf.com/" />
 
     <!-- High-Priority Preload for First-Screen Hero Image (AVIF) -->
     <link rel="preload" as="image" href="/hero-banner-mobile.avif" type="image/avif" media="(max-width: 767px)" fetchpriority="high" />

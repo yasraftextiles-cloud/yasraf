@@ -132,7 +132,7 @@ export default function Header({
               {navItems.map((item) => (
                 <a
                   key={item.label}
-                  href={`#${item.label.toLowerCase().replace(/ /g, '-')}`}
+                  href={item.category === 'all' ? '/collections' : `/collections/${item.category}`}
                   onClick={(e) => handleNavClick(e, item.category)}
                   className="text-[11px] font-medium tracking-[0.11em] uppercase hover:opacity-60 transition-opacity duration-200 whitespace-nowrap px-1 py-1 cursor-pointer"
                 >
@@ -326,7 +326,7 @@ export default function Header({
               {navItems.map((item) => (
                 <a
                   key={item.label}
-                  href={`#${item.label.toLowerCase().replace(/ /g, '-')}`}
+                  href={item.category === 'all' ? '/collections' : `/collections/${item.category}`}
                   className="block text-[13px] font-medium tracking-[0.1em] text-gray-900 uppercase transition-colors hover:text-gray-500 cursor-pointer"
                   onClick={(e) => handleNavClick(e, item.category)}
                 >
