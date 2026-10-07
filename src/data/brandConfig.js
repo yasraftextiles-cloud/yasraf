@@ -25,7 +25,8 @@ export const BRAND_CONFIG = {
   // Helper method for generating standardized WhatsApp order/inquiry links
   getWhatsAppOrderUrl: (product, size = 'Standard', color = 'Default') => {
     const phone = BRAND_CONFIG.whatsappNumber;
-    const text = `Assalam-o-Alaikum YASRAF Clothing!%0A%0AI would like to inquire about/order this piece:%0A• *Product*: ${encodeURIComponent(product.title)}%0A• *SKU*: ${encodeURIComponent(product.sku || 'YAS-001')}%0A• *Size*: ${encodeURIComponent(size)}%0A• *Color*: ${encodeURIComponent(color)}%0A• *Price*: Rs. ${encodeURIComponent((product.price || 0).toLocaleString())}%0A%0APlease confirm availability and delivery details. Shukriya!`;
+    const skuLine = product.sku ? `%0A• *SKU*: ${encodeURIComponent(product.sku)}` : '';
+    const text = `Assalam-o-Alaikum YASRAF Clothing!%0A%0AI would like to inquire about/order this piece:%0A• *Product*: ${encodeURIComponent(product.title)}${skuLine}%0A• *Size*: ${encodeURIComponent(size)}%0A• *Color*: ${encodeURIComponent(color)}%0A• *Price*: Rs. ${encodeURIComponent((product.price || 0).toLocaleString())}%0A%0APlease confirm availability and delivery details. Shukriya!`;
     return `https://wa.me/${phone}?text=${text}`;
   },
 

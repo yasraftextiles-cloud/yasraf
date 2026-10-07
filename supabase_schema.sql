@@ -279,6 +279,7 @@ CREATE TABLE IF NOT EXISTS public.order_items (
   order_id TEXT NOT NULL REFERENCES public.orders(order_id) ON DELETE CASCADE,
   product_id TEXT NOT NULL REFERENCES public.products(id),
   variant_id UUID REFERENCES public.product_variants(id),
+  sku TEXT,
   title TEXT NOT NULL,
   size TEXT NOT NULL,
   color TEXT,
@@ -292,6 +293,9 @@ CREATE TABLE IF NOT EXISTS public.order_items (
 
 -- Backward compatibility: handle legacy columns & backfill historical data
 DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='order_items' AND column_name='sku') THEN
+    ALTER TABLE public.order_items ADD COLUMN sku TEXT;
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='order_items' AND column_name='color') THEN
     ALTER TABLE public.order_items ADD COLUMN color TEXT;
   END IF;
@@ -454,6 +458,7 @@ BEGIN
     variant_id UUID NOT NULL,
     quantity INT NOT NULL,
     product_id TEXT,
+    sku TEXT,
     title TEXT,
     size TEXT,
     color TEXT,
@@ -479,7 +484,7 @@ BEGIN
   LOOP
     SELECT 
       pv.id, pv.product_id, pv.sku, pv.size, pv.color, pv.price, pv.stock,
-      p.title, p.is_published, coalesce(p.images->>0, '') AS image
+      p.title, p.sku AS product_sku, p.is_published, coalesce(p.images->>0, '') AS image
     INTO v_var
     FROM public.product_variants pv
     JOIN public.products p ON p.id = pv.product_id
@@ -512,6 +517,7 @@ BEGIN
     -- Update calculation table
     UPDATE temp_cart_items
     SET product_id = v_var.product_id,
+        sku = coalesce(v_var.sku, v_var.product_sku),
         title = v_var.title,
         size = v_var.size,
         color = v_var.color,
@@ -584,6 +590,7 @@ BEGIN
     order_id,
     product_id,
     variant_id,
+    sku,
     title,
     size,
     color,
@@ -597,6 +604,7 @@ BEGIN
     v_order_id,
     product_id,
     variant_id,
+    sku,
     title,
     size,
     color,
@@ -689,6 +697,7 @@ BEGIN
   -- 3. Return MINIMAL Sanitized Shipment Details (No full street address, no financial details)
   SELECT jsonb_agg(jsonb_build_object(
     'title', oi.title,
+    'sku', oi.sku,
     'size', oi.size,
     'color', oi.color,
     'quantity', oi.quantity,

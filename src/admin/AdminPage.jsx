@@ -7,6 +7,7 @@ import AdminDashboard from './AdminDashboard.jsx';
 import ProductEditor from './ProductEditor.jsx';
 import StoreSettingsTab from './StoreSettingsTab.jsx';
 import CollectionsTab from './CollectionsTab.jsx';
+import OrdersTab from './OrdersTab.jsx';
 import { Loader2 } from 'lucide-react';
 
 export default function AdminPage({ onBackToStore }) {
@@ -173,6 +174,11 @@ export default function AdminPage({ onBackToStore }) {
             />
           )}
         </>
+      )}
+
+      {/* Tab: Orders */}
+      {currentTab === 'orders' && (
+        <OrdersTab />
       )}
 
       {/* Tab: Collections */}

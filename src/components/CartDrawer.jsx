@@ -207,6 +207,13 @@ export default function CartDrawer({
                           </button>
                         </div>
 
+                        {/* Product SKU */}
+                        {item.sku && (
+                          <div className="cart-item-sku">
+                            SKU: {item.sku}
+                          </div>
+                        )}
+
                         {/* Selected Variants */}
                         <div className="cart-item-meta">
                           <span>Size: <strong>{item.selectedSize || 'Standard'}</strong></span>

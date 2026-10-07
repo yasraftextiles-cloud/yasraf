@@ -53,10 +53,23 @@ export default function ProductDetailPage({
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
     : 10;
 
+  // Resolve existing product or variant SKU strictly without generating new ones
+  const matchedVariant = (product.variants || product.product_variants || [])?.find((v) => {
+    const matchSize = String(v.size || '').trim().toLowerCase() === String(selectedSize).trim().toLowerCase();
+    const colorName = selectedColor?.name || selectedColor;
+    if (colorName && v.color) {
+      return matchSize && String(v.color).trim().toLowerCase() === String(colorName).trim().toLowerCase();
+    }
+    return matchSize;
+  });
+  const productSku = (matchedVariant?.sku || product.sku)?.trim() || null;
+
   const handleAdd = () => {
     if (onAddToCart) {
       onAddToCart({
         ...product,
+        variantId: matchedVariant?.id || product.variantId || null,
+        sku: productSku || undefined,
         selectedSize,
         selectedColor: selectedColor?.name || 'Standard',
         quantity
@@ -378,6 +391,11 @@ export default function ProductDetailPage({
                 {openAccordion === 'details' && (
                   <div className="pb-4 text-[12.5px] text-[#67615c] font-light leading-relaxed space-y-2">
                     <p>{product.description}</p>
+                    {productSku && (
+                      <p className="text-[12px] text-[#8c867f]">
+                        <strong className="text-[#1a1814] font-medium">Product Code:</strong> {productSku}
+                      </p>
+                    )}
                     <p><strong>Fabric:</strong> {product.fabric || 'Luxury Egyptian Lawn & Pure Silk'}</p>
                     {product.type && <p><strong>Ensemble Type:</strong> {product.type}</p>}
                     <p><strong>Workmanship:</strong> Artisanal ton-sur-ton embroidery, Schiffli cutwork border, delicate neckline lace embellishment.</p>

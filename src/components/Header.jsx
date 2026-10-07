@@ -40,7 +40,6 @@ export default function Header({
   }, []);
 
   const navItems = [
-    { label: 'THE EDIT', category: 'the-edit' },
     { label: 'SUMMER', category: 'summer' },
     { label: 'WINTER', category: 'winter-collection' },
     { label: 'FESTIVE', category: 'festive' },
@@ -89,7 +88,7 @@ export default function Header({
 
       {/* Main Navigation Bar */}
       <div className={`transition-colors duration-300 relative ${
-        isLight ? 'bg-white text-[#1a1814] shadow-[0_1px_0_rgba(0,0,0,0.06)]' : 'bg-transparent text-white'
+        isLight ? 'bg-white text-[#1a1814] shadow-[0_1px_0_rgba(0,0,0,0.06)] header-light' : 'bg-transparent text-white'
       }`}>
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
           <div className="flex lg:grid lg:grid-cols-[1fr_auto_1fr] items-center justify-between h-[68px] sm:h-[72px] py-2">
@@ -134,7 +133,7 @@ export default function Header({
                   key={item.label}
                   href={item.category === 'all' ? '/collections' : `/collections/${item.category}`}
                   onClick={(e) => handleNavClick(e, item.category)}
-                  className="text-[11px] font-medium tracking-[0.11em] uppercase hover:opacity-60 transition-opacity duration-200 whitespace-nowrap px-1 py-1 cursor-pointer"
+                  className="nav-link text-[11px] font-medium tracking-[0.11em] uppercase whitespace-nowrap px-1 py-1 cursor-pointer focus:outline-none"
                 >
                   {item.label}
                 </a>

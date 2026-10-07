@@ -62,7 +62,7 @@
 
 .cart-header-icon {
   color: #1a1814;
-  shrink: 0;
+  flex-shrink: 0;
 }
 
 .cart-header-heading {
@@ -242,6 +242,17 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.cart-item-sku {
+  font-family: var(--font-family-primary, 'Jost', sans-serif);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: #8c867f;
+  margin-top: 0.18rem;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .cart-item-remove-btn {

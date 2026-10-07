@@ -330,6 +330,7 @@ export default function AccountPage({
           id: catalogMatch.id,
           productId: catalogMatch.id,
           variantId: variantMatch ? variantMatch.id : null,
+          sku: (variantMatch?.sku || catalogMatch.sku || item.sku) || undefined,
           price: currentPrice,
           selectedSize: variantMatch ? variantMatch.size : (item.size || null),
           size: variantMatch ? variantMatch.size : (item.size || null),
@@ -547,6 +548,11 @@ export default function AccountPage({
                                 />
                                 <div className="order-item-details">
                                   <h5 className="order-item-title">{item.title}</h5>
+                                  {item.sku && (
+                                    <div className="order-item-sku text-[11px] text-[#8c867f] uppercase tracking-wide mt-0.5">
+                                      SKU: {item.sku}
+                                    </div>
+                                  )}
                                   <p className="order-item-specs">
                                     Size: {item.size || 'M'} {item.color ? `| Color: ${item.color}` : ''} | Qty: {item.quantity}
                                   </p>
@@ -696,6 +702,11 @@ export default function AccountPage({
                               />
                               <div className="order-item-details">
                                 <h5 className="order-item-title">{item.title}</h5>
+                                {item.sku && (
+                                  <div className="order-item-sku text-[11px] text-[#8c867f] uppercase tracking-wide mt-0.5">
+                                    SKU: {item.sku}
+                                  </div>
+                                )}
                                 <p className="order-item-specs">
                                   Size: {item.size || 'M'} {item.color ? `| Color: ${item.color}` : ''} | Qty: {item.quantity}
                                 </p>
@@ -1186,6 +1197,11 @@ export default function AccountPage({
                     />
                     <div className="flex-1 min-w-0">
                       <h5 className="font-semibold text-sm text-[#1a1814] m-0 truncate">{item.title}</h5>
+                      {item.sku && (
+                        <div className="text-[11px] text-[#8c867f] uppercase tracking-wide mt-0.5">
+                          SKU: {item.sku}
+                        </div>
+                      )}
                       <p className="text-xs text-[#8c867f] m-0 mt-0.5">
                         Size: {item.size || 'M'} {item.color ? `| Color: ${item.color}` : ''} | Quantity: {item.quantity}
                       </p>

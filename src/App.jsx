@@ -245,21 +245,32 @@ function AppContent() {
 
   // Cart operations
   const handleAddToCart = (productToAdd) => {
+    // Resolve existing catalog SKU if not directly attached, without generating any new SKU
+    const catalogItem = products.find((p) => p.id === productToAdd.id);
+    const existingSku = (productToAdd.sku || catalogItem?.sku)?.trim() || null;
+    const resolvedProduct = {
+      ...productToAdd,
+      sku: existingSku || undefined
+    };
+
     setCartItems((prev) => {
       const existingIndex = prev.findIndex(
         (item) =>
-          item.id === productToAdd.id &&
-          (item.variantId || '') === (productToAdd.variantId || '') &&
-          item.selectedSize === productToAdd.selectedSize &&
-          (item.selectedColor?.name || item.color) === (productToAdd.selectedColor?.name || productToAdd.color)
+          item.id === resolvedProduct.id &&
+          (item.variantId || '') === (resolvedProduct.variantId || '') &&
+          item.selectedSize === resolvedProduct.selectedSize &&
+          (item.selectedColor?.name || item.color) === (resolvedProduct.selectedColor?.name || resolvedProduct.color)
       );
 
       let nextCart;
       if (existingIndex > -1) {
         nextCart = [...prev];
-        nextCart[existingIndex].quantity += productToAdd.quantity || 1;
+        nextCart[existingIndex].quantity += resolvedProduct.quantity || 1;
+        if (existingSku && !nextCart[existingIndex].sku) {
+          nextCart[existingIndex].sku = existingSku;
+        }
       } else {
-        nextCart = [...prev, { ...productToAdd, quantity: productToAdd.quantity || 1 }];
+        nextCart = [...prev, { ...resolvedProduct, quantity: resolvedProduct.quantity || 1 }];
       }
 
       persistCart(nextCart);

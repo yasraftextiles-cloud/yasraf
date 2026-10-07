@@ -151,7 +151,7 @@ export function getProductJsonLd(product) {
     "name": product.title,
     "image": [imageUrl],
     "description": product.description || `${product.title} - Luxury women's clothing by YASRAF Textiles.`,
-    "sku": product.sku || `YAS-${product.id}`,
+    "sku": product.sku ? product.sku : undefined,
     "brand": {
       "@type": "Brand",
       "name": "YASRAF Textiles"

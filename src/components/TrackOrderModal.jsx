@@ -268,7 +268,14 @@ export default function TrackOrderModal({ isOpen, onClose }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   {trackedOrder.items.map((it, idx) => (
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', padding: '0.4rem 0', borderBottom: '1px dashed #eee' }}>
-                      <span style={{ color: '#141414' }}>{it.title}</span>
+                      <div>
+                        <div style={{ color: '#141414', fontWeight: 500 }}>{it.title}</div>
+                        {it.sku && (
+                          <div style={{ fontSize: '0.68rem', color: '#8c867f', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                            SKU: {it.sku}
+                          </div>
+                        )}
+                      </div>
                       <span style={{ color: '#7a756f', fontSize: '0.75rem' }}>Size: {it.size} &bull; Qty: {it.quantity}</span>
                     </div>
                   ))}

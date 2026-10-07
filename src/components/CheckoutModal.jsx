@@ -251,6 +251,39 @@ export default function CheckoutModal({
                 <span style={{ fontSize: '0.8rem', color: '#7a756f' }}>Est. Delivery:</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1d4838' }}>{completedOrder.estDelivery}</span>
               </div>
+              {/* Enclosed Items with SKU */}
+              {completedOrder.items && completedOrder.items.length > 0 && (
+                <div style={{ padding: '0.75rem 0', borderBottom: '1px solid #eee' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#7a756f', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>
+                    Purchased Items ({completedOrder.items.length})
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                    {completedOrder.items.map((item, idx) => {
+                      const itemQty = parseInt(item.quantity, 10) || 1;
+                      const lineTotal = Math.round((item.price || 0) * itemQty * curr.rate);
+                      const colorDisplay = item.selectedColor?.name || (typeof item.selectedColor === 'string' ? item.selectedColor : (item.color || ''));
+                      return (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontSize: '0.78rem' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, color: '#141414' }}>{item.title}</div>
+                            {item.sku && (
+                              <div style={{ fontSize: '0.68rem', color: '#8c867f', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '1px' }}>
+                                SKU: {item.sku}
+                              </div>
+                            )}
+                            <div style={{ fontSize: '0.72rem', color: '#7a756f', marginTop: '1px' }}>
+                              Size: {item.selectedSize || item.size || 'Standard'}{colorDisplay ? ` • ${colorDisplay}` : ''} • Qty: {itemQty}
+                            </div>
+                          </div>
+                          <span style={{ fontWeight: 600, color: '#141414', whiteSpace: 'nowrap' }}>
+                            {curr.symbol} {lineTotal.toLocaleString()}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.8rem', fontSize: '1.05rem', fontWeight: 700 }}>
                 <span>Total Payable at Doorstep:</span>
                 <span>{curr.symbol} {Math.round(completedOrder.total * curr.rate).toLocaleString()}</span>
@@ -325,7 +358,7 @@ export default function CheckoutModal({
                 marginBottom: '1.5rem',
                 fontSize: '0.85rem'
               }}>
-                <AlertCircle size={18} style={{ shrink: 0 }} />
+                <AlertCircle size={18} style={{ flexShrink: 0 }} />
                 <span>{errorMessage}</span>
               </div>
             )}
@@ -613,9 +646,39 @@ export default function CheckoutModal({
 
                   {/* Summary Box */}
                   <div style={{ backgroundColor: '#faf7f2', padding: '1.2rem', border: '1px solid #ede8de', marginBottom: '1.5rem' }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#141414', marginBottom: '0.6rem' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#141414', marginBottom: '0.8rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                       Order Summary ({checkoutData.cartItems.length} items)
                     </div>
+
+                    {/* Order Line Items with SKU */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem', marginBottom: '0.9rem', paddingBottom: '0.85rem', borderBottom: '1px solid #e8e3d9' }}>
+                      {checkoutData.cartItems.map((item, idx) => {
+                        const itemQty = parseInt(item.quantity, 10) || 1;
+                        const lineTotal = Math.round((item.price || 0) * itemQty * curr.rate);
+                        const colorDisplay = item.selectedColor?.name || (typeof item.selectedColor === 'string' ? item.selectedColor : (item.color || ''));
+                        return (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem', fontSize: '0.8rem' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, color: '#141414', lineHeight: 1.3 }}>
+                                {item.title}
+                              </div>
+                              {item.sku && (
+                                <div style={{ fontSize: '0.68rem', color: '#8c867f', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: '2px' }}>
+                                  SKU: {item.sku}
+                                </div>
+                              )}
+                              <div style={{ fontSize: '0.72rem', color: '#7a756f', marginTop: '2px' }}>
+                                Size: {item.selectedSize || item.size || 'Standard'}{colorDisplay ? ` • ${colorDisplay}` : ''} • Qty: {itemQty}
+                              </div>
+                            </div>
+                            <span style={{ fontWeight: 600, color: '#141414', whiteSpace: 'nowrap', fontSize: '0.8rem' }}>
+                              {curr.symbol} {lineTotal.toLocaleString()}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#6e6b66', marginBottom: '0.3rem' }}>
                       <span>Subtotal</span>
                       <span>{curr.symbol} {Math.round(checkoutData.subtotal * curr.rate).toLocaleString()}</span>

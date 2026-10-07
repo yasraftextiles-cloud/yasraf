@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Package, Settings, LogOut, ExternalLink, Menu, X, 
+  Package, ShoppingBag, Settings, LogOut, ExternalLink, Menu, X, 
   Layers, Shield, ChevronRight, Sparkles 
 } from 'lucide-react';
 
@@ -16,6 +16,7 @@ export default function AdminLayout({
 
   const navigationItems = [
     { id: 'products', label: 'Products & Catalog', icon: Package, count: null },
+    { id: 'orders', label: 'Orders & Line Items', icon: ShoppingBag, count: null },
     { id: 'collections', label: 'Collections', icon: Layers, count: null },
     { id: 'settings', label: 'Store Settings', icon: Settings, count: null }
   ];
