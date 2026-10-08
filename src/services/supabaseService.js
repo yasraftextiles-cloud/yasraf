@@ -498,7 +498,7 @@ export async function updateStoreSetting(key, value) {
 }
 
 /**
- * Submit checkout through secure backend endpoint (/api/checkout)
+ * Submit checkout through secure backend Netlify Function (/.netlify/functions/checkout)
  */
 export async function createOrder({ customer, items, paymentMethod = 'cod', idempotencyKey = null }) {
   const key = idempotencyKey || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `idemp_${Date.now()}_${Math.random().toString(36).substring(2)}`);
@@ -540,34 +540,29 @@ export async function createOrder({ customer, items, paymentMethod = 'cod', idem
       // Proceed as guest checkout if session retrieval fails
     }
 
-    const res = await fetch('/api/checkout', {
+    const res = await fetch('/.netlify/functions/checkout', {
       method: 'POST',
       headers,
       body: JSON.stringify(payload)
     });
 
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const rawText = await res.text();
+      console.error('Invalid non-JSON response from checkout function:', rawText.slice(0, 300));
+      return {
+        success: false,
+        error: `Checkout server returned an unexpected response (HTTP ${res.status}). Please try again.`
+      };
+    }
+
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      if (data?.error && data.error.includes('Server configuration error')) {
-        // Resilient fallback when backend service role key is not configured in local environment
-        const orderId = `YAS-${new Date().toISOString().slice(2, 7).replace('-', '')}-${Math.floor(100000 + Math.random() * 900000)}`;
-        const trackingToken = Array.from({ length: 48 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-        const calcSubtotal = items.reduce((acc, it) => acc + (Number(it.price || 0) * (parseInt(it.quantity, 10) || 1)), 0);
-        return {
-          success: true,
-          order_id: orderId,
-          tracking_token: trackingToken,
-          total: calcSubtotal,
-          subtotal: calcSubtotal,
-          shipping_fee: 0,
-          currency: 'PKR',
-          status: 'Order Received',
-          estimated_delivery: '2 - 4 Working Days (via TCS / Leopards Express)',
-          source: 'local-resilient'
-        };
-      }
-      return { success: false, error: data?.error || `Checkout failed (HTTP ${res.status})` };
+      return {
+        success: false,
+        error: data?.error || `Checkout failed (HTTP ${res.status})`
+      };
     }
 
     return {
@@ -583,7 +578,7 @@ export async function createOrder({ customer, items, paymentMethod = 'cod', idem
       source: 'backend-endpoint'
     };
   } catch (err) {
-    console.error('Failed to submit order via /api/checkout:', err);
+    console.error('Failed to submit order via /.netlify/functions/checkout:', err);
     return { success: false, error: err.message || 'Network error during checkout' };
   }
 }
@@ -610,7 +605,7 @@ export async function getAdminOrders() {
 }
 
 /**
- * Securely track an order through backend endpoint (/api/track)
+ * Securely track an order through backend endpoint (/.netlify/functions/track-order)
  */
 export async function trackOrder({ orderId, trackingToken }) {
   if (!orderId || !trackingToken) {
@@ -618,7 +613,7 @@ export async function trackOrder({ orderId, trackingToken }) {
   }
 
   try {
-    const res = await fetch('/api/track', {
+    const res = await fetch('/.netlify/functions/track-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -626,6 +621,13 @@ export async function trackOrder({ orderId, trackingToken }) {
         trackingToken: trackingToken.trim()
       })
     });
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const rawText = await res.text();
+      console.error('Invalid non-JSON response from tracking function:', rawText.slice(0, 300));
+      throw new Error(`Tracking service returned an unexpected response (HTTP ${res.status}).`);
+    }
 
     const data = await res.json();
 
@@ -645,7 +647,7 @@ export async function trackOrder({ orderId, trackingToken }) {
       items: data.items || []
     };
   } catch (err) {
-    console.error('Error tracking order via /api/track:', err);
+    console.error('Error tracking order via /.netlify/functions/track-order:', err);
     throw err;
   }
 }

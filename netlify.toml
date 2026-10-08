@@ -3,10 +3,15 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "22"
   NPM_FLAGS = "--include=optional"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
 
 # Canonical Domain Enforcement (301 Permanent Redirects)
 [[redirects]]
@@ -26,6 +31,22 @@
   to = "https://yasraftextiles.com/:splat"
   status = 301
   force = true
+
+# Function & API Route Rewrites (must precede SPA catch-all)
+[[redirects]]
+  from = "/api/checkout"
+  to = "/.netlify/functions/checkout"
+  status = 200
+
+[[redirects]]
+  from = "/api/track"
+  to = "/.netlify/functions/track-order"
+  status = 200
+
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
 
 # Single Page Application (SPA) routing rule
 # Ensures direct links like /collections/ready-to-wear, /products/:slug, /about resolve to index.html with HTTP 200

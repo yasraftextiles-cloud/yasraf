@@ -8,7 +8,7 @@ function backendApiPlugin() {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url ? req.url.split('?')[0] : '';
-        if (url === '/api/checkout' && req.method === 'POST') {
+        if ((url === '/.netlify/functions/checkout' || url === '/api/checkout') && req.method === 'POST') {
           let body = '';
           req.on('data', chunk => { body += chunk; });
           req.on('end', async () => {
@@ -30,7 +30,7 @@ function backendApiPlugin() {
           return;
         }
 
-        if (url === '/api/track' && req.method === 'POST') {
+        if ((url === '/.netlify/functions/track-order' || url === '/api/track') && req.method === 'POST') {
           let body = '';
           req.on('data', chunk => { body += chunk; });
           req.on('end', async () => {

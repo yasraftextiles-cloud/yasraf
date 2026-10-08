@@ -1,1 +1,7 @@
-/*    /index.html   200
+# API and Function endpoints must precede SPA wildcard catch-all
+/api/checkout               /.netlify/functions/checkout       200
+/api/track                  /.netlify/functions/track-order    200
+/.netlify/functions/*       /.netlify/functions/:splat         200
+
+# Single Page Application wildcard fallback
+/*                          /index.html                        200
