@@ -7,6 +7,66 @@ import { CURRENCIES } from '../data/products';
 import { BRAND_CONFIG } from '../data/brandConfig';
 import './CartDrawer.css';
 
+// Safe attribute extractors to prevent "Objects are not valid as a React child" crashes
+const getItemColor = (item) => {
+  if (!item) return 'Original';
+  if (typeof item.selectedColor === 'string' && item.selectedColor.trim()) {
+    return item.selectedColor.trim();
+  }
+  if (item.selectedColor && typeof item.selectedColor === 'object') {
+    if (typeof item.selectedColor.name === 'string' && item.selectedColor.name.trim()) {
+      return item.selectedColor.name.trim();
+    }
+  }
+  if (typeof item.color === 'string' && item.color.trim()) {
+    return item.color.trim();
+  }
+  if (item.color && typeof item.color === 'object') {
+    if (typeof item.color.name === 'string' && item.color.name.trim()) {
+      return item.color.name.trim();
+    }
+  }
+  return 'Original';
+};
+
+const getItemSize = (item) => {
+  if (!item) return 'Standard';
+  if (typeof item.selectedSize === 'string' && item.selectedSize.trim()) {
+    return item.selectedSize.trim();
+  }
+  if (item.selectedSize && typeof item.selectedSize === 'object') {
+    if (typeof item.selectedSize.name === 'string' && item.selectedSize.name.trim()) {
+      return item.selectedSize.name.trim();
+    }
+  }
+  if (typeof item.size === 'string' && item.size.trim()) {
+    return item.size.trim();
+  }
+  return 'Standard';
+};
+
+const getItemTitle = (item) => {
+  if (!item) return 'Luxury Ensemble';
+  if (typeof item.title === 'string' && item.title.trim()) {
+    return item.title.trim();
+  }
+  if (typeof item.name === 'string' && item.name.trim()) {
+    return item.name.trim();
+  }
+  return 'Luxury Ensemble';
+};
+
+const getItemImage = (item) => {
+  if (!item) return '/favicon.svg';
+  if (typeof item.image === 'string' && item.image.trim()) {
+    return item.image.trim();
+  }
+  if (Array.isArray(item.images) && item.images.length > 0 && typeof item.images[0] === 'string') {
+    return item.images[0].trim();
+  }
+  return '/favicon.svg';
+};
+
 export default function CartDrawer({
   isOpen,
   onClose,
@@ -34,24 +94,33 @@ export default function CartDrawer({
 
   if (!isOpen) return null;
 
-  const curr = CURRENCIES[currency] || CURRENCIES.PKR;
+  const safeCartItems = Array.isArray(cartItems) ? cartItems.filter(Boolean) : [];
+  const curr = CURRENCIES[currency] || CURRENCIES.PKR || { symbol: 'Rs.', rate: 1 };
+  const currRate = Number(curr?.rate) || 1;
+  const currSymbol = curr?.symbol || 'Rs.';
 
   // Real calculations based on configured threshold
-  const subtotalPKR = cartItems.reduce((acc, item) => acc + (item.price * (parseInt(item.quantity, 10) || 1)), 0);
+  const subtotalPKR = safeCartItems.reduce((acc, item) => {
+    const p = Number(item?.price) || 0;
+    const q = Math.max(1, parseInt(item?.quantity, 10) || 1);
+    return acc + (p * q);
+  }, 0);
   const freeShippingThresholdPKR = BRAND_CONFIG.freeShippingThreshold || 4990;
   const isFreeShipping = subtotalPKR >= freeShippingThresholdPKR;
   const amountNeededForFree = Math.max(0, freeShippingThresholdPKR - subtotalPKR);
-  const shippingFeePKR = isFreeShipping || cartItems.length === 0 ? 0 : (BRAND_CONFIG.standardShippingFee || 250);
-  const giftWrapFeePKR = giftWrap && cartItems.length > 0 ? 350 : 0;
-  const discountAmountPKR = Math.round(subtotalPKR * appliedDiscount);
+  const shippingFeePKR = isFreeShipping || safeCartItems.length === 0 ? 0 : (BRAND_CONFIG.standardShippingFee || 250);
+  const giftWrapFeePKR = giftWrap && safeCartItems.length > 0 ? 350 : 0;
+  const discountAmountPKR = Math.round(subtotalPKR * (Number(appliedDiscount) || 0));
   const grandTotalPKR = Math.max(0, subtotalPKR - discountAmountPKR + shippingFeePKR + giftWrapFeePKR);
 
   // Total items calculation with accurate pluralization
-  const totalItemCount = cartItems.reduce((acc, i) => acc + (parseInt(i.quantity, 10) || 1), 0);
+  const totalItemCount = safeCartItems.reduce((acc, i) => acc + Math.max(1, parseInt(i?.quantity, 10) || 1), 0);
   const itemCountLabel = `${totalItemCount} ${totalItemCount === 1 ? 'item' : 'items'}`;
 
   // Shipping progress ratio (0 to 100%)
-  const shippingProgress = Math.min(100, Math.max(0, (subtotalPKR / freeShippingThresholdPKR) * 100));
+  const shippingProgress = freeShippingThresholdPKR > 0
+    ? Math.min(100, Math.max(0, (subtotalPKR / freeShippingThresholdPKR) * 100))
+    : 100;
 
   const handleApplyPromo = (e) => {
     e.preventDefault();
@@ -80,7 +149,7 @@ export default function CartDrawer({
     onClose();
     if (onOpenCheckout) {
       onOpenCheckout({
-        cartItems,
+        cartItems: safeCartItems,
         subtotal: subtotalPKR,
         discount: discountAmountPKR,
         shipping: shippingFeePKR,
@@ -123,7 +192,7 @@ export default function CartDrawer({
         </header>
 
         {/* 2. Compact Free Shipping Meter */}
-        {cartItems.length > 0 && (
+        {safeCartItems.length > 0 && (
           <div className={`cart-shipping-meter ${isFreeShipping ? 'unlocked' : ''}`}>
             <div className="cart-shipping-status">
               {isFreeShipping ? (
@@ -135,7 +204,7 @@ export default function CartDrawer({
                 <>
                   <Truck size={14} className="text-[#c5a880] shrink-0" aria-hidden="true" />
                   <span>
-                    Add <strong>{curr.symbol} {Math.round(amountNeededForFree * curr.rate).toLocaleString()}</strong> more for complimentary delivery
+                    Add <strong>{currSymbol} {Math.round(amountNeededForFree * currRate).toLocaleString()}</strong> more for complimentary delivery
                   </span>
                 </>
               )}
@@ -152,7 +221,7 @@ export default function CartDrawer({
 
         {/* 3. Single Scrollable Content Area */}
         <div className="cart-scroll-area">
-          {cartItems.length === 0 ? (
+          {safeCartItems.length === 0 ? (
             /* Empty State */
             <div className="cart-empty-container">
               <div className="cart-empty-icon-wrap">
@@ -174,18 +243,23 @@ export default function CartDrawer({
             <>
               {/* Product Rows */}
               <div className="cart-items-list">
-                {cartItems.map((item, index) => {
-                  const itemKey = `${item.id}-${item.selectedSize}-${item.selectedColor}-${index}`;
-                  const itemQty = parseInt(item.quantity, 10) || 1;
-                  const itemTotalPrice = Math.round(item.price * itemQty * curr.rate);
+                {safeCartItems.map((item, index) => {
+                  const colorStr = getItemColor(item);
+                  const sizeStr = getItemSize(item);
+                  const titleStr = getItemTitle(item);
+                  const imageStr = getItemImage(item);
+                  const itemKey = `${item?.id || 'item'}-${sizeStr}-${colorStr}-${index}`;
+                  const itemQty = Math.max(1, parseInt(item?.quantity, 10) || 1);
+                  const itemPrice = Number(item?.price) || 0;
+                  const itemTotalPrice = Math.round(itemPrice * itemQty * currRate);
 
                   return (
                     <div key={itemKey} className="cart-item-card">
                       {/* Product Thumbnail */}
                       <div className="cart-item-thumb">
                         <img
-                          src={item.image}
-                          alt={item.title}
+                          src={imageStr}
+                          alt={titleStr}
                           loading="lazy"
                         />
                       </div>
@@ -193,13 +267,13 @@ export default function CartDrawer({
                       {/* Item Details */}
                       <div className="cart-item-info">
                         <div className="cart-item-top">
-                          <h4 className="cart-item-title" title={item.title}>
-                            {item.title}
+                          <h4 className="cart-item-title" title={titleStr}>
+                            {titleStr}
                           </h4>
                           <button
                             type="button"
                             onClick={() => onRemoveItem(item)}
-                            aria-label={`Remove ${item.title} from shopping bag`}
+                            aria-label={`Remove ${titleStr} from shopping bag`}
                             className="cart-item-remove-btn"
                             title="Remove item"
                           >
@@ -208,17 +282,17 @@ export default function CartDrawer({
                         </div>
 
                         {/* Product SKU */}
-                        {item.sku && (
+                        {item?.sku && (
                           <div className="cart-item-sku">
-                            SKU: {item.sku}
+                            SKU: {String(item.sku)}
                           </div>
                         )}
 
                         {/* Selected Variants */}
                         <div className="cart-item-meta">
-                          <span>Size: <strong>{item.selectedSize || 'Standard'}</strong></span>
+                          <span>Size: <strong>{sizeStr}</strong></span>
                           <span style={{ margin: '0 0.35rem', color: '#d5cfc4' }}>•</span>
-                          <span>Color: <strong>{item.selectedColor || 'Original'}</strong></span>
+                          <span>Color: <strong>{colorStr}</strong></span>
                         </div>
 
                         {/* Bottom Row: Stepper + Price */}
@@ -248,7 +322,7 @@ export default function CartDrawer({
 
                           {/* Line Price */}
                           <span className="cart-item-price">
-                            {curr.symbol} {itemTotalPrice.toLocaleString()}
+                            {currSymbol} {itemTotalPrice.toLocaleString()}
                           </span>
                         </div>
                       </div>
@@ -309,7 +383,7 @@ export default function CartDrawer({
                   <span className="cart-gift-label">
                     <Gift size={13} className="text-[#c5a880]" aria-hidden="true" />
                     <span>Luxury Gold Gift Packaging</span>
-                    <span className="cart-gift-price">(+{curr.symbol} {Math.round(350 * curr.rate)})</span>
+                    <span className="cart-gift-price">(+{currSymbol} {Math.round(350 * currRate)})</span>
                   </span>
                 </label>
               </div>
@@ -319,7 +393,7 @@ export default function CartDrawer({
                 <div className="cart-price-row">
                   <span>Subtotal</span>
                   <span className="cart-price-val">
-                    {curr.symbol} {Math.round(subtotalPKR * curr.rate).toLocaleString()}
+                    {currSymbol} {Math.round(subtotalPKR * currRate).toLocaleString()}
                   </span>
                 </div>
 
@@ -329,7 +403,7 @@ export default function CartDrawer({
                       <Sparkles size={11} aria-hidden="true" /> Voucher Savings
                     </span>
                     <span className="cart-price-val">
-                      -{curr.symbol} {Math.round(discountAmountPKR * curr.rate).toLocaleString()}
+                      -{currSymbol} {Math.round(discountAmountPKR * currRate).toLocaleString()}
                     </span>
                   </div>
                 )}
@@ -340,7 +414,7 @@ export default function CartDrawer({
                     {isFreeShipping ? (
                       <span style={{ color: '#1d4838', fontWeight: 600 }}>Complimentary</span>
                     ) : (
-                      `${curr.symbol} ${Math.round(shippingFeePKR * curr.rate)}`
+                      `${currSymbol} ${Math.round(shippingFeePKR * currRate)}`
                     )}
                   </span>
                 </div>
@@ -349,7 +423,7 @@ export default function CartDrawer({
                   <div className="cart-price-row">
                     <span>Gift Packaging</span>
                     <span className="cart-price-val">
-                      +{curr.symbol} {Math.round(giftWrapFeePKR * curr.rate)}
+                      +{currSymbol} {Math.round(giftWrapFeePKR * currRate)}
                     </span>
                   </div>
                 )}
@@ -359,7 +433,7 @@ export default function CartDrawer({
                 <div className="cart-price-row total">
                   <span>Estimated Total</span>
                   <span className="cart-price-val">
-                    {curr.symbol} {Math.round(grandTotalPKR * curr.rate).toLocaleString()}
+                    {currSymbol} {Math.round(grandTotalPKR * currRate).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -368,7 +442,7 @@ export default function CartDrawer({
         </div>
 
         {/* 4. Non-Overlapping Checkout Footer (Only rendered when items exist) */}
-        {cartItems.length > 0 && (
+        {safeCartItems.length > 0 && (
           <footer className="cart-drawer-footer">
             <button
               type="button"
@@ -377,7 +451,7 @@ export default function CartDrawer({
             >
               <span>Proceed to Checkout</span>
               <span>•</span>
-              <span>{curr.symbol} {Math.round(grandTotalPKR * curr.rate).toLocaleString()}</span>
+              <span>{currSymbol} {Math.round(grandTotalPKR * currRate).toLocaleString()}</span>
               <ArrowRight size={14} aria-hidden="true" style={{ marginLeft: '0.2rem' }} />
             </button>
 

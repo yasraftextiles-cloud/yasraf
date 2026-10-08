@@ -49,6 +49,7 @@ const AccountPage = lazy(() => import('./pages/account/AccountPage'));
 import { updateDocumentSeo, findProductBySlug, getProductSlug } from './utils/seo';
 
 import CartDrawer from './components/CartDrawer';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Code-split Heavy Modals (Loaded on-demand when activated)
 const QuickViewModal = lazy(() => import('./components/QuickViewModal'));
@@ -818,15 +819,17 @@ function AppContent() {
       />
 
       {/* Modals & Slide Drawers (Lazy Loaded On-Demand) */}
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        cartItems={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveFromCart}
-        onOpenCheckout={(data) => setCheckoutData(data)}
-        currency={currency}
-      />
+      <ErrorBoundary fallback={null}>
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          cartItems={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveFromCart}
+          onOpenCheckout={(data) => setCheckoutData(data)}
+          currency={currency}
+        />
+      </ErrorBoundary>
 
       <Suspense fallback={null}>
         {quickViewProduct && (
