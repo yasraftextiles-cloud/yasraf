@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase.js';
 import { PRODUCTS as localProducts } from '../data/products.js';
+import { inferProvince } from '../utils/location.js';
 
 export { supabase, isSupabaseConfigured };
 
@@ -87,9 +88,13 @@ export function normalizeProduct(p) {
     variants: variants,
     stockCount: totalStock,
     inStock: totalStock > 0,
-    isNew: p.is_new ?? (p.isNew ?? false),
-    isFeatured: p.is_featured ?? (p.isFeatured ?? false),
-    isPublished: isPublished
+    isNew: Boolean(p.show_in_new_arrivals ?? p.showInNewArrivals ?? p.is_new ?? p.isNew ?? false),
+    isFeatured: Boolean(p.show_in_signature_edit ?? p.showInSignatureEdit ?? p.is_featured ?? p.isFeatured ?? false),
+    isPublished: isPublished,
+    showInNewArrivals: Boolean(p.show_in_new_arrivals ?? p.showInNewArrivals ?? p.is_new ?? p.isNew ?? false),
+    showInSignatureEdit: Boolean(p.show_in_signature_edit ?? p.showInSignatureEdit ?? p.is_featured ?? p.isFeatured ?? false),
+    show_in_new_arrivals: Boolean(p.show_in_new_arrivals ?? p.showInNewArrivals ?? p.is_new ?? p.isNew ?? false),
+    show_in_signature_edit: Boolean(p.show_in_signature_edit ?? p.showInSignatureEdit ?? p.is_featured ?? p.isFeatured ?? false)
   };
 }
 
@@ -181,10 +186,25 @@ export async function saveProduct(productData) {
     throw new Error('Supabase is not configured.');
   }
 
+  const targetNewArrivals = Boolean(
+    productData.show_in_new_arrivals ?? productData.showInNewArrivals ?? productData.is_new ?? productData.isNew ?? false
+  );
+  const targetSignatureEdit = Boolean(
+    productData.show_in_signature_edit ?? productData.showInSignatureEdit ?? productData.is_featured ?? productData.isFeatured ?? false
+  );
+
+  const rpcPayload = {
+    ...productData,
+    is_new: targetNewArrivals,
+    is_featured: targetSignatureEdit,
+    show_in_new_arrivals: targetNewArrivals,
+    show_in_signature_edit: targetSignatureEdit
+  };
+
   // 1. First attempt atomic RPC save_product_with_variants
   try {
     const { data, error } = await supabase.rpc('save_product_with_variants', {
-      payload: productData
+      payload: rpcPayload
     });
 
     if (!error && data) {
@@ -237,7 +257,7 @@ export async function saveProduct(productData) {
     collections: productData.collections || [],
     price: productData.price,
     original_price: productData.original_price || null,
-    badge: productData.badge || null,
+    badge: productData.badge || (targetNewArrivals ? 'NEW' : null),
     description: productData.description || '',
     fabric: productData.fabric || '',
     includes: productData.includes || '',
@@ -248,21 +268,42 @@ export async function saveProduct(productData) {
     colors: productData.colors || [],
     sizes: productData.sizes || [],
     is_published: productData.is_published ?? false,
-    is_new: productData.is_new ?? false,
-    is_featured: productData.is_featured ?? false,
+    is_new: targetNewArrivals,
+    is_featured: targetSignatureEdit,
+    show_in_new_arrivals: targetNewArrivals,
+    show_in_signature_edit: targetSignatureEdit,
     updated_at: now
   };
 
   if (isUpdate) {
-    const { error: prodErr } = await supabase
+    let { error: prodErr } = await supabase
       .from('products')
       .update(productRow)
       .eq('id', productId);
+
+    if (prodErr && prodErr.message && prodErr.message.includes('show_in_')) {
+      const { show_in_new_arrivals, show_in_signature_edit, ...fallbackRow } = productRow;
+      const fallbackResult = await supabase
+        .from('products')
+        .update(fallbackRow)
+        .eq('id', productId);
+      prodErr = fallbackResult.error;
+    }
+
     if (prodErr) throw new Error(prodErr.message || 'Failed to update product record.');
   } else {
-    const { error: prodErr } = await supabase
+    let { error: prodErr } = await supabase
       .from('products')
       .insert({ ...productRow, created_at: now });
+
+    if (prodErr && prodErr.message && prodErr.message.includes('show_in_')) {
+      const { show_in_new_arrivals, show_in_signature_edit, ...fallbackRow } = productRow;
+      const fallbackResult = await supabase
+        .from('products')
+        .insert({ ...fallbackRow, created_at: now });
+      prodErr = fallbackResult.error;
+    }
+
     if (prodErr) throw new Error(prodErr.message || 'Failed to insert product record.');
   }
 
@@ -511,7 +552,7 @@ export async function createOrder({ customer, items, paymentMethod = 'cod', idem
       phone: customer.phone?.trim(),
       address: customer.address?.trim(),
       city: customer.city?.trim(),
-      province: customer.province?.trim(),
+      province: customer.province?.trim() || inferProvince(customer.city) || 'Punjab',
       postalCode: customer.postalCode?.trim() || null,
       notes: customer.notes?.trim() || null
     },

@@ -123,6 +123,8 @@ CREATE TABLE IF NOT EXISTS public.products (
   occasion TEXT,
   in_stock BOOLEAN NOT NULL DEFAULT true,
   is_published BOOLEAN NOT NULL DEFAULT true,
+  show_in_new_arrivals BOOLEAN NOT NULL DEFAULT false,
+  show_in_signature_edit BOOLEAN NOT NULL DEFAULT false,
   sizes JSONB DEFAULT '[]'::jsonb,
   images JSONB DEFAULT '[]'::jsonb,
   description TEXT,
@@ -138,6 +140,12 @@ ALTER TABLE public.products ALTER COLUMN reviews_count SET DEFAULT 0;
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='is_published') THEN
     ALTER TABLE public.products ADD COLUMN is_published BOOLEAN NOT NULL DEFAULT true;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='show_in_new_arrivals') THEN
+    ALTER TABLE public.products ADD COLUMN show_in_new_arrivals BOOLEAN NOT NULL DEFAULT false;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='show_in_signature_edit') THEN
+    ALTER TABLE public.products ADD COLUMN show_in_signature_edit BOOLEAN NOT NULL DEFAULT false;
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='updated_at') THEN
     ALTER TABLE public.products ADD COLUMN updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL;

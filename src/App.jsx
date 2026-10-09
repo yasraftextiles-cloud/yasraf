@@ -21,7 +21,7 @@ import CategoryLookbook from './components/CategoryLookbook';
 import EditorialBanner from './components/EditorialBanner';
 import EditorialStatement from './components/EditorialStatement';
 import DualEditorialSplit from './components/DualEditorialSplit';
-import NewInCollection from './components/NewInCollection';
+import SignatureEdit from './components/SignatureEdit';
 import EditorialSplitPromo from './components/EditorialSplitPromo';
 import BrandStatement from './components/BrandStatement';
 import TrustBar from './components/TrustBar';
@@ -51,11 +51,13 @@ import { updateDocumentSeo, findProductBySlug, getProductSlug } from './utils/se
 import CartDrawer from './components/CartDrawer';
 import ErrorBoundary from './components/ErrorBoundary';
 
+// Code-split Storefront Pages & Dedicated Checkout Page
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+
 // Code-split Heavy Modals (Loaded on-demand when activated)
 const QuickViewModal = lazy(() => import('./components/QuickViewModal'));
 const SizeGuideModal = lazy(() => import('./components/SizeGuideModal'));
 const SearchModal = lazy(() => import('./components/SearchModal'));
-const CheckoutModal = lazy(() => import('./components/CheckoutModal'));
 const TrackOrderModal = lazy(() => import('./components/TrackOrderModal'));
 const StoryModal = lazy(() => import('./components/StoryModal'));
 const WishlistModal = lazy(() => import('./components/WishlistModal'));
@@ -124,7 +126,15 @@ function AppContent() {
   const [isTrackOrderOpen, setIsTrackOrderOpen] = useState(false);
   const [isImageManagerOpen, setIsImageManagerOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [checkoutData, setCheckoutData] = useState(null);
+  const [buyNowItem, setBuyNowItem] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('yasraf_buy_now');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [cartCheckoutMeta, setCartCheckoutMeta] = useState(null);
   const [storyIndex, setStoryIndex] = useState(null);
   const [isWhatsAppChannelOpen, setIsWhatsAppChannelOpen] = useState(false);
 
@@ -424,6 +434,8 @@ function AppContent() {
       window.history.pushState({ page: 'forgot-password' }, '', '/forgot-password');
     } else if (page === 'reset-password') {
       window.history.pushState({ page: 'reset-password' }, '', '/reset-password');
+    } else if (page === 'checkout') {
+      window.history.pushState({ page: 'checkout' }, '', '/checkout');
     } else {
       window.history.pushState({ page }, '', `/${page}`);
     }
@@ -518,6 +530,10 @@ function AppContent() {
         setCurrentPage('shipping');
         return;
       }
+      if (pathname === '/checkout' || hash === 'checkout') {
+        setCurrentPage('checkout');
+        return;
+      }
 
       // 6. Homepage
       if (pathname === '/' && (!rawHash || rawHash === '')) {
@@ -567,23 +583,31 @@ function AppContent() {
     showToast(`Welcome back, ${clientName}!`);
 
     if (destination === 'checkout') {
-      const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (parseInt(item.quantity, 10) || 1)), 0);
-      const shipping = subtotal >= 4990 ? 0 : 250;
-      setCheckoutData({
-        cartItems,
-        subtotal,
-        discount: 0,
-        shipping,
-        giftWrap: 0,
-        total: subtotal + shipping,
-        currency
-      });
-      navigateTo('home');
+      navigateTo('checkout');
     } else {
       // Automatically open the storefront homepage using the existing navigation system
       navigateTo('home');
     }
   };
+
+  // Trigger Buy Now direct single-item checkout without modifying cart
+  const handleBuyNow = useCallback((productToBuy) => {
+    setBuyNowItem(productToBuy);
+    try {
+      sessionStorage.setItem('yasraf_buy_now', JSON.stringify(productToBuy));
+    } catch {}
+    navigateTo('checkout');
+  }, []);
+
+  // Trigger standard full-cart checkout from Cart Drawer
+  const handleOpenCartCheckout = useCallback((meta = null) => {
+    setBuyNowItem(null);
+    try {
+      sessionStorage.removeItem('yasraf_buy_now');
+    } catch {}
+    setCartCheckoutMeta(meta);
+    navigateTo('checkout');
+  }, []);
 
   // Outcome-Driven WhatsApp Channel Popup (Triggered on active scroll engagement, NOT blocking initial paint)
   useEffect(() => {
@@ -662,7 +686,14 @@ function AppContent() {
               <EditorialBanner />
               <EditorialStatement onViewCollection={() => navigateTo('collections', 'all')} />
               <DualEditorialSplit />
-              <NewInCollection onQuickView={(prod) => navigateTo('product', prod)} />
+              <SignatureEdit
+                products={products}
+                currency={currency}
+                onQuickView={(prod) => navigateTo('product', prod)}
+                wishlistIds={wishlistIds}
+                onToggleWishlist={handleToggleWishlist}
+                onDiscover={() => navigateTo('collections', 'all')}
+              />
               <EditorialSplitPromo onShopFestive={() => navigateTo('collections', 'festive')} />
               <BrandStatement />
               <TrustBar />
@@ -677,6 +708,7 @@ function AppContent() {
               allProducts={products}
               currency={currency}
               onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
               onBackToHome={() => navigateTo('home')}
               onSelectProduct={(prod) => navigateTo('product', prod)}
               onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
@@ -786,6 +818,54 @@ function AppContent() {
             />
           )}
 
+          {/* Dedicated Checkout Page */}
+          {currentPage === 'checkout' && (
+            <CheckoutPage
+              cartItems={cartItems}
+              buyNowItem={buyNowItem}
+              cartCheckoutMeta={cartCheckoutMeta}
+              currency={currency}
+              onBackToStore={() => navigateTo('home')}
+              onNavigateCollections={() => navigateTo('collections', 'all')}
+              onNavigateAccount={(tab, orderId) => navigateTo('account', { tab, orderId })}
+              onNavigateLogin={(target) => {
+                setRedirectAfterLogin(target || 'checkout');
+                navigateTo('login');
+              }}
+              onOrderPlaced={async ({ isBuyNow }) => {
+                setBuyNowItem(null);
+                try {
+                  sessionStorage.removeItem('yasraf_buy_now');
+                } catch {}
+
+                // Only clear the cart if standard cart checkout was completed
+                if (!isBuyNow) {
+                  cartSyncSeqRef.current++;
+                  isCheckoutActiveRef.current = true;
+
+                  setCartItems([]);
+                  try {
+                    localStorage.removeItem('yasraf_cart');
+                  } catch {}
+
+                  if (user) {
+                    try {
+                      await clearCustomerCart(user.id);
+                      const { items: reloadedItems } = await fetchCustomerCart(user.id, products);
+                      setCartItems(reloadedItems || []);
+                    } catch (reloadErr) {
+                      console.warn('[App] Post-checkout cart reload warning:', reloadErr);
+                    }
+                  }
+
+                  setTimeout(() => {
+                    isCheckoutActiveRef.current = false;
+                  }, 1500);
+                }
+              }}
+            />
+          )}
+
           {/* Nationwide Shipping & Exchange Policy Page */}
           {currentPage === 'shipping' && (
             <ShippingPolicyPage
@@ -826,7 +906,7 @@ function AppContent() {
           cartItems={cartItems}
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveFromCart}
-          onOpenCheckout={(data) => setCheckoutData(data)}
+          onOpenCheckout={handleOpenCartCheckout}
           currency={currency}
         />
       </ErrorBoundary>
@@ -843,9 +923,8 @@ function AppContent() {
             isWishlisted={quickViewProduct ? wishlistIds.includes(quickViewProduct.id) : false}
             onToggleWishlist={handleToggleWishlist}
             onDirectBuyNow={(prod) => {
-              handleAddToCart(prod);
+              handleBuyNow(prod);
               setQuickViewProduct(null);
-              setIsCartOpen(true);
             }}
             allProducts={products}
             onSelectProduct={(p) => {
@@ -872,44 +951,6 @@ function AppContent() {
               setIsSearchOpen(false);
               navigateTo('product', prod);
             }}
-          />
-        )}
-
-        {checkoutData && (
-          <CheckoutModal
-            isOpen={!!checkoutData}
-            onClose={() => setCheckoutData(null)}
-            checkoutData={checkoutData}
-            onOrderSuccess={async () => {
-              // Prevent pending cart writes from restoring purchased items after checkout
-              cartSyncSeqRef.current++;
-              isCheckoutActiveRef.current = true;
-
-              setCartItems([]);
-              try {
-                localStorage.removeItem('yasraf_cart');
-              } catch {}
-
-              if (user) {
-                try {
-                  await clearCustomerCart(user.id);
-                  // Reload server cart after successful checkout to verify empty state
-                  const { items: reloadedItems } = await fetchCustomerCart(user.id, products);
-                  setCartItems(reloadedItems || []);
-                } catch (reloadErr) {
-                  console.warn('[App] Post-checkout cart reload warning:', reloadErr);
-                }
-              }
-
-              setTimeout(() => {
-                isCheckoutActiveRef.current = false;
-              }, 1500);
-            }}
-            onNavigateLogin={(target) => {
-              setRedirectAfterLogin(target || 'checkout');
-              navigateTo('login');
-            }}
-            onNavigateAccount={(tab, orderId) => navigateTo('account', { tab, orderId })}
           />
         )}
 

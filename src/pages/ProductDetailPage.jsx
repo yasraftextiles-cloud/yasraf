@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Heart, ShoppingBag, Ruler, Check, ChevronDown, 
-  Truck, ShieldCheck, RefreshCw, ArrowLeft, Share2, Sparkles 
+  Truck, ShieldCheck, RefreshCw, ArrowLeft, Share2, Sparkles,
+  Zap, AlertCircle
 } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
 import { BRAND_CONFIG } from '../data/brandConfig';
@@ -13,6 +14,7 @@ export default function ProductDetailPage({
   allProducts = [],
   currency = 'PKR',
   onAddToCart,
+  onBuyNow,
   onBackToHome,
   onSelectProduct,
   onOpenSizeGuide,
@@ -27,6 +29,7 @@ export default function ProductDetailPage({
   const [quantity, setQuantity] = useState(1);
   const [openAccordion, setOpenAccordion] = useState('details');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [validationError, setValidationError] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -35,6 +38,7 @@ export default function ProductDetailPage({
       setSelectedSize(product.sizes?.[0] || 'M');
       setSelectedColor(product.colors?.[0] || { name: 'Original', hex: '#d4c5b9' });
       setQuantity(1);
+      setValidationError(null);
     }
   }, [product]);
 
@@ -64,15 +68,46 @@ export default function ProductDetailPage({
   });
   const productSku = (matchedVariant?.sku || product.sku)?.trim() || null;
 
+  const validateSelection = () => {
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      setValidationError('Please select a size to continue.');
+      return false;
+    }
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      setValidationError('Please select a color to continue.');
+      return false;
+    }
+    setValidationError(null);
+    return true;
+  };
+
   const handleAdd = () => {
+    if (!validateSelection()) return;
     if (onAddToCart) {
       onAddToCart({
         ...product,
         variantId: matchedVariant?.id || product.variantId || null,
         sku: productSku || undefined,
-        selectedSize,
+        selectedSize: selectedSize || 'Standard',
         selectedColor: selectedColor?.name || 'Standard',
         quantity
+      });
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!validateSelection()) return;
+    if (onBuyNow) {
+      onBuyNow({
+        ...product,
+        productId: product.id,
+        variantId: matchedVariant?.id || product.variantId || null,
+        sku: productSku || undefined,
+        selectedSize: selectedSize || 'Standard',
+        selectedColor: selectedColor?.name || (typeof selectedColor === 'string' ? selectedColor : 'Standard'),
+        color: selectedColor?.name || (typeof selectedColor === 'string' ? selectedColor : 'Standard'),
+        quantity: quantity || 1,
+        price: Number(product.price) || 0
       });
     }
   };
@@ -274,7 +309,10 @@ export default function ProductDetailPage({
                   {product.colors.map((c) => (
                     <button
                       key={c.name}
-                      onClick={() => setSelectedColor(c)}
+                      onClick={() => {
+                        setSelectedColor(c);
+                        setValidationError(null);
+                      }}
                       className={`w-7 h-7 rounded-full border transition-all cursor-pointer relative ${
                         selectedColor?.name === c.name 
                           ? 'ring-2 ring-offset-2 ring-[#1a1814] border-transparent' 
@@ -306,7 +344,10 @@ export default function ProductDetailPage({
                   <button
                     key={sz}
                     type="button"
-                    onClick={() => setSelectedSize(sz)}
+                    onClick={() => {
+                      setSelectedSize(sz);
+                      setValidationError(null);
+                    }}
                     className={`min-w-[46px] h-10 px-3.5 flex items-center justify-center text-[12px] uppercase tracking-[0.08em] border cursor-pointer select-none transition-all ${
                       selectedSize === sz
                         ? 'bg-black text-white font-medium shadow-sm ring-1 ring-black border-black'
@@ -324,11 +365,11 @@ export default function ProductDetailPage({
             <div className="space-y-3 pt-2">
               <div className="flex items-stretch gap-3">
                 {/* Quantity Counter */}
-                <div className="flex items-center border border-neutral-200 bg-white px-1 shadow-2xs">
+                <div className="flex items-center border border-neutral-200 bg-white px-1 shadow-2xs h-12">
                   <button
                     type="button"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-9 h-9 flex items-center justify-center text-base text-[#67615c] hover:text-black hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer rounded-none select-none"
+                    className="w-9 h-full flex items-center justify-center text-base text-[#67615c] hover:text-black hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer rounded-none select-none"
                     aria-label="Decrease quantity"
                   >
                     -
@@ -339,33 +380,52 @@ export default function ProductDetailPage({
                   <button
                     type="button"
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="w-9 h-9 flex items-center justify-center text-base text-[#67615c] hover:text-black hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer rounded-none select-none"
+                    className="w-9 h-full flex items-center justify-center text-base text-[#67615c] hover:text-black hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer rounded-none select-none"
                     aria-label="Increase quantity"
                   >
                     +
                   </button>
                 </div>
 
-                {/* Primary Add to Bag Button */}
+                {/* Primary Add to Cart Button */}
                 <button
                   type="button"
                   onClick={() => {
                     handleAdd();
                     if (onOpenCart) onOpenCart();
                   }}
-                  className="flex-1 py-4 px-6 border border-black bg-white text-black font-medium tracking-[0.2em] text-xs uppercase flex items-center justify-center gap-2.5 hover:bg-black hover:text-white transition-colors duration-200 cursor-pointer shadow-sm"
+                  className="flex-1 h-12 px-4 sm:px-6 border border-black bg-white text-black font-medium tracking-[0.16em] text-xs uppercase flex items-center justify-center gap-2 hover:bg-black hover:text-white transition-colors duration-200 cursor-pointer shadow-xs"
                   style={{ fontFamily: 'var(--font-family-primary)' }}
                 >
-                  <ShoppingBag size={16} strokeWidth={2} className="shrink-0 transition-colors duration-200" />
-                  <span>ADD TO BAG</span>
+                  <ShoppingBag size={15} strokeWidth={2} className="shrink-0 transition-colors duration-200" />
+                  <span>ADD TO CART</span>
                 </button>
               </div>
+
+              {/* Buy Now Button (Direct checkout for this product only) */}
+              <button
+                type="button"
+                onClick={handleBuyNow}
+                className="w-full h-12 px-6 bg-[#1a1814] text-white border border-[#1a1814] font-medium tracking-[0.18em] text-xs uppercase flex items-center justify-center gap-2 hover:bg-black hover:border-black active:scale-[0.99] transition-all duration-200 cursor-pointer shadow-sm"
+                style={{ fontFamily: 'var(--font-family-primary)' }}
+              >
+                <Zap size={15} className="text-[#c5a880] fill-[#c5a880]" />
+                <span>BUY NOW</span>
+              </button>
+
+              {/* Validation Error Banner */}
+              {validationError && (
+                <div className="p-3 bg-[#fdf2f2] border border-[#f8b4b4] text-[#9b1c1c] text-xs flex items-center gap-2">
+                  <AlertCircle size={15} className="shrink-0" />
+                  <span>{validationError}</span>
+                </div>
+              )}
 
               {/* Direct WhatsApp Ordering Button */}
               <button
                 type="button"
                 onClick={handleDirectWhatsAppOrder}
-                className="w-full py-4 px-6 bg-[#25D366] text-white border-0 shadow-md font-medium tracking-[0.15em] text-xs uppercase flex items-center justify-center gap-2 hover:bg-[#20ba5a] active:scale-[0.99] transition-all duration-200 hover:shadow-lg cursor-pointer"
+                className="w-full h-12 px-6 bg-[#25D366] text-white border-0 shadow-md font-medium tracking-[0.15em] text-xs uppercase flex items-center justify-center gap-2 hover:bg-[#20ba5a] active:scale-[0.99] transition-all duration-200 hover:shadow-lg cursor-pointer"
                 style={{ fontFamily: 'var(--font-family-primary)' }}
               >
                 <WhatsAppIcon size={18} color="white" className="shrink-0" />

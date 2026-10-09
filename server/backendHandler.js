@@ -34,6 +34,30 @@ function checkRateLimit(action, identifier, limit, windowMs) {
   return true;
 }
 
+function inferProvince(city = '') {
+  if (!city || typeof city !== 'string') return 'Punjab';
+  const c = city.trim().toLowerCase();
+  if (c.includes('karachi') || c.includes('hyderabad') || c.includes('sukkur') || c.includes('larkana') || c.includes('nawabshah') || c.includes('mirpurkhas') || c.includes('sindh')) {
+    return 'Sindh';
+  }
+  if (c.includes('islamabad')) {
+    return 'Islamabad Capital Territory';
+  }
+  if (c.includes('peshawar') || c.includes('abbottabad') || c.includes('mardan') || c.includes('swat') || c.includes('kohat') || c.includes('mingora') || c.includes('bannu') || c.includes('haripur') || c.includes('kpk')) {
+    return 'Khyber Pakhtunkhwa';
+  }
+  if (c.includes('quetta') || c.includes('gwadar') || c.includes('turbat') || c.includes('khuzdar') || c.includes('balochistan')) {
+    return 'Balochistan';
+  }
+  if (c.includes('muzaffarabad') || c.includes('mirpur') || c.includes('rawalakot') || c.includes('kotli') || c.includes('kashmir') || c.includes('ajk')) {
+    return 'Azad Jammu & Kashmir';
+  }
+  if (c.includes('gilgit') || c.includes('skardu') || c.includes('hunza') || c.includes('baltistan')) {
+    return 'Gilgit-Baltistan';
+  }
+  return 'Punjab';
+}
+
 /**
  * Obtain authenticated Supabase client for backend operations.
  * Requires server-only SUPABASE_SERVICE_ROLE_KEY.
@@ -111,7 +135,12 @@ export async function handleCheckout(payload, remoteIp, authHeader = null) {
   const phone = typeof customer.phone === 'string' ? customer.phone.trim() : '';
   const address = typeof customer.address === 'string' ? customer.address.trim() : '';
   const city = typeof customer.city === 'string' ? customer.city.trim() : '';
-  const province = typeof customer.province === 'string' ? customer.province.trim() : '';
+  let province = typeof customer.province === 'string' ? customer.province.trim() : '';
+  if (!province && city) {
+    province = inferProvince(city);
+  } else if (!province) {
+    province = 'Punjab';
+  }
 
   if (!fullName) {
     return { status: 400, data: { success: false, error: 'Full customer name is required.' } };
@@ -124,9 +153,6 @@ export async function handleCheckout(payload, remoteIp, authHeader = null) {
   }
   if (!city) {
     return { status: 400, data: { success: false, error: 'Destination city is required.' } };
-  }
-  if (!province) {
-    return { status: 400, data: { success: false, error: 'Destination province is required.' } };
   }
 
   // Validate Cart Items
@@ -191,9 +217,13 @@ export async function handleCheckout(payload, remoteIp, authHeader = null) {
     }
   }
 
-  // 5. Attach verified remote IP and verified user_id (strictly derived from Auth, overriding any client payload spoofing)
+  // 5. Attach verified remote IP, normalized province, and verified user_id
   const securePayload = {
     ...payload,
+    customer: {
+      ...payload.customer,
+      province
+    },
     client_ip: remoteIp,
     user_id: verifiedUserId
   };

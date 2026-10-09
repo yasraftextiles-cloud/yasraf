@@ -51,10 +51,17 @@ export default function CollectionsPage({
         if (inCollections) return true;
         if (activeCategory === 'best-sellers') return Boolean(p.isBestSeller || inCollections);
         if (activeCategory === 'new-in') return Boolean(p.isNew || inCollections);
-        if (activeCategory === 'ready-to-wear') return p.category === 'ready-to-wear';
+        if (activeCategory === 'ready-to-wear') return p.category === 'ready-to-wear' || p.occasion === 'Ready to Wear';
+        if (activeCategory === 'unstitched') return p.category === 'unstitched' || p.sizes?.includes('Unstitched') || inCollections;
+        if (activeCategory === 'summer') return p.category === 'summer' || p.fabricCategory === 'Egyptian Lawn' || p.fabric?.toLowerCase().includes('lawn') || inCollections;
+        if (activeCategory === 'festive' || activeCategory === 'formal') {
+          return p.category === 'party-wear' || p.category === 'festive' || p.occasion === 'Party Wear' || p.occasion === 'Festive' || p.tag?.toLowerCase().includes('festive') || p.type?.toLowerCase().includes('festive') || inCollections;
+        }
         if (activeCategory === 'luxury-pret') return p.category === 'luxury-pret';
         if (activeCategory === 'party-wear') return p.category === 'party-wear';
-        if (activeCategory === 'winter-collection') return p.category === 'winter-collection';
+        if (activeCategory === 'winter-collection' || activeCategory === 'winter') {
+          return p.category === 'winter-collection' || p.category === 'winter' || p.tag?.toLowerCase().includes('winter') || inCollections;
+        }
         return p.category === activeCategory;
       });
     }

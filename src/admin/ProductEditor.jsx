@@ -182,8 +182,12 @@ export default function ProductEditor({
 
   // 9. Publishing Status & Badges
   const [isPublished, setIsPublished] = useState(product?.isPublished ?? product?.is_published ?? false);
-  const [isNew, setIsNew] = useState(product?.isNew ?? product?.is_new ?? true);
-  const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? product?.is_featured ?? false);
+  const [showInNewArrivals, setShowInNewArrivals] = useState(
+    Boolean(product?.showInNewArrivals ?? product?.show_in_new_arrivals ?? product?.isNew ?? product?.is_new ?? false)
+  );
+  const [showInSignatureEdit, setShowInSignatureEdit] = useState(
+    Boolean(product?.showInSignatureEdit ?? product?.show_in_signature_edit ?? product?.isFeatured ?? product?.is_featured ?? false)
+  );
 
   // UI state & Unsaved changes tracking
   const [isSaving, setIsSaving] = useState(false);
@@ -644,7 +648,6 @@ export default function ProductEditor({
         collections: Array.isArray(collections) ? collections : [],
         price: numPrice,
         original_price: numOrig,
-        badge: isNew ? 'NEW' : null,
         description: description.trim(),
         fabric: fabric.trim(),
         includes: includes.trim(),
@@ -655,8 +658,11 @@ export default function ProductEditor({
         colors: colors.map((c) => ({ name: c.name, hex: c.hex })),
         sizes: selectedSizes,
         is_published: targetPublishState,
-        is_new: isNew,
-        is_featured: isFeatured,
+        is_new: showInNewArrivals,
+        is_featured: showInSignatureEdit,
+        show_in_new_arrivals: showInNewArrivals,
+        show_in_signature_edit: showInSignatureEdit,
+        badge: showInNewArrivals ? 'NEW' : null,
         variants: variants.map((v) => ({
           id: v.id || null,
           sku: v.sku.trim(),
@@ -1607,6 +1613,71 @@ export default function ProductEditor({
         {/* Right Column: Sticky Publishing & Preview Sidebar (Col-span 4) */}
         <div className="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
           
+          {/* Home Page Placement Panel */}
+          <div className="bg-white border border-[#ebe6e0] p-6 shadow-2xs space-y-4">
+            <div className="border-b border-[#ebe6e0] pb-3">
+              <h3 
+                className="text-base text-[#1a1814] font-medium uppercase tracking-[0.14em]"
+              >
+                Home Page Placement
+              </h3>
+              <p className="text-[11.5px] text-[#67615c] mt-0.5">
+                Select where this product appears on the homepage grids.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <label className="flex items-start gap-3 text-[12.5px] text-[#1a1814] cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  id="placement-new-arrivals"
+                  checked={showInNewArrivals}
+                  onChange={(e) => {
+                    setShowInNewArrivals(e.target.checked);
+                    setIsDirty(true);
+                  }}
+                  className="w-4 h-4 mt-0.5 accent-[#1a1814] cursor-pointer"
+                />
+                <div className="flex flex-col">
+                  <span className="font-medium group-hover:text-[#b46146] transition-colors">
+                    New Arrivals
+                  </span>
+                  <span className="text-[11px] text-[#8c867f]">
+                    Section 1: New Arrivals grid
+                  </span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 text-[12.5px] text-[#1a1814] cursor-pointer select-none group">
+                <input
+                  type="checkbox"
+                  id="placement-signature-edit"
+                  checked={showInSignatureEdit}
+                  onChange={(e) => {
+                    setShowInSignatureEdit(e.target.checked);
+                    setIsDirty(true);
+                  }}
+                  className="w-4 h-4 mt-0.5 accent-[#1a1814] cursor-pointer"
+                />
+                <div className="flex flex-col">
+                  <span className="font-medium group-hover:text-[#b46146] transition-colors">
+                    The Signature Edit
+                  </span>
+                  <span className="text-[11px] text-[#8c867f]">
+                    Section 2: Handpicked Styles by Yasraf
+                  </span>
+                </div>
+              </label>
+            </div>
+
+            <div className="pt-2 border-t border-[#ebe6e0]/60 text-[11px] text-[#8c867f]">
+              {showInNewArrivals && showInSignatureEdit && 'Showing in both homepage sections'}
+              {showInNewArrivals && !showInSignatureEdit && 'Showing in New Arrivals only'}
+              {!showInNewArrivals && showInSignatureEdit && 'Showing in The Signature Edit only'}
+              {!showInNewArrivals && !showInSignatureEdit && 'Not displayed on homepage grids'}
+            </div>
+          </div>
+
           {/* Publishing Controls Panel */}
           <div className="bg-white border border-[#ebe6e0] p-6 shadow-2xs space-y-5">
             <h3 
@@ -1614,35 +1685,6 @@ export default function ProductEditor({
             >
               Publishing Actions
             </h3>
-
-            {/* Badges / Flags */}
-            <div className="space-y-2.5">
-              <label className="flex items-center gap-2 text-[12px] text-[#1a1814] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isNew}
-                  onChange={(e) => {
-                    setIsNew(e.target.checked);
-                    setIsDirty(true);
-                  }}
-                  className="w-3.5 h-3.5 accent-[#1a1814] cursor-pointer"
-                />
-                <span>Mark as "New Arrival" (displays NEW tag)</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-[12px] text-[#1a1814] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isFeatured}
-                  onChange={(e) => {
-                    setIsFeatured(e.target.checked);
-                    setIsDirty(true);
-                  }}
-                  className="w-3.5 h-3.5 accent-[#1a1814] cursor-pointer"
-                />
-                <span>Highlight on Homepage Featured Grid</span>
-              </label>
-            </div>
 
             {/* Separate Actions: "Publish Product" and "Save as Draft" */}
             <div className="pt-4 border-t border-[#ebe6e0] space-y-2.5">

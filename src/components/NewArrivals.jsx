@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import ProductCard from './ProductCard';
 
 export default function NewArrivals({
@@ -9,8 +9,27 @@ export default function NewArrivals({
   onToggleWishlist,
   onSelectCategory
 }) {
-  const newProducts = products.filter((p) => p.isNew).slice(0, 4);
-  const displayItems = newProducts.length >= 4 ? newProducts : products.slice(0, 4);
+  const displayItems = useMemo(() => {
+    return products
+      .filter((p) => {
+        const isPublished = p.isPublished ?? p.is_published ?? true;
+        const showInNewArrivals = Boolean(p.showInNewArrivals ?? p.show_in_new_arrivals ?? p.isNew ?? p.is_new);
+        return isPublished && showInNewArrivals;
+      })
+      .slice()
+      .sort((a, b) => {
+        if (a.created_at && b.created_at) {
+          return new Date(b.created_at) - new Date(a.created_at);
+        }
+        return 0;
+      });
+  }, [products]);
+
+  const itemsToRender = displayItems.length > 0 
+    ? displayItems 
+    : products.filter(p => (p.isPublished ?? true) && (p.isNew ?? true)).slice(0, 4);
+
+  if (itemsToRender.length === 0) return null;
 
   return (
     <section 
@@ -42,7 +61,7 @@ export default function NewArrivals({
 
         {/* 4-Column Edge-to-Edge Grid with Large 2/3 Photos Matching Jahaan */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-3.5">
-          {displayItems.map((prod) => (
+          {itemsToRender.map((prod) => (
             <ProductCard
               key={prod.id}
               product={prod}

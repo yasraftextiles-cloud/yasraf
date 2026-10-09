@@ -286,9 +286,13 @@ export function updateDocumentSeo({
     title = "Delivery, Shipping Rates & 7-Day Exchange | YASRAF Textiles";
     description = "View YASRAF Textiles shipping rates, nationwide Cash on Delivery terms, and straightforward 7-day exchange policy for women's dresses across Pakistan.";
     canonicalPath = '/shipping';
-  } else if (['login', 'register', 'forgot-password', 'reset-password', 'auth-callback', 'account', 'admin'].includes(page)) {
-    title = `${page.charAt(0).toUpperCase() + page.slice(1).replace(/-/g, ' ')} | YASRAF Textiles`;
-    description = "Secure client portal for YASRAF Textiles.";
+  } else if (['login', 'register', 'forgot-password', 'reset-password', 'auth-callback', 'account', 'admin', 'checkout'].includes(page)) {
+    title = page === 'checkout' 
+      ? "Express Checkout | YASRAF Textiles"
+      : `${page.charAt(0).toUpperCase() + page.slice(1).replace(/-/g, ' ')} | YASRAF Textiles`;
+    description = page === 'checkout'
+      ? "Complete your order with Cash on Delivery at YASRAF Textiles."
+      : "Secure client portal for YASRAF Textiles.";
     canonicalPath = `/${page}`;
     robots = 'noindex, follow'; // Exclude private and utility pages from search indexing
   } else if (page === '404') {

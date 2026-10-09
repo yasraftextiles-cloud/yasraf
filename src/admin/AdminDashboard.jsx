@@ -377,6 +377,20 @@ export default function AdminDashboard({
                             </>
                           )}
                         </div>
+                        {(p.showInNewArrivals || p.show_in_new_arrivals || p.showInSignatureEdit || p.show_in_signature_edit) && (
+                          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                            {(p.showInNewArrivals || p.show_in_new_arrivals) && (
+                              <span className="text-[9.5px] uppercase tracking-wider bg-[#1a1814]/5 text-[#524d47] px-1.5 py-0.5 border border-[#1a1814]/10 font-medium">
+                                New Arrivals
+                              </span>
+                            )}
+                            {(p.showInSignatureEdit || p.show_in_signature_edit) && (
+                              <span className="text-[9.5px] uppercase tracking-wider bg-[#8e704b]/10 text-[#8e704b] px-1.5 py-0.5 border border-[#8e704b]/20 font-medium">
+                                Signature Edit
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
 
                       {/* Category */}

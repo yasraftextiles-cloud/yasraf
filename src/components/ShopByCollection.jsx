@@ -3,39 +3,39 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const COLLECTIONS = [
   {
-    id: 'silhouettes-of-dawn',
-    title: 'Silhouettes of Dawn',
-    category: 'organza',
-    image: '/images/collection-coastal-wind.jpg',
-    tag: 'SOLAR EDIT'
-  },
-  {
-    id: 'modern-muse',
-    title: 'Modern Muse',
-    category: 'pret',
-    image: '/images/collection-monochrome-arch.jpg',
-    tag: 'ATELIER PRÊT'
-  },
-  {
-    id: 'aura',
-    title: 'Aura',
-    category: 'silk',
-    image: '/images/collection-flow.jpg',
-    tag: 'SILK STUDIO'
-  },
-  {
-    id: 'amber-bloom',
-    title: 'Amber Bloom',
-    category: 'festive',
-    image: '/images/collection-ember-rose.jpg',
-    tag: 'FESTIVE WEAVE'
-  },
-  {
-    id: 'the-grace-she-carries',
-    title: 'The Grace She Carries',
+    id: 'unstitched',
+    title: 'Unstitched',
     category: 'unstitched',
-    image: '/images/collection-heritage.jpg',
-    tag: 'HERITAGE CHINTZ'
+    image: '/images/collection-unstitched.jpg',
+    tag: 'UNSTITCHED'
+  },
+  {
+    id: 'ready-to-wear',
+    title: 'Ready to Wear',
+    category: 'ready-to-wear',
+    image: '/images/collection-ready-to-wear.jpg',
+    tag: 'READY TO WEAR'
+  },
+  {
+    id: 'summer',
+    title: 'Summer',
+    category: 'summer',
+    image: '/images/collection-summer.jpg',
+    tag: 'SUMMER'
+  },
+  {
+    id: 'festive',
+    title: 'Festive',
+    category: 'festive',
+    image: '/images/collection-festive.jpg',
+    tag: 'FESTIVE WEAR'
+  },
+  {
+    id: 'winter',
+    title: 'Winter',
+    category: 'winter-collection',
+    image: '/images/collection-winter.jpg',
+    tag: 'WINTER'
   }
 ];
 
@@ -54,7 +54,8 @@ export default function ShopByCollection({ onSelectCollection }) {
 
   const scroll = (direction) => {
     if (sliderRef.current) {
-      const scrollAmount = sliderRef.current.clientWidth * 0.75;
+      const { clientWidth } = sliderRef.current;
+      const scrollAmount = clientWidth * 0.7;
       sliderRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -73,6 +74,8 @@ export default function ShopByCollection({ onSelectCollection }) {
 
   useEffect(() => {
     handleScroll();
+    window.addEventListener('resize', handleScroll);
+    return () => window.removeEventListener('resize', handleScroll);
   }, []);
 
   return (
@@ -99,6 +102,7 @@ export default function ShopByCollection({ onSelectCollection }) {
             {/* Slider Navigation Arrows (Desktop) */}
             <div className="hidden lg:flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => scroll('left')}
                 aria-label="Previous Collection"
                 className="w-10 h-10 rounded-full border border-neutral-300/70 flex items-center justify-center text-[#67615c] hover:border-[#67615c] hover:text-[#1a1814] transition-colors cursor-pointer"
@@ -106,6 +110,7 @@ export default function ShopByCollection({ onSelectCollection }) {
                 <ArrowLeft size={16} />
               </button>
               <button
+                type="button"
                 onClick={() => scroll('right')}
                 aria-label="Next Collection"
                 className="w-10 h-10 rounded-full border border-neutral-300/70 flex items-center justify-center text-[#67615c] hover:border-[#67615c] hover:text-[#1a1814] transition-colors cursor-pointer"
@@ -124,10 +129,14 @@ export default function ShopByCollection({ onSelectCollection }) {
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
             >
               {COLLECTIONS.map((col) => (
-                <div 
+                <a 
                   key={col.id}
-                  onClick={() => handleItemClick(col)}
-                  className="shrink-0 flex flex-col items-center cursor-pointer group select-none snap-start"
+                  href={`/collections/${col.category}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleItemClick(col);
+                  }}
+                  className="shrink-0 flex flex-col items-center cursor-pointer group select-none snap-start no-underline"
                 >
                   {/* Perfectly Round Circle Container */}
                   <div className="rounded-full aspect-square w-36 sm:w-48 lg:w-60 overflow-hidden border border-neutral-200/60 shadow-sm relative bg-[#ebe6e0]">
@@ -149,7 +158,7 @@ export default function ShopByCollection({ onSelectCollection }) {
                   >
                     {col.title}
                   </h3>
-                </div>
+                </a>
               ))}
             </div>
 
