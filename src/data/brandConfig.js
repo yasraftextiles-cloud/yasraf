@@ -43,9 +43,9 @@ export const BRAND_CONFIG = {
 
   // Official Social Media Channels
   socialLinks: {
-    instagram: 'https://www.instagram.com/yasrafclothing',
+    instagram: 'https://www.instagram.com/yasraftextiles_/',
     facebook: 'https://www.facebook.com/profile.php?id=61590429044323',
-    tiktok: 'https://www.tiktok.com/@yasrafclothing',
+    tiktok: 'https://www.tiktok.com/@yasraftextiles_',
     snapchat: 'https://www.snapchat.com/@yasrafclothing',
     whatsapp: 'https://wa.me/923024220514'
   },

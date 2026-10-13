@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowRight, Sparkles, Check } from 'lucide-react';
 import { InstagramIcon, FacebookIcon, TikTokIcon, SnapchatIcon, WhatsAppIcon } from './SocialIcons';
 import { BRAND_CONFIG } from '../data/brandConfig';
+import './Footer.css';
 
 export default function Footer({ 
   onOpenTrackOrder, 
@@ -137,56 +138,51 @@ export default function Footer({
             <p style={{ fontSize: '0.84rem', color: '#9c978f', lineHeight: 1.65, marginBottom: '1.5rem' }}>
               Yasraf Clothing is Pakistan’s distinguished women’s fashion atelier, celebrating timeless Eastern silhouettes, refined craftsmanship, and contemporary ready-to-wear luxury.
             </p>
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <div className="footer-social-row">
               <a 
                 href={BRAND_CONFIG.socialLinks.instagram} 
                 target="_blank" 
-                rel="noreferrer" 
+                rel="noopener noreferrer" 
                 aria-label="Instagram"
-                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
-                className="hover:bg-white hover:text-black transition-colors"
+                className="footer-social-icon"
               >
-                <InstagramIcon size={16} />
+                <InstagramIcon size={18} />
               </a>
               <a 
                 href={BRAND_CONFIG.socialLinks.facebook} 
                 target="_blank" 
-                rel="noreferrer" 
+                rel="noopener noreferrer" 
                 aria-label="Facebook"
-                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
-                className="hover:bg-white hover:text-black transition-colors"
+                className="footer-social-icon"
               >
-                <FacebookIcon size={16} />
+                <FacebookIcon size={18} />
               </a>
               <a 
                 href={BRAND_CONFIG.socialLinks.tiktok} 
                 target="_blank" 
-                rel="noreferrer" 
+                rel="noopener noreferrer" 
                 aria-label="TikTok"
-                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
-                className="hover:bg-white hover:text-black transition-colors"
+                className="footer-social-icon"
               >
-                <TikTokIcon size={15} />
+                <TikTokIcon size={18} />
               </a>
               <a 
                 href={BRAND_CONFIG.socialLinks.snapchat} 
                 target="_blank" 
-                rel="noreferrer" 
+                rel="noopener noreferrer" 
                 aria-label="Snapchat"
-                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
-                className="hover:bg-white hover:text-black transition-colors"
+                className="footer-social-icon"
               >
-                <SnapchatIcon size={15} />
+                <SnapchatIcon size={18} />
               </a>
               <a 
                 href={BRAND_CONFIG.socialLinks.whatsapp} 
                 target="_blank" 
-                rel="noreferrer" 
+                rel="noopener noreferrer" 
                 aria-label="WhatsApp"
-                style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(37,211,102,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D366' }}
-                className="hover:bg-[#25D366] hover:text-white transition-colors"
+                className="footer-social-icon"
               >
-                <WhatsAppIcon size={16} />
+                <WhatsAppIcon size={18} />
               </a>
             </div>
           </div>
@@ -344,70 +340,75 @@ export default function Footer({
             <h4 style={{ fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#ffffff', marginBottom: '1.2rem' }}>
               Connect & Follow
             </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.82rem', color: '#9c978f' }}>
-              <a 
-                href={BRAND_CONFIG.socialLinks.whatsapp} 
-                target="_blank" 
-                rel="noreferrer" 
-                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
-                className="hover:text-white transition-colors"
-              >
-                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(37,211,102,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#25D366' }}>
-                  <WhatsAppIcon size={15} />
-                </span>
-                <span><strong>WhatsApp:</strong> {BRAND_CONFIG.whatsappDisplay}</span>
-              </a>
-
+            <div className="footer-connect-list">
               <a 
                 href={BRAND_CONFIG.socialLinks.instagram} 
                 target="_blank" 
-                rel="noreferrer" 
-                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
-                className="hover:text-white transition-colors"
+                rel="noopener noreferrer" 
+                className="footer-connect-link"
               >
-                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                  <InstagramIcon size={14} />
+                <span className="footer-connect-badge">
+                  <InstagramIcon size={15} />
                 </span>
-                <span><strong>Instagram:</strong> @yasrafclothing</span>
+                <span className="footer-connect-label">
+                  <strong>Instagram:</strong> @yasraftextiles_
+                </span>
               </a>
 
               <a 
                 href={BRAND_CONFIG.socialLinks.facebook} 
                 target="_blank" 
-                rel="noreferrer" 
-                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
-                className="hover:text-white transition-colors"
+                rel="noopener noreferrer" 
+                className="footer-connect-link"
               >
-                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                  <FacebookIcon size={14} />
+                <span className="footer-connect-badge">
+                  <FacebookIcon size={15} />
                 </span>
-                <span><strong>Facebook:</strong> Yasraf Clothing</span>
+                <span className="footer-connect-label">
+                  <strong>Facebook:</strong> Yasraf Clothing
+                </span>
               </a>
 
               <a 
                 href={BRAND_CONFIG.socialLinks.tiktok} 
                 target="_blank" 
-                rel="noreferrer" 
-                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
-                className="hover:text-white transition-colors"
+                rel="noopener noreferrer" 
+                className="footer-connect-link"
               >
-                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                  <TikTokIcon size={14} />
+                <span className="footer-connect-badge">
+                  <TikTokIcon size={15} />
                 </span>
-                <span><strong>TikTok:</strong> @yasrafclothing</span>
+                <span className="footer-connect-label">
+                  <strong>TikTok:</strong> @yasraftextiles_
+                </span>
               </a>
 
               <a 
                 href={BRAND_CONFIG.socialLinks.snapchat} 
                 target="_blank" 
-                rel="noreferrer" 
-                style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'inherit', textDecoration: 'none' }}
-                className="hover:text-white transition-colors"
+                rel="noopener noreferrer" 
+                className="footer-connect-link"
               >
-                <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                  <SnapchatIcon size={14} />
+                <span className="footer-connect-badge">
+                  <SnapchatIcon size={15} />
                 </span>
-                <span><strong>Snapchat:</strong> @yasrafclothing</span>
+                <span className="footer-connect-label">
+                  <strong>Snapchat:</strong> @yasrafclothing
+                </span>
+              </a>
+
+              <a 
+                href={BRAND_CONFIG.socialLinks.whatsapp} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="footer-connect-link"
+              >
+                <span className="footer-connect-badge">
+                  <WhatsAppIcon size={15} />
+                </span>
+                <span className="footer-connect-label">
+                  <strong>WhatsApp:</strong> {BRAND_CONFIG.whatsappDisplay}
+                </span>
               </a>
             </div>
           </div>

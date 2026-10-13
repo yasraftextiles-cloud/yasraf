@@ -53,9 +53,9 @@ export default function InstagramFeed() {
           </div>
 
           <a
-            href="https://www.instagram.com/yasrafclothing"
+            href="https://www.instagram.com/yasraftextiles_/"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -69,7 +69,7 @@ export default function InstagramFeed() {
               borderBottom: '1px solid rgba(103, 97, 92, 0.5)'
             }}
           >
-            Follow @YasrafClothing <ArrowUpRight size={14} />
+            Follow @YasrafTextiles_ <ArrowUpRight size={14} />
           </a>
         </div>
       </div>

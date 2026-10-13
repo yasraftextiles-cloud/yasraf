@@ -186,9 +186,9 @@ export function getOrganizationAndWebsiteJsonLd() {
         "logo": `${PRODUCTION_DOMAIN}/hero-banner.jpg`,
         "description": "Distinguished Pakistani women's clothing brand specializing in ready-to-wear, unstitched, luxury prêt, and festive couture.",
         "sameAs": [
-          "https://www.instagram.com/yasrafclothing",
+          "https://www.instagram.com/yasraftextiles_/",
           "https://www.facebook.com/profile.php?id=61590429044323",
-          "https://www.tiktok.com/@yasrafclothing",
+          "https://www.tiktok.com/@yasraftextiles_",
           "https://www.snapchat.com/@yasrafclothing"
         ],
         "contactPoint": {

@@ -1,0 +1,119 @@
+/* ==========================================================================
+   YASRAF FOOTER — LUXURY SOCIAL LINKS & ICONS
+   Design Specifications:
+   - 44px uniform circular icons for primary row
+   - Subtle dark/charcoal background (#1f1f1f / rgba(255,255,255,0.05))
+   - Thin refined border (1px solid rgba(255,255,255,0.14))
+   - Centered white icon
+   - Smooth 250ms luxury gold hover with subtle elevation translateY(-2px)
+   ========================================================================== */
+
+/* Left-side Social Icon Row */
+.footer-social-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.footer-social-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: all 250ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.footer-social-icon:hover {
+  background-color: #c5a880;
+  border-color: #c5a880;
+  color: #121212;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(197, 168, 128, 0.25);
+}
+
+.footer-social-icon:active {
+  transform: translateY(0);
+}
+
+.footer-social-icon:focus-visible {
+  outline: 2px solid #c5a880;
+  outline-offset: 2px;
+}
+
+/* Connect & Follow Section */
+.footer-connect-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  font-size: 0.82rem;
+  color: #9c978f;
+}
+
+.footer-connect-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #9c978f;
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  margin: -0.35rem -0.5rem;
+  border-radius: 8px;
+  transition: color 250ms ease, background-color 250ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.footer-connect-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.footer-connect-link:hover .footer-connect-label {
+  color: #ffffff;
+}
+
+.footer-connect-link:hover .footer-connect-label strong {
+  color: #dfc7a7;
+}
+
+.footer-connect-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: all 250ms ease;
+}
+
+.footer-connect-link:hover .footer-connect-badge {
+  background-color: #c5a880;
+  border-color: #c5a880;
+  color: #121212;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(197, 168, 128, 0.2);
+}
+
+.footer-connect-label {
+  transition: color 250ms ease;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.footer-connect-label strong {
+  transition: color 250ms ease;
+  font-weight: 600;
+}

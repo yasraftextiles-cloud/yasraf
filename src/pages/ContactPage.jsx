@@ -105,10 +105,10 @@ export default function ContactPage({ onBackToHome }) {
                 <a 
                   href={BRAND_CONFIG.socialLinks.instagram}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-[#67615c] hover:text-[#1a1814] transition-colors"
                 >
-                  <InstagramIcon size={16} /> Instagram: @yasrafclothing
+                  <InstagramIcon size={16} /> Instagram: @yasraftextiles_
                 </a>
                 <a 
                   href={BRAND_CONFIG.socialLinks.facebook}
@@ -121,10 +121,10 @@ export default function ContactPage({ onBackToHome }) {
                 <a 
                   href={BRAND_CONFIG.socialLinks.tiktok}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 text-[#67615c] hover:text-[#1a1814] transition-colors"
                 >
-                  <TikTokIcon size={16} /> TikTok: @yasrafclothing
+                  <TikTokIcon size={16} /> TikTok: @yasraftextiles_
                 </a>
                 <a 
                   href={BRAND_CONFIG.socialLinks.snapchat}

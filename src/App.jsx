@@ -25,7 +25,6 @@ import SignatureEdit from './components/SignatureEdit';
 import EditorialSplitPromo from './components/EditorialSplitPromo';
 import BrandStatement from './components/BrandStatement';
 import TrustBar from './components/TrustBar';
-import InstagramFeed from './components/InstagramFeed';
 import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
 
@@ -697,7 +696,6 @@ function AppContent() {
               <EditorialSplitPromo onShopFestive={() => navigateTo('collections', 'festive')} />
               <BrandStatement />
               <TrustBar />
-              <InstagramFeed />
             </>
           )}
 

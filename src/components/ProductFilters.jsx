@@ -1,14 +1,11 @@
-import React from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { 
   X, 
   RotateCcw, 
   Check, 
-  ChevronDown, 
-  ChevronUp, 
   SlidersHorizontal,
-  Sparkles
+  ChevronRight
 } from 'lucide-react';
-import { NAV_CATEGORIES, FABRICS, OCCASIONS, SIZES } from '../data/products';
 
 export const PRICE_RANGES = [
   { id: 'all', label: 'All Prices', min: 0, max: Infinity },
@@ -18,330 +15,397 @@ export const PRICE_RANGES = [
   { id: 'above-13k', label: 'Above Rs. 13,000', min: 13000, max: Infinity }
 ];
 
-export const COLOR_PALETTE = [
-  { name: 'Black / Onyx', hex: '#1e1c1b' },
-  { name: 'Emerald Green', hex: '#16503c' },
-  { name: 'Plum & Wine', hex: '#582138' },
-  { name: 'Royal Violet', hex: '#634b82' },
-  { name: 'Saffron Yellow', hex: '#d49b28' },
-  { name: 'Sage Green', hex: '#688c75' },
-  { name: 'Peacock Teal', hex: '#1b4d5a' },
-  { name: 'Ivory & Cream', hex: '#eceae3' },
-  { name: 'Glacier Blue', hex: '#8faec2' },
-  { name: 'Blush Rose', hex: '#e3b3b8' }
-];
+// Curated hex fallback mapping for natural fabric & dye names
+const COLOR_HEX_MAP = {
+  black: '#1a1814',
+  onyx: '#1e1c1b',
+  white: '#ffffff',
+  ivory: '#f8f6f0',
+  cream: '#f2ece1',
+  beige: '#d8ccb8',
+  emerald: '#16503c',
+  green: '#246b4e',
+  sage: '#688c75',
+  olive: '#556b2f',
+  wine: '#582138',
+  burgundy: '#5a1827',
+  plum: '#4e223c',
+  maroon: '#4a1525',
+  red: '#a82c35',
+  rust: '#8c3d26',
+  ruby: '#9b111e',
+  pink: '#d9869b',
+  rose: '#c97284',
+  blush: '#e3b3b8',
+  mauve: '#915f6d',
+  blue: '#2c5282',
+  navy: '#1a2744',
+  teal: '#1b4d5a',
+  peacock: '#164e59',
+  glacier: '#8faec2',
+  yellow: '#d49b28',
+  mustard: '#c48b28',
+  gold: '#c5a880',
+  ochre: '#633d26',
+  saffron: '#d49b28',
+  purple: '#5e3a6e',
+  violet: '#634b82',
+  lavender: '#9d8bb8',
+  grey: '#7a7672',
+  gray: '#7a7672',
+  charcoal: '#2e2c2a',
+  brown: '#4a3325'
+};
+
+export function resolveColorHex(colorName = '', explicitHex = null) {
+  if (explicitHex && typeof explicitHex === 'string' && explicitHex.startsWith('#')) {
+    return explicitHex;
+  }
+  const clean = String(colorName).toLowerCase();
+  for (const [key, hex] of Object.entries(COLOR_HEX_MAP)) {
+    if (clean.includes(key)) {
+      return hex;
+    }
+  }
+  return '#c5a880';
+}
 
 export default function ProductFilters({
   isOpen,
   onClose,
-  selectedCategory,
-  onSelectCategory,
-  selectedPriceRange,
+  products = [],
+  // Categories (Multi-select)
+  selectedCategories = [],
+  onToggleCategory,
+  // Availability
+  selectedAvailability = 'all', // 'all' | 'in_stock' | 'out_of_stock'
+  onSelectAvailability,
+  // Price
+  selectedPriceRange = 'all',
   onSelectPriceRange,
-  selectedSizes,
+  customPriceMin = '',
+  customPriceMax = '',
+  onChangePriceMin,
+  onChangePriceMax,
+  // Sizes (Multi-select)
+  selectedSizes = [],
   onToggleSize,
-  selectedColors,
+  // Colors (Multi-select)
+  selectedColors = [],
   onToggleColor,
-  selectedFabrics,
+  // Fabrics (Multi-select)
+  selectedFabrics = [],
   onToggleFabric,
-  selectedOccasions,
-  onToggleOccasion,
-  availabilityOnly,
-  onToggleAvailability,
+  // Reset & Metrics
   onResetFilters,
-  totalResultsCount
+  totalResultsCount = 0
 }) {
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, onClose]);
+
+  // Dynamically extract real available filters and counts from actual products
+  const {
+    availableCategories,
+    availableSizes,
+    availableColors,
+    availableFabrics,
+    stockCounts,
+    minCatalogPrice,
+    maxCatalogPrice
+  } = useMemo(() => {
+    // 1. Categories
+    const canonicalCategories = [
+      { id: 'ready-to-wear', label: 'Ready to Wear' },
+      { id: 'unstitched', label: 'Unstitched' },
+      { id: 'luxury-pret', label: 'Luxury Prêt' },
+      { id: 'party-wear', label: 'Party Wear / Formal' },
+      { id: 'summer', label: 'Summer' },
+      { id: 'winter', label: 'Winter' },
+      { id: 'festive', label: 'Festive' }
+    ];
+
+    const catCounts = {};
+    canonicalCategories.forEach((c) => { catCounts[c.id] = 0; });
+
+    // 2. Sizes
+    const sizeMap = new Map(); // size -> count
+    const preferredSizeOrder = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', 'Unstitched', 'Free Size'];
+
+    // 3. Colors
+    const colorMap = new Map(); // name -> { name, hex, count }
+
+    // 4. Fabrics
+    const fabricMap = new Map(); // fabric -> count
+
+    // 5. Stock
+    let inStockCount = 0;
+    let outOfStockCount = 0;
+
+    // 6. Price
+    let minP = Infinity;
+    let maxP = 0;
+
+    products.forEach((p) => {
+      // Check category match
+      canonicalCategories.forEach((c) => {
+        const catId = c.id;
+        const cLower = catId.toLowerCase();
+        const inCols = Array.isArray(p.collections) && p.collections.some((col) => {
+          const cl = String(col).toLowerCase().trim();
+          return cl === cLower || cl === cLower.replace(/-/g, ' ');
+        });
+        const catF = (p.category || '').toLowerCase().trim();
+        const occF = (p.occasion || '').toLowerCase().trim();
+        const tagF = (p.tag || '').toLowerCase().trim();
+        const fabF = (p.fabric || '').toLowerCase().trim();
+        const fabCat = (p.fabricCategory || '').toLowerCase().trim();
+
+        let matches = false;
+        if (catId === 'ready-to-wear') matches = catF === 'ready-to-wear' || occF.includes('ready to wear') || inCols;
+        else if (catId === 'unstitched') matches = catF === 'unstitched' || (Array.isArray(p.sizes) && p.sizes.some((s) => String(s).toLowerCase().includes('unstitched'))) || inCols;
+        else if (catId === 'luxury-pret') matches = catF === 'luxury-pret' || occF.includes('luxury') || inCols;
+        else if (catId === 'party-wear') matches = catF === 'party-wear' || catF === 'festive' || occF.includes('party') || occF.includes('festive') || occF.includes('formal') || inCols;
+        else if (catId === 'summer') matches = catF === 'summer' || fabCat.includes('lawn') || fabF.includes('lawn') || inCols;
+        else if (catId === 'winter') matches = catF === 'winter' || catF === 'winter-collection' || tagF.includes('winter') || inCols;
+        else if (catId === 'festive') matches = catF === 'festive' || catF === 'party-wear' || occF.includes('festive') || tagF.includes('festive') || inCols;
+        else matches = catF === catId || occF === catId || inCols;
+
+        if (matches) {
+          catCounts[catId] = (catCounts[catId] || 0) + 1;
+        }
+      });
+
+      // Sizes
+      const pSizes = new Set();
+      if (Array.isArray(p.sizes)) {
+        p.sizes.forEach((s) => { if (s) pSizes.add(String(s).trim()); });
+      }
+      if (Array.isArray(p.variants)) {
+        p.variants.forEach((v) => { if (v.size) pSizes.add(String(v.size).trim()); });
+      }
+      pSizes.forEach((s) => {
+        sizeMap.set(s, (sizeMap.get(s) || 0) + 1);
+      });
+
+      // Colors
+      const pColors = new Map();
+      if (Array.isArray(p.colors)) {
+        p.colors.forEach((c) => {
+          if (typeof c === 'string' && c.trim()) {
+            const name = c.trim();
+            pColors.set(name, resolveColorHex(name, null));
+          } else if (c && c.name && typeof c.name === 'string') {
+            const name = c.name.trim();
+            pColors.set(name, resolveColorHex(name, c.hex));
+          }
+        });
+      }
+      if (Array.isArray(p.variants)) {
+        p.variants.forEach((v) => {
+          const name = (v.color_name || v.color || '').trim();
+          if (name) {
+            pColors.set(name, resolveColorHex(name, v.color_hex));
+          }
+        });
+      }
+      if (p.color && typeof p.color === 'string' && p.color.trim()) {
+        const name = p.color.trim();
+        pColors.set(name, resolveColorHex(name, null));
+      }
+
+      pColors.forEach((hex, name) => {
+        if (!colorMap.has(name)) {
+          colorMap.set(name, { name, hex, count: 1 });
+        } else {
+          colorMap.get(name).count += 1;
+        }
+      });
+
+      // Fabrics
+      const pFabrics = new Set();
+      if (p.fabricCategory && typeof p.fabricCategory === 'string') {
+        pFabrics.add(p.fabricCategory.trim());
+      }
+      if (p.fabric && typeof p.fabric === 'string') {
+        const short = p.fabric.split(/[,.]/)[0].trim();
+        if (short && short.length <= 25 && !short.toLowerCase().includes('with') && !short.toLowerCase().includes('digital')) {
+          pFabrics.add(short);
+        }
+      }
+      pFabrics.forEach((f) => {
+        fabricMap.set(f, (fabricMap.get(f) || 0) + 1);
+      });
+
+      // Stock
+      const inSt = p.inStock === true || (p.stockCount !== undefined && p.stockCount > 0);
+      if (inSt) inStockCount++;
+      else outOfStockCount++;
+
+      // Price
+      const pr = Number(p.price) || 0;
+      if (pr > 0) {
+        if (pr < minP) minP = pr;
+        if (pr > maxP) maxP = pr;
+      }
+    });
+
+    const sortedSizes = Array.from(sizeMap.entries())
+      .map(([size, count]) => ({ size, count }))
+      .sort((a, b) => {
+        const idxA = preferredSizeOrder.indexOf(a.size);
+        const idxB = preferredSizeOrder.indexOf(b.size);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.size.localeCompare(b.size);
+      });
+
+    const sortedColors = Array.from(colorMap.values())
+      .sort((a, b) => b.count - a.count);
+
+    const sortedFabrics = Array.from(fabricMap.entries())
+      .map(([fabric, count]) => ({ fabric, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const categoriesWithCounts = canonicalCategories.map((c) => ({
+      ...c,
+      count: catCounts[c.id] || 0
+    }));
+
+    return {
+      availableCategories: categoriesWithCounts,
+      availableSizes: sortedSizes,
+      availableColors: sortedColors,
+      availableFabrics: sortedFabrics,
+      stockCounts: { inStock: inStockCount, outOfStock: outOfStockCount },
+      minCatalogPrice: minP === Infinity ? 0 : minP,
+      maxCatalogPrice: maxP === 0 ? 25000 : maxP
+    };
+  }, [products]);
+
   if (!isOpen) return null;
 
   const hasActiveFilters = 
-    selectedCategory !== 'all' ||
+    selectedCategories.length > 0 ||
+    selectedAvailability !== 'all' ||
     selectedPriceRange !== 'all' ||
+    customPriceMin !== '' ||
+    customPriceMax !== '' ||
     selectedSizes.length > 0 ||
     selectedColors.length > 0 ||
-    selectedFabrics.length > 0 ||
-    selectedOccasions.length > 0 ||
-    availabilityOnly !== 'all';
+    selectedFabrics.length > 0;
+
+  const activeFiltersCount = 
+    selectedCategories.length +
+    (selectedAvailability !== 'all' ? 1 : 0) +
+    (selectedPriceRange !== 'all' || customPriceMin !== '' || customPriceMax !== '' ? 1 : 0) +
+    selectedSizes.length +
+    selectedColors.length +
+    selectedFabrics.length;
 
   return (
     <div 
-      className="filter-overlay"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(18, 18, 18, 0.65)',
-        backdropFilter: 'blur(4px)',
-        zIndex: 9999,
-        display: 'flex',
-        justifyContent: 'flex-start',
-        animation: 'fadeIn 0.2s ease-out'
-      }}
+      className="fixed inset-0 z-50 flex justify-end"
+      style={{ backgroundColor: 'rgba(18, 18, 18, 0.65)', backdropFilter: 'blur(3px)' }}
       onClick={onClose}
     >
       <div 
-        className="filter-drawer animate-slide-left"
-        style={{
-          width: '100%',
-          maxWidth: '380px',
-          height: '100%',
-          backgroundColor: '#ffffff',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: 'var(--shadow-drawer)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}
+        className="w-full sm:w-[420px] max-w-full h-full bg-[#ffffff] flex flex-col shadow-2xl relative animate-slide-left select-none text-[#1a1814]"
         onClick={(e) => e.stopPropagation()}
+        style={{ fontFamily: 'var(--font-family-primary)' }}
       >
-        {/* Filter Drawer Header */}
-        <div style={{
-          padding: '1.4rem 1.6rem',
-          borderBottom: '1px solid #ede8de',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: '#ffffff'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <SlidersHorizontal size={18} style={{ color: '#121212' }} />
-            <h3 style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '1.25rem',
-              fontWeight: 600,
-              letterSpacing: '0.02em',
-              color: '#141414'
-            }}>
-              Filter Collection
-            </h3>
+        {/* 1. Header */}
+        <header className="px-5 py-4 border-b border-[#ede8de] flex items-center justify-between bg-white shrink-0">
+          <div className="flex items-center gap-2.5">
+            <SlidersHorizontal size={17} className="text-[#1a1814]" />
+            <h2 
+              className="text-base sm:text-lg font-medium tracking-[0.06em] uppercase text-[#1a1814]"
+              style={{ fontFamily: 'var(--font-family-editorial)' }}
+            >
+              Filter Products
+            </h2>
+            {activeFiltersCount > 0 && (
+              <span className="bg-[#1a1814] text-white text-[10px] font-semibold px-2 py-0.5 rounded-full tracking-wider">
+                {activeFiltersCount}
+              </span>
+            )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div className="flex items-center gap-3">
             {hasActiveFilters && (
               <button
+                type="button"
                 onClick={onResetFilters}
-                style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                  color: '#8e704b',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  cursor: 'pointer'
-                }}
+                className="text-[11px] uppercase tracking-[0.14em] font-medium text-[#8c867f] hover:text-[#1a1814] flex items-center gap-1 transition-colors cursor-pointer"
               >
-                <RotateCcw size={12} /> Reset
+                <RotateCcw size={11} /> Clear All
               </button>
             )}
-
             <button
+              type="button"
               onClick={onClose}
               aria-label="Close filters"
-              style={{
-                padding: '0.4rem',
-                borderRadius: '50%',
-                backgroundColor: '#f7f4ee',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+              className="w-8 h-8 rounded-full bg-[#f6ece4] hover:bg-[#faede5] text-[#1a1814] flex items-center justify-center transition-colors cursor-pointer"
             >
-              <X size={17} />
+              <X size={16} />
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Scrollable Filter Sections */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '1.4rem 1.6rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.8rem'
-        }}>
-          {/* 1. Category */}
-          <div>
-            <h4 style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: '#141414',
-              marginBottom: '0.8rem'
-            }}>
-              Category
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {NAV_CATEGORIES.map((cat) => {
-                const isSelected = selectedCategory === cat.id;
+        {/* 2. Scrollable Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-7 scrollbar-thin">
+          
+          {/* Section: Category */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#1a1814]">
+                Category
+              </span>
+              {selectedCategories.length > 0 && (
+                <span className="text-[10px] text-[#8c867f]">
+                  {selectedCategories.length} selected
+                </span>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 gap-1.5">
+              {availableCategories.map((cat) => {
+                const isSelected = selectedCategories.includes(cat.id);
                 return (
                   <button
                     key={cat.id}
-                    onClick={() => onSelectCategory(cat.id)}
-                    style={{
-                      textAlign: 'left',
-                      padding: '0.45rem 0.6rem',
-                      borderRadius: '2px',
-                      fontSize: '0.82rem',
-                      fontWeight: isSelected ? 700 : 500,
-                      backgroundColor: isSelected ? '#121212' : '#fcfbf9',
-                      color: isSelected ? '#ffffff' : '#4a4642',
-                      border: isSelected ? '1px solid #121212' : '1px solid #eee8df',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
+                    type="button"
+                    onClick={() => onToggleCategory(cat.id)}
+                    className={`w-full text-left px-3.5 py-2.5 rounded text-[12px] tracking-[0.04em] flex items-center justify-between transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#1a1814] text-white font-medium shadow-xs'
+                        : 'bg-[#faf8f5] hover:bg-[#f5ede5] text-[#3a3530]'
+                    }`}
                   >
-                    <span>{cat.label}</span>
-                    {cat.badge && (
-                      <span style={{
-                        fontSize: '0.55rem',
-                        fontWeight: 700,
-                        backgroundColor: isSelected ? '#c5a880' : '#121212',
-                        color: '#ffffff',
-                        padding: '0.1rem 0.35rem',
-                        borderRadius: '2px'
-                      }}>
-                        {cat.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 2. Price Range */}
-          <div>
-            <h4 style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: '#141414',
-              marginBottom: '0.8rem'
-            }}>
-              Price Range (PKR)
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {PRICE_RANGES.map((pr) => {
-                const isSelected = selectedPriceRange === pr.id;
-                return (
-                  <label
-                    key={pr.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.6rem',
-                      fontSize: '0.8rem',
-                      color: isSelected ? '#141414' : '#555',
-                      fontWeight: isSelected ? 600 : 400,
-                      cursor: 'pointer',
-                      padding: '0.3rem 0'
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="priceRange"
-                      checked={isSelected}
-                      onChange={() => onSelectPriceRange(pr.id)}
-                      style={{ accentColor: '#c5a880', width: '15px', height: '15px' }}
-                    />
-                    <span>{pr.label}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 3. Sizes */}
-          <div>
-            <h4 style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: '#141414',
-              marginBottom: '0.8rem'
-            }}>
-              Sizes
-            </h4>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
-              {SIZES.map((size) => {
-                const isSelected = selectedSizes.includes(size);
-                return (
-                  <button
-                    key={size}
-                    onClick={() => onToggleSize(size)}
-                    style={{
-                      minWidth: '46px',
-                      padding: '0.45rem 0.6rem',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                      backgroundColor: isSelected ? '#121212' : '#f7f4ee',
-                      color: isSelected ? '#ffffff' : '#141414',
-                      border: isSelected ? '1px solid #121212' : '1px solid #d5cfc4',
-                      cursor: 'pointer',
-                      borderRadius: '2px',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {size}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 4. Colors */}
-          <div>
-            <h4 style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: '#141414',
-              marginBottom: '0.8rem'
-            }}>
-              Color Palette
-            </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
-              {COLOR_PALETTE.map((color) => {
-                const isSelected = selectedColors.includes(color.name);
-                return (
-                  <button
-                    key={color.name}
-                    onClick={() => onToggleColor(color.name)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      padding: '0.4rem 0.6rem',
-                      border: isSelected ? '1px solid #121212' : '1px solid #eee8df',
-                      backgroundColor: isSelected ? '#f5f0ea' : '#ffffff',
-                      borderRadius: '2px',
-                      cursor: 'pointer',
-                      fontSize: '0.74rem',
-                      fontWeight: isSelected ? 600 : 400,
-                      textAlign: 'left'
-                    }}
-                  >
-                    <span style={{
-                      width: '14px',
-                      height: '14px',
-                      borderRadius: '50%',
-                      backgroundColor: color.hex,
-                      border: '1px solid rgba(0,0,0,0.2)',
-                      flexShrink: 0
-                    }} />
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {color.name}
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center transition-colors ${
+                        isSelected ? 'bg-white border-white text-[#1a1814]' : 'border-[#d6cebf] bg-white'
+                      }`}>
+                        {isSelected && <Check size={11} strokeWidth={3} />}
+                      </div>
+                      <span>{cat.label}</span>
+                    </div>
+                    <span className={`text-[10.5px] ${isSelected ? 'text-neutral-300' : 'text-[#8c867f]'}`}>
+                      {cat.count}
                     </span>
                   </button>
                 );
@@ -349,159 +413,278 @@ export default function ProductFilters({
             </div>
           </div>
 
-          {/* 5. Fabric */}
-          <div>
-            <h4 style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: '#141414',
-              marginBottom: '0.8rem'
-            }}>
-              Fabric
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {FABRICS.map((fabric) => {
-                const isSelected = selectedFabrics.includes(fabric);
-                return (
-                  <label
-                    key={fabric}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.6rem',
-                      fontSize: '0.8rem',
-                      color: isSelected ? '#141414' : '#555',
-                      fontWeight: isSelected ? 600 : 400,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => onToggleFabric(fabric)}
-                      style={{ accentColor: '#c5a880', width: '15px', height: '15px' }}
-                    />
-                    <span>{fabric}</span>
-                  </label>
-                );
-              })}
+          {/* Section: Availability */}
+          <div className="space-y-3 pt-2 border-t border-[#ede8de]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#1a1814] block">
+              Availability
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => onSelectAvailability(selectedAvailability === 'in_stock' ? 'all' : 'in_stock')}
+                className={`px-3 py-2.5 rounded text-[11.5px] uppercase tracking-[0.1em] font-medium flex items-center justify-between transition-all cursor-pointer ${
+                  selectedAvailability === 'in_stock'
+                    ? 'bg-[#1a1814] text-white shadow-xs'
+                    : 'bg-[#faf8f5] hover:bg-[#f5ede5] text-[#3a3530] border border-[#eee7dc]'
+                }`}
+              >
+                <span>In Stock</span>
+                <span className={`text-[10px] ${selectedAvailability === 'in_stock' ? 'text-neutral-300' : 'text-[#8c867f]'}`}>
+                  ({stockCounts.inStock})
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectAvailability(selectedAvailability === 'out_of_stock' ? 'all' : 'out_of_stock')}
+                className={`px-3 py-2.5 rounded text-[11.5px] uppercase tracking-[0.1em] font-medium flex items-center justify-between transition-all cursor-pointer ${
+                  selectedAvailability === 'out_of_stock'
+                    ? 'bg-[#1a1814] text-white shadow-xs'
+                    : 'bg-[#faf8f5] hover:bg-[#f5ede5] text-[#3a3530] border border-[#eee7dc]'
+                }`}
+              >
+                <span>Out of Stock</span>
+                <span className={`text-[10px] ${selectedAvailability === 'out_of_stock' ? 'text-neutral-300' : 'text-[#8c867f]'}`}>
+                  ({stockCounts.outOfStock})
+                </span>
+              </button>
             </div>
           </div>
 
-          {/* 6. Occasion */}
-          <div>
-            <h4 style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: '#141414',
-              marginBottom: '0.8rem'
-            }}>
-              Occasion
-            </h4>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-              {OCCASIONS.map((occ) => {
-                const isSelected = selectedOccasions.includes(occ);
+          {/* Section: Price Range */}
+          <div className="space-y-3 pt-2 border-t border-[#ede8de]">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#1a1814]">
+                Price (PKR)
+              </span>
+              {(selectedPriceRange !== 'all' || customPriceMin !== '' || customPriceMax !== '') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectPriceRange('all');
+                    if (onChangePriceMin) onChangePriceMin('');
+                    if (onChangePriceMax) onChangePriceMax('');
+                  }}
+                  className="text-[10px] uppercase tracking-wider text-[#8c867f] hover:text-[#1a1814]"
+                >
+                  Reset Price
+                </button>
+              )}
+            </div>
+
+            {/* Custom Min-Max Inputs */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#8c867f] tracking-wider uppercase font-semibold">
+                  Min Rs.
+                </span>
+                <input
+                  type="number"
+                  placeholder={String(minCatalogPrice)}
+                  value={customPriceMin}
+                  onChange={(e) => {
+                    if (onChangePriceMin) onChangePriceMin(e.target.value);
+                    onSelectPriceRange('custom');
+                  }}
+                  className="w-full pl-15 pr-2.5 py-2 text-[12px] bg-[#faf8f5] border border-[#e8e0d5] focus:border-[#1a1814] focus:bg-white rounded outline-none transition-all"
+                />
+              </div>
+
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#8c867f] tracking-wider uppercase font-semibold">
+                  Max Rs.
+                </span>
+                <input
+                  type="number"
+                  placeholder={String(maxCatalogPrice)}
+                  value={customPriceMax}
+                  onChange={(e) => {
+                    if (onChangePriceMax) onChangePriceMax(e.target.value);
+                    onSelectPriceRange('custom');
+                  }}
+                  className="w-full pl-15 pr-2.5 py-2 text-[12px] bg-[#faf8f5] border border-[#e8e0d5] focus:border-[#1a1814] focus:bg-white rounded outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Quick Price Bracket Chips */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {PRICE_RANGES.map((pr) => {
+                const isSelected = selectedPriceRange === pr.id && customPriceMin === '' && customPriceMax === '';
                 return (
                   <button
-                    key={occ}
-                    onClick={() => onToggleOccasion(occ)}
-                    style={{
-                      padding: '0.4rem 0.75rem',
-                      fontSize: '0.74rem',
-                      fontWeight: isSelected ? 600 : 500,
-                      backgroundColor: isSelected ? '#121212' : '#f7f4ee',
-                      color: isSelected ? '#ffffff' : '#4a4642',
-                      border: isSelected ? '1px solid #121212' : '1px solid #e2ddd3',
-                      cursor: 'pointer',
-                      borderRadius: '2px'
+                    key={pr.id}
+                    type="button"
+                    onClick={() => {
+                      onSelectPriceRange(isSelected ? 'all' : pr.id);
+                      if (onChangePriceMin) onChangePriceMin('');
+                      if (onChangePriceMax) onChangePriceMax('');
                     }}
+                    className={`px-2.5 py-1.5 rounded text-[11px] tracking-wide transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#1a1814] text-white font-medium'
+                        : 'bg-[#faf8f5] text-[#554f48] hover:bg-[#f5ede5] border border-[#ede5d8]'
+                    }`}
                   >
-                    {occ}
+                    {pr.label}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* 7. Availability */}
-          <div>
-            <h4 style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: '#141414',
-              marginBottom: '0.8rem'
-            }}>
-              Availability
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-              {[
-                { id: 'all', label: 'All Items' },
-                { id: 'in_stock', label: 'In Stock Only' },
-                { id: 'low_stock', label: 'Limited / Low Stock Only' }
-              ].map((av) => (
-                <label
-                  key={av.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.6rem',
-                    fontSize: '0.8rem',
-                    color: availabilityOnly === av.id ? '#141414' : '#555',
-                    fontWeight: availabilityOnly === av.id ? 600 : 400,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="availability"
-                    checked={availabilityOnly === av.id}
-                    onChange={() => onToggleAvailability(av.id)}
-                    style={{ accentColor: '#c5a880', width: '15px', height: '15px' }}
-                  />
-                  <span>{av.label}</span>
-                </label>
-              ))}
+          {/* Section: Size */}
+          <div className="space-y-3 pt-2 border-t border-[#ede8de]">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#1a1814]">
+                Size
+              </span>
+              {selectedSizes.length > 0 && (
+                <span className="text-[10px] text-[#8c867f]">
+                  {selectedSizes.length} selected
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {availableSizes.map(({ size, count }) => {
+                const isSelected = selectedSizes.includes(size);
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => onToggleSize(size)}
+                    className={`min-w-[48px] h-9 px-2.5 rounded text-[11px] font-medium uppercase tracking-[0.08em] flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#1a1814] text-white shadow-xs'
+                        : 'bg-[#faf8f5] text-[#2c2824] hover:bg-[#f5ede5] border border-[#e5ded2]'
+                    }`}
+                  >
+                    <span>{size}</span>
+                    <span className={`text-[9px] ${isSelected ? 'text-neutral-300' : 'text-[#8c867f]'}`}>
+                      ({count})
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
+
+          {/* Section: Color Palette */}
+          {availableColors.length > 0 && (
+            <div className="space-y-3 pt-2 border-t border-[#ede8de]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#1a1814]">
+                  Color Palette
+                </span>
+                {selectedColors.length > 0 && (
+                  <span className="text-[10px] text-[#8c867f]">
+                    {selectedColors.length} selected
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5">
+                {availableColors.map((color) => {
+                  const isSelected = selectedColors.includes(color.name);
+                  return (
+                    <button
+                      key={color.name}
+                      type="button"
+                      onClick={() => onToggleColor(color.name)}
+                      className={`text-left px-2.5 py-2 rounded text-[11px] flex items-center justify-between gap-1.5 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#1a1814] text-white font-medium'
+                          : 'bg-[#faf8f5] hover:bg-[#f5ede5] text-[#3a3530] border border-[#eee7dc]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span 
+                          className="w-3.5 h-3.5 rounded-full shrink-0 border border-black/20"
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        <span className="truncate">{color.name}</span>
+                      </div>
+                      <span className={`text-[9.5px] shrink-0 ${isSelected ? 'text-neutral-300' : 'text-[#8c867f]'}`}>
+                        {color.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Section: Fabric */}
+          {availableFabrics.length > 0 && (
+            <div className="space-y-3 pt-2 border-t border-[#ede8de]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#1a1814]">
+                  Fabric
+                </span>
+                {selectedFabrics.length > 0 && (
+                  <span className="text-[10px] text-[#8c867f]">
+                    {selectedFabrics.length} selected
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                {availableFabrics.map(({ fabric, count }) => {
+                  const isSelected = selectedFabrics.includes(fabric);
+                  return (
+                    <button
+                      key={fabric}
+                      type="button"
+                      onClick={() => onToggleFabric(fabric)}
+                      className={`w-full text-left px-3 py-2 rounded text-[11.5px] flex items-center justify-between transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#1a1814] text-white font-medium'
+                          : 'bg-[#faf8f5] hover:bg-[#f5ede5] text-[#3a3530]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center transition-colors ${
+                          isSelected ? 'bg-white border-white text-[#1a1814]' : 'border-[#d6cebf] bg-white'
+                        }`}>
+                          {isSelected && <Check size={11} strokeWidth={3} />}
+                        </div>
+                        <span>{fabric}</span>
+                      </div>
+                      <span className={`text-[10px] ${isSelected ? 'text-neutral-300' : 'text-[#8c867f]'}`}>
+                        ({count})
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
         </div>
 
-        {/* Footer Apply Button */}
-        <div style={{
-          padding: '1.2rem 1.6rem',
-          borderTop: '1px solid #ede8de',
-          backgroundColor: '#ffffff'
-        }}>
+        {/* 3. Sticky Footer Action Bar */}
+        <footer className="p-4 sm:p-5 border-t border-[#ede8de] bg-white space-y-2 shrink-0">
           <button
+            type="button"
             onClick={onClose}
-            style={{
-              width: '100%',
-              padding: '0.85rem',
-              backgroundColor: '#121212',
-              color: '#ffffff',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              transition: 'background 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c5a880'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#121212'}
+            className="w-full py-3.5 bg-[#1a1814] hover:bg-[#c5a880] text-white text-[12px] font-semibold tracking-[0.16em] uppercase rounded transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
           >
-            <Check size={16} /> Show {totalResultsCount} Results
+            <Check size={15} />
+            <span>Show {totalResultsCount} {totalResultsCount === 1 ? 'Piece' : 'Pieces'}</span>
           </button>
-        </div>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="w-full py-2 text-[11px] text-[#8c867f] hover:text-[#1a1814] tracking-[0.14em] uppercase font-medium transition-colors cursor-pointer text-center block"
+            >
+              Clear All Filters
+            </button>
+          )}
+        </footer>
+
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Heart, ShoppingBag, Ruler, Check, ChevronDown, 
-  Truck, ShieldCheck, RefreshCw, ArrowLeft, Share2, Sparkles,
-  Zap, AlertCircle
+  Truck, ShieldCheck, RefreshCw, ArrowLeft, ArrowRight, Share2, Sparkles,
+  AlertCircle
 } from 'lucide-react';
 import { CURRENCIES } from '../data/products';
 import { BRAND_CONFIG } from '../data/brandConfig';
@@ -406,11 +406,13 @@ export default function ProductDetailPage({
               <button
                 type="button"
                 onClick={handleBuyNow}
-                className="w-full h-12 px-6 bg-[#1a1814] text-white border border-[#1a1814] font-medium tracking-[0.18em] text-xs uppercase flex items-center justify-center gap-2 hover:bg-black hover:border-black active:scale-[0.99] transition-all duration-200 cursor-pointer shadow-sm"
-                style={{ fontFamily: 'var(--font-family-primary)' }}
+                className="buy-now-btn"
+                aria-label="Buy now and proceed to express checkout"
               >
-                <Zap size={15} className="text-[#c5a880] fill-[#c5a880]" />
-                <span>BUY NOW</span>
+                <span className="buy-now-content">
+                  <span>BUY NOW</span>
+                  <ArrowRight size={14} strokeWidth={1.75} className="buy-now-icon shrink-0" aria-hidden="true" />
+                </span>
               </button>
 
               {/* Validation Error Banner */}
