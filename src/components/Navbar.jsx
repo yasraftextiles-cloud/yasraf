@@ -41,6 +41,7 @@ export default function Navbar({
     { id: 'home', label: 'Home', isHome: true },
     { id: 'new-in', label: 'New In', badge: 'NEW' },
     { id: 'ready-to-wear', label: 'Ready to Wear', badge: null },
+    { id: 'festive', label: 'Festive', badge: null },
     { id: 'luxury-pret', label: 'Luxury Prêt', badge: 'LUXE' },
     { id: 'party-wear', label: 'Party Wear', badge: null },
     { id: 'winter-collection', label: 'Winter Collection', badge: null },

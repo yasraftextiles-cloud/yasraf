@@ -4,6 +4,7 @@ import {
   AlertTriangle, CheckCircle, Package, ArrowUpDown, Loader2, Sparkles 
 } from 'lucide-react';
 import { toggleProductPublish, deleteProduct } from '../services/supabaseService.js';
+import { getCategoryLabel } from '../data/categories.js';
 
 export default function AdminDashboard({ 
   products = [], 
@@ -50,7 +51,8 @@ export default function AdminDashboard({
         p.title?.toLowerCase().includes(query) ||
         p.sku?.toLowerCase().includes(query) ||
         p.id?.toLowerCase().includes(query) ||
-        p.category?.toLowerCase().includes(query);
+        p.category?.toLowerCase().includes(query) ||
+        p.categoryLabel?.toLowerCase().includes(query);
 
       // Status match
       let matchesStatus = true;
@@ -396,7 +398,7 @@ export default function AdminDashboard({
                       {/* Category */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span className="text-[#524d47] text-[11.5px] uppercase tracking-wide font-medium">
-                          {p.categoryLabel || p.category || 'Luxury Prêt'}
+                          {p.categoryLabel || getCategoryLabel(p.category) || 'Luxury Prêt'}
                         </span>
                       </td>
 

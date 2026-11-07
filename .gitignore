@@ -36,3 +36,6 @@ dist-ssr
 
 # Nested workspace copy
 yasraf/
+
+# Scratch directories
+scratch/

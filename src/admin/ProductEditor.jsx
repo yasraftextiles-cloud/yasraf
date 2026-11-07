@@ -4,23 +4,10 @@ import {
   Check, AlertCircle, Loader2, Eye, EyeOff, Plus, ExternalLink 
 } from 'lucide-react';
 import { uploadProductImage, saveProduct, getCollections } from '../services/supabaseService.js';
+import { PRODUCT_CATEGORIES, BASE_COLLECTIONS, getCategoryLabel } from '../data/categories.js';
 import { supabase } from '../lib/supabase.js';
 
-const DEFAULT_CATEGORIES = [
-  { id: 'luxury-pret', label: 'Luxury Prêt' },
-  { id: 'ready-to-wear', label: 'Ready to Wear' },
-  { id: 'party-wear', label: 'Party Wear' },
-  { id: 'winter-collection', label: 'Winter Collection' }
-];
-
-const BASE_COLLECTIONS = [
-  { id: 'new-in', label: 'New In' },
-  { id: 'best-sellers', label: 'Best Sellers' },
-  { id: 'ready-to-wear', label: 'Ready to Wear' },
-  { id: 'luxury-pret', label: 'Luxury Prêt' },
-  { id: 'party-wear', label: 'Party Wear' },
-  { id: 'winter-collection', label: 'Winter Collection' }
-];
+// Product categories and base collections imported from canonical ../data/categories.js
 
 const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL'];
 
@@ -636,7 +623,7 @@ export default function ProductEditor({
 
     // D. Construct exact payload compatible with saveProduct / save_product_with_variants
     try {
-      const categoryObj = DEFAULT_CATEGORIES.find((c) => c.id === category);
+      const categoryObj = PRODUCT_CATEGORIES.find((c) => c.id === category);
 
       const payload = {
         id: isEditing ? product.id : null,
@@ -644,7 +631,7 @@ export default function ProductEditor({
         title: title.trim(),
         subheading: subheading.trim() || 'HAUTE COUTURE',
         category: category,
-        category_label: categoryObj?.label || 'Luxury Prêt',
+        category_label: categoryObj?.label || getCategoryLabel(category) || 'Festive',
         collections: Array.isArray(collections) ? collections : [],
         price: numPrice,
         original_price: numOrig,
@@ -893,7 +880,7 @@ export default function ProductEditor({
                     }}
                     className="w-full sm:w-80 px-3.5 py-2.5 text-[13px] border border-[#ebe6e0] bg-[#faf8f6] text-[#1a1814] focus:bg-white focus:border-[#1a1814] focus:outline-none cursor-pointer"
                   >
-                    {DEFAULT_CATEGORIES.map((c) => (
+                    {PRODUCT_CATEGORIES.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.label}
                       </option>

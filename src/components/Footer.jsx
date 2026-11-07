@@ -215,6 +215,16 @@ export default function Footer({
               </li>
               <li>
                 <a 
+                  href="/collections/festive" 
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('festive'); }} 
+                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:text-white transition-colors"
+                >
+                  Festive Collection
+                </a>
+              </li>
+              <li>
+                <a 
                   href="/collections/luxury-pret" 
                   onClick={(e) => { e.preventDefault(); onSelectCategory('luxury-pret'); }} 
                   style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}

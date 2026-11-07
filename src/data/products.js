@@ -11,6 +11,9 @@ export const CURRENCIES = {
   SAR: { symbol: 'SAR', rate: 0.0135, label: 'SAR - Saudi Arabia' },
 };
 
+// Re-export canonical categories and taxonomy
+export { PRODUCT_CATEGORIES, BASE_COLLECTIONS, getCategoryLabel } from './categories.js';
+
 // Canonical Navigation & Filter Categories (matches user requirements)
 export const NAV_CATEGORIES = [
   { id: 'all', label: 'All Products', shortLabel: 'All' },

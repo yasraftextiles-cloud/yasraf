@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase.js';
 import { PRODUCTS as localProducts } from '../data/products.js';
+import { getCategoryLabel } from '../data/categories.js';
 import { inferProvince } from '../utils/location.js';
 
 export { supabase, isSupabaseConfigured };
@@ -66,7 +67,7 @@ export function normalizeProduct(p) {
     subheading: p.subheading || p.tag || 'HAUTE COUTURE',
     tag: p.subheading || p.badge || p.tag || 'HAUTE COUTURE',
     category: p.category,
-    categoryLabel: p.category_label || p.categoryLabel || 'Luxury Prêt',
+    categoryLabel: p.category_label || p.categoryLabel || getCategoryLabel(p.category) || 'Luxury Prêt',
     collections: Array.isArray(p.collections) ? p.collections : [],
     price: Number(p.price) || 0,
     originalPrice: p.original_price ? Number(p.original_price) : (p.originalPrice ? Number(p.originalPrice) : null),
@@ -253,7 +254,7 @@ export async function saveProduct(productData) {
     title: productData.title,
     subheading: productData.subheading || null,
     category: productData.category || 'luxury-pret',
-    category_label: productData.category_label || null,
+    category_label: productData.category_label || getCategoryLabel(productData.category) || null,
     collections: productData.collections || [],
     price: productData.price,
     original_price: productData.original_price || null,
