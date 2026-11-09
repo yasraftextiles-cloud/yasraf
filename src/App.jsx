@@ -52,7 +52,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 // Code-split Storefront Pages & Dedicated Checkout Page
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
-const RackPreviewPage = lazy(() => import('./pages/RackPreviewPage'));
 
 // Code-split Heavy Modals (Loaded on-demand when activated)
 const QuickViewModal = lazy(() => import('./components/QuickViewModal'));
@@ -436,8 +435,6 @@ function AppContent() {
       window.history.pushState({ page: 'reset-password' }, '', '/reset-password');
     } else if (page === 'checkout') {
       window.history.pushState({ page: 'checkout' }, '', '/checkout');
-    } else if (page === 'rack-preview' || page === 'rack') {
-      window.history.pushState({ page: 'rack-preview' }, '', '/rack');
     } else {
       window.history.pushState({ page }, '', `/${page}`);
     }
@@ -454,12 +451,6 @@ function AppContent() {
       // 1. Admin
       if (pathname === '/admin' || pathname.startsWith('/admin/') || hash === 'admin' || hash.startsWith('admin/')) {
         setCurrentPage('admin');
-        return;
-      }
-
-      // 1.1 Isolated 3D Clothing Rack Preview Prototype
-      if (pathname === '/rack' || pathname === '/rack-preview' || hash === 'rack' || hash === 'rack-preview') {
-        setCurrentPage('rack-preview');
         return;
       }
 
@@ -647,18 +638,6 @@ function AppContent() {
             refreshCatalog();
             navigateTo('home');
           }} 
-        />
-      </Suspense>
-    );
-  }
-
-  // If viewing Isolated 3D Interactive Clothing Rack Preview
-  if (currentPage === 'rack-preview') {
-    return (
-      <Suspense fallback={<div className="min-h-screen bg-[#F9F8F6] flex items-center justify-center text-[#8C7654] font-serif tracking-widest uppercase text-sm">Preparing Atelier Rack Experience...</div>}>
-        <RackPreviewPage 
-          onBackToHome={() => navigateTo('home')}
-          onAddToCart={handleAddToCart}
         />
       </Suspense>
     );
