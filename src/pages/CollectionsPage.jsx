@@ -99,6 +99,7 @@ export default function CollectionsPage({
     if (c === 'summer') return catF === 'summer' || fabCat.includes('lawn') || fabF.includes('lawn') || inCols;
     if (c === 'winter' || c === 'winter-collection') return catF === 'winter' || catF === 'winter-collection' || tagF.includes('winter') || inCols;
     if (c === 'festive') return catF === 'festive' || catF === 'party-wear' || occF.includes('festive') || tagF.includes('festive') || inCols;
+    if (c === 'sale') return Boolean((p.originalPrice && Number(p.originalPrice) > Number(p.price)) || p.isSale || inCols || catF === 'sale');
     if (c === 'best-sellers') return Boolean(p.isBestSeller || inCols);
     if (c === 'new-in') return Boolean(p.isNew || inCols);
     return catF === c || occF === c || inCols;

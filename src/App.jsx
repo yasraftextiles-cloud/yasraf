@@ -682,7 +682,7 @@ function AppContent() {
               />
               <BrandStory onOpenStory={() => navigateTo('about')} />
               <CategoryLookbook onSelectCategory={(cat) => navigateTo('collections', cat)} />
-              <EditorialBanner />
+              <EditorialBanner onShopSale={() => navigateTo('collections', 'sale')} />
               <EditorialStatement onViewCollection={() => navigateTo('collections', 'all')} />
               <DualEditorialSplit />
               <SignatureEdit
