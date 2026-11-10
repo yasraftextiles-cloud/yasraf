@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Header({ 
   navItems = [],
+  saleProduct,
+  onSelectSaleProduct,
   cartCount = 0,
   onOpenCart,
   onOpenSearch,
@@ -17,6 +19,27 @@ export default function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef(null);
+  const deadline = Date.parse('2026-11-12T00:00:00+05:00');
+  const [now, setNow] = useState(Date.now);
+  const [noticeVisible, setNoticeVisible] = useState(false);
+  const seconds = Math.max(0, Math.ceil((deadline - now) / 1000));
+  const countdown = [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60]
+    .map((value) => String(value).padStart(2, '0')).join(':');
+  const saleActive = seconds > 0 && navItems.some((item) => item.category === 'sale');
+
+  useEffect(() => {
+    if (Date.now() >= deadline) return;
+    const timer = window.setInterval(() => {
+      const time = Date.now();
+      setNow(time);
+      if (time >= deadline) window.clearInterval(timer);
+    }, 1000);
+    const notice = window.setTimeout(() => setNoticeVisible(true), 8000);
+    return () => {
+      window.clearInterval(timer);
+      window.clearTimeout(notice);
+    };
+  }, [deadline]);
 
   const clientName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Client';
   const firstName = clientName.split(' ')[0];
@@ -56,8 +79,14 @@ export default function Header({
   };
 
   return (
+    <>
     <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? '-translate-y-[36px] sm:-translate-y-[38px]' : ''}`}>
-      {/* Top Announcement Bar — Clickable VIP Channel Link */}
+      {saleActive ? (
+        <a href="/collections/sale" onClick={(event) => handleNavClick(event, 'sale')} className="flex h-[36px] items-center justify-center gap-2 bg-[#681e34] text-[11px] font-semibold uppercase tracking-wider text-white sm:h-[38px] sm:text-xs">
+          <span>11.11 Sale ends in</span>
+          <span role="timer" aria-live="off" className="tabular-nums">{countdown}</span>
+        </a>
+      ) : (
       <div 
         onClick={onOpenVIPChannel}
         className="bg-[#f6ece4] hover:bg-[#faede5] text-[#1a1814] text-[10px] sm:text-[11px] font-medium h-[36px] sm:h-[38px] flex items-center justify-center px-3 sm:px-4 tracking-[0.12em] sm:tracking-[0.16em] uppercase text-center transition-all duration-200 select-none cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
@@ -71,6 +100,7 @@ export default function Header({
           COMPLIMENTARY SHIPPING OVER RS. 4,990 &nbsp;|&nbsp; CLAIM 10% OFF ON WHATSAPP &rarr;
         </span>
       </div>
+      )}
 
       {/* Main Navigation Bar */}
       <div className="relative bg-white text-[#1a1814] shadow-[0_1px_0_rgba(0,0,0,0.06)] header-light">
@@ -460,5 +490,21 @@ export default function Header({
         </div>
       </div>
     </header>
+    {saleActive && saleProduct && noticeVisible && !isMobileMenuOpen && (
+      <aside aria-label="11.11 sale offer" className="fixed bottom-4 left-3 z-40 flex max-w-[min(18rem,calc(100vw-5.5rem))] items-center gap-2 rounded-md border border-[#e8d7cf] bg-white px-3 py-2 text-[#391d20] shadow-lg sm:bottom-6 sm:left-6">
+        <button type="button" onClick={() => { setNoticeVisible(false); onSelectSaleProduct(saleProduct); }} className="flex min-w-0 items-center gap-3 text-left">
+          {saleProduct.image && <img src={saleProduct.image} alt="" className="h-11 w-9 shrink-0 rounded-sm object-cover" />}
+          <span className="min-w-0">
+            <span className="block text-[10px] font-semibold uppercase tracking-wider">11.11 sale offer</span>
+            <span className="block truncate text-sm font-semibold">{saleProduct.title}</span>
+            <span className="block text-xs">PKR {Number(saleProduct.price).toLocaleString('en-PK')}</span>
+          </span>
+        </button>
+        <button type="button" aria-label="Dismiss sale offer" onClick={() => setNoticeVisible(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded hover:bg-[#f6ece4]">
+          <X size={15} />
+        </button>
+      </aside>
+    )}
+    </>
   );
 }
