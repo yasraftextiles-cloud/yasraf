@@ -672,7 +672,9 @@ function AppContent() {
             <>
               <EditorialBanner
                 discount={maxDiscount}
-                featuredProduct={products.find((product) => product.slug === 'elara')}
+                featuredProducts={['ruby-royale', 'celestial-ice-blue']
+                  .map((slug) => products.find((product) => product.slug === slug))
+                  .filter((product) => product?.image && product.inStock)}
                 onShopSale={() => navigateTo('collections', 'sale')}
                 onShopCollections={() => navigateTo('collections', 'all')}
               />
