@@ -15,6 +15,7 @@ import {
 
 import Header from './components/Header';
 import NewArrivals from './components/NewArrivals';
+import SaleCampaign from './components/SaleCampaign';
 import EditorialBanner from './components/EditorialBanner';
 import SignatureEdit from './components/SignatureEdit';
 import TrustBar from './components/TrustBar';
@@ -656,8 +657,6 @@ function AppContent() {
       {/* Main Single-Line Header & Navbar with Adaptive Theme */}
       <Header
         navItems={navItems}
-        saleProduct={currentPage === 'home' && products.find((product) => product.inStock && getMarkdownPercent(product) > 0)}
-        onSelectSaleProduct={(product) => navigateTo('product', product)}
         cartCount={totalCartCount}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
@@ -665,6 +664,13 @@ function AppContent() {
         onNavigateHome={() => navigateTo('home')}
         onNavigateCollections={(cat) => navigateTo('collections', cat)}
         onNavigatePage={(page, param) => navigateTo(page, param)}
+      />
+
+      <SaleCampaign
+        products={products}
+        enabled={currentPage === 'home' && !isCartOpen && !isSearchOpen && !isWishlistOpen && !isSizeGuideOpen && !isTrackOrderOpen && !isWhatsAppChannelOpen}
+        onShopSale={() => navigateTo('collections', 'sale')}
+        onSelectProduct={(product) => navigateTo('product', product)}
       />
 
       {/* Main Page Rendering */}

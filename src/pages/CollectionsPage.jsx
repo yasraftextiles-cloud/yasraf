@@ -242,7 +242,7 @@ export default function CollectionsPage({
           </a>
           <span>/</span>
           <span className="text-[#1a1814] font-medium">
-            {selectedCategories.length === 0 ? 'All Collections' : (colData.h1 || 'Collections')}
+            {colData.h1 || 'Collections'}
           </span>
         </div>
       </div>
@@ -256,10 +256,10 @@ export default function CollectionsPage({
           className="text-3xl sm:text-4xl lg:text-[44px] text-[#2c2824] font-light tracking-tight leading-tight mb-3"
           style={{ fontFamily: 'var(--font-family-editorial)' }}
         >
-          {selectedCategories.length === 0 ? 'All Collections' : (colData.h1 || 'Collections')}
+          {colData.h1 || 'Collections'}
         </h1>
         <p className="text-xs sm:text-[13px] text-[#78716a] font-light leading-relaxed max-w-lg mx-auto">
-          {selectedCategories.length === 0 ? COLLECTION_SEO_DATA['all'].intro : colData.intro}
+          {colData.intro}
         </p>
       </div>
 

@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, User, ShoppingBag, Menu, X, ArrowRight, LogOut, Package, MapPin, Sparkles } from 'lucide-react';
+import { SALE_DEADLINE } from './SaleCampaign';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header({ 
   navItems = [],
-  saleProduct,
-  onSelectSaleProduct,
   cartCount = 0,
   onOpenCart,
   onOpenSearch,
@@ -19,9 +18,8 @@ export default function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef(null);
-  const deadline = Date.parse('2026-11-12T00:00:00+05:00');
+  const deadline = SALE_DEADLINE;
   const [now, setNow] = useState(Date.now);
-  const [noticeVisible, setNoticeVisible] = useState(false);
   const seconds = Math.max(0, Math.ceil((deadline - now) / 1000));
   const countdown = [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60]
     .map((value) => String(value).padStart(2, '0')).join(':');
@@ -34,10 +32,8 @@ export default function Header({
       setNow(time);
       if (time >= deadline) window.clearInterval(timer);
     }, 1000);
-    const notice = window.setTimeout(() => setNoticeVisible(true), 8000);
     return () => {
       window.clearInterval(timer);
-      window.clearTimeout(notice);
     };
   }, [deadline]);
 
@@ -490,21 +486,6 @@ export default function Header({
         </div>
       </div>
     </header>
-    {saleActive && saleProduct && noticeVisible && !isMobileMenuOpen && (
-      <aside aria-label="11.11 sale offer" className="fixed bottom-4 left-3 z-40 flex max-w-[min(18rem,calc(100vw-5.5rem))] items-center gap-2 rounded-md border border-[#e8d7cf] bg-white px-3 py-2 text-[#391d20] shadow-lg sm:bottom-6 sm:left-6">
-        <button type="button" onClick={() => { setNoticeVisible(false); onSelectSaleProduct(saleProduct); }} className="flex min-w-0 items-center gap-3 text-left">
-          {saleProduct.image && <img src={saleProduct.image} alt="" className="h-11 w-9 shrink-0 rounded-sm object-cover" />}
-          <span className="min-w-0">
-            <span className="block text-[10px] font-semibold uppercase tracking-wider">11.11 sale offer</span>
-            <span className="block truncate text-sm font-semibold">{saleProduct.title}</span>
-            <span className="block text-xs">PKR {Number(saleProduct.price).toLocaleString('en-PK')}</span>
-          </span>
-        </button>
-        <button type="button" aria-label="Dismiss sale offer" onClick={() => setNoticeVisible(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded hover:bg-[#f6ece4]">
-          <X size={15} />
-        </button>
-      </aside>
-    )}
     </>
   );
 }
