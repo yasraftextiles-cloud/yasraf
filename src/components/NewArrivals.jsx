@@ -25,11 +25,7 @@ export default function NewArrivals({
       });
   }, [products]);
 
-  const itemsToRender = displayItems.length > 0 
-    ? displayItems 
-    : products.filter(p => (p.isPublished ?? true) && (p.isNew ?? true)).slice(0, 4);
-
-  if (itemsToRender.length === 0) return null;
+  if (displayItems.length === 0) return null;
 
   return (
     <section 
@@ -61,7 +57,7 @@ export default function NewArrivals({
 
         {/* 4-Column Edge-to-Edge Grid with Large 2/3 Photos Matching Jahaan */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-3.5">
-          {itemsToRender.map((prod) => (
+          {displayItems.map((prod) => (
             <ProductCard
               key={prod.id}
               product={prod}

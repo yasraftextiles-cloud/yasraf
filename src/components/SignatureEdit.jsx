@@ -1,61 +1,6 @@
 import React, { useMemo } from 'react';
 import ProductCard from './ProductCard';
 
-const HANDPICKED_STYLES = [
-  {
-    id: 'new-in-mehraab',
-    title: 'Mehraab',
-    category: 'pret',
-    categoryLabel: '3-Piece Suit',
-    price: 9890,
-    originalPrice: 11868,
-    image: '/images/new-in-loom.jpg',
-    description: 'Contemporary luxury ivory raw-silk relaxed three-piece suit with hand-finished cutwork accents.',
-    inStock: true,
-    isPublished: true,
-    showInSignatureEdit: true
-  },
-  {
-    id: 'new-in-gulzar',
-    title: 'Gulzar',
-    category: 'pret',
-    categoryLabel: 'Shrug & Co-ord',
-    price: 11500,
-    originalPrice: 13800,
-    image: '/images/new-in-zephyr.jpg',
-    description: 'Flowing modal-linen overlay and tailored tunic in warm terracotta with artisanal thread embroidery.',
-    inStock: true,
-    isPublished: true,
-    showInSignatureEdit: true
-  },
-  {
-    id: 'new-in-shab-e-noor',
-    title: 'Shab-e-Noor',
-    category: 'pret',
-    categoryLabel: 'Evening Prêt',
-    price: 14200,
-    originalPrice: 17040,
-    image: '/images/new-in-nocturne.jpg',
-    description: 'Exquisite midnight-obsidian raw silk three-piece ensemble adorned with subtle neckline artistry.',
-    inStock: true,
-    isPublished: true,
-    showInSignatureEdit: true
-  },
-  {
-    id: 'new-in-rawayat',
-    title: 'Rawayat',
-    category: 'pret',
-    categoryLabel: 'Signature Set',
-    price: 12800,
-    originalPrice: 15360,
-    image: '/images/new-in-solstice.jpg',
-    description: 'Luxe pistachio sage silk-blend co-ord set accented with refined metallic zari motifs.',
-    inStock: true,
-    isPublished: true,
-    showInSignatureEdit: true
-  }
-];
-
 export default function SignatureEdit({
   products = [],
   currency = 'PKR',
@@ -82,8 +27,7 @@ export default function SignatureEdit({
       });
   }, [products]);
 
-  // Fallback to original 4 handpicked styles if no catalog products are assigned to Signature Edit yet
-  const itemsToRender = displayItems.length > 0 ? displayItems : HANDPICKED_STYLES;
+  if (displayItems.length === 0) return null;
 
   const handleDiscoverClick = (e) => {
     e.preventDefault();
@@ -128,7 +72,7 @@ export default function SignatureEdit({
 
         {/* Dynamic 4-Column Grid: 4 per row on desktop, continuing naturally onto next rows */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-3.5">
-          {itemsToRender.map((prod) => (
+          {displayItems.map((prod) => (
             <ProductCard
               key={prod.id}
               product={prod}

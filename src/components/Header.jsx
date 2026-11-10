@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, User, ShoppingBag, Menu, X, ArrowRight, LogOut, Package, MapPin, Sparkles } from 'lucide-react';
-import { getCategoryLabel } from '../data/categories';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header({ 
+  navItems = [],
   cartCount = 0,
   onOpenCart,
   onOpenSearch,
@@ -38,15 +38,6 @@ export default function Header({
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const navItems = [
-    { label: '11.11 Sale', category: 'sale' },
-    { label: 'Collections', category: 'all' },
-    ...['ready-to-wear', 'unstitched', 'festive', 'luxury-pret', 'winter-collection'].map((category) => ({
-      category,
-      label: getCategoryLabel(category)
-    }))
-  ];
 
   const handleNavClick = (e, category) => {
     e.preventDefault();

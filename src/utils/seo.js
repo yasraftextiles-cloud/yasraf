@@ -183,7 +183,7 @@ export function getOrganizationAndWebsiteJsonLd() {
         "@id": `${PRODUCTION_DOMAIN}/#organization`,
         "name": "YASRAF Textiles",
         "url": `${PRODUCTION_DOMAIN}/`,
-        "logo": `${PRODUCTION_DOMAIN}/hero-banner.jpg`,
+        "logo": `${PRODUCTION_DOMAIN}/favicon-512x512.png`,
         "description": "Distinguished Pakistani women's clothing brand specializing in ready-to-wear, unstitched, luxury prêt, and festive couture.",
         "sameAs": [
           "https://www.instagram.com/yasraftextiles_/",
@@ -226,16 +226,16 @@ export function updateDocumentSeo({
   category = 'all'
 }) {
   let title = "YASRAF Textiles | Premium Women's Clothing in Pakistan";
-  let description = "Shop YASRAF Textiles for elegant women's clothing in Pakistan. Discover ready to wear, unstitched, festive, winter and premium collections crafted for timeless style.";
+  let description = "Shop YASRAF Textiles for elegant women's clothing in Pakistan. Discover ready to wear, festive, winter and luxury prêt collections crafted for timeless style.";
   let canonicalPath = '/';
   let robots = 'index, follow';
   let ogType = 'website';
-  let ogImage = `${PRODUCTION_DOMAIN}/hero-banner.jpg`;
+  let ogImage = `${PRODUCTION_DOMAIN}/favicon-512x512.png`;
   let jsonLdData = null;
 
   if (page === 'home') {
     title = "YASRAF Textiles | Premium Women's Clothing in Pakistan";
-    description = "Shop YASRAF Textiles for elegant women's clothing in Pakistan. Discover ready to wear, unstitched, festive, winter and premium collections crafted for timeless style.";
+    description = "Shop YASRAF Textiles for elegant women's clothing in Pakistan. Discover ready to wear, festive, winter and luxury prêt collections crafted for timeless style.";
     canonicalPath = '/';
     jsonLdData = getOrganizationAndWebsiteJsonLd();
   } else if (page === 'product' && product) {

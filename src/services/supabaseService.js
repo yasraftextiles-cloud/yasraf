@@ -114,16 +114,10 @@ export async function getProducts() {
       .eq('is_published', true)
       .order('created_at', { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      console.warn('Supabase products query returned no rows or errored, using local fallback:', error?.message);
-      return { data: localProducts.map(normalizeProduct), error, source: 'local-fallback' };
-    }
-
-    const normalized = data.map(normalizeProduct);
-    return { data: normalized, error: null, source: 'supabase' };
+    if (error) return { data: null, error, source: 'supabase' };
+    return { data: (data || []).map(normalizeProduct), error: null, source: 'supabase' };
   } catch (err) {
-    console.error('Error in getProducts:', err);
-    return { data: localProducts.map(normalizeProduct), error: err, source: 'local-fallback' };
+    return { data: null, error: err, source: 'supabase' };
   }
 }
 

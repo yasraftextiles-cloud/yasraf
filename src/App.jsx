@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import './App.css';
 import { PRODUCTS as DEFAULT_PRODUCTS } from './data/products';
-import { getProducts } from './services/supabaseService';
+import { getStorefrontNav, getMarkdownPercent } from './data/categories';
+import { getProducts, isSupabaseConfigured } from './services/supabaseService';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { 
@@ -13,7 +14,6 @@ import {
 } from './services/customerCartService';
 
 import Header from './components/Header';
-import ShopByCollection from './components/ShopByCollection';
 import NewArrivals from './components/NewArrivals';
 import EditorialBanner from './components/EditorialBanner';
 import SignatureEdit from './components/SignatureEdit';
@@ -63,6 +63,7 @@ function AppContent() {
 
   // Support custom product images updated by user
   const [products, setProducts] = useState(() => {
+    if (isSupabaseConfigured) return [];
     try {
       const savedCustomImages = localStorage.getItem('yasraf_custom_images');
       if (savedCustomImages) {
@@ -138,15 +139,21 @@ function AppContent() {
     setTimeout(() => setToastMessage(null), 3000);
   }, []);
 
+  const [catalogPending, setCatalogPending] = useState(isSupabaseConfigured);
+  const navItems = getStorefrontNav(products);
+  const maxDiscount = products.reduce((max, product) => Math.max(max, getMarkdownPercent(product)), 0);
+
   // Live catalog synchronization with Supabase
   const refreshCatalog = useCallback(async () => {
     try {
       const res = await getProducts();
-      if (res && res.data && res.data.length > 0) {
+      if (res.data && !res.error) {
         setProducts(res.data);
       }
     } catch (err) {
       console.warn('Failed to load live catalog from Supabase:', err);
+    } finally {
+      setCatalogPending(false);
     }
   }, []);
 
@@ -490,8 +497,8 @@ function AppContent() {
           setSelectedProduct(found);
           setCurrentPage('product');
           return;
-        } else if (products && products.length > 0) {
-          setCurrentPage('404');
+        } else {
+          setCurrentPage(catalogPending ? 'catalog-loading' : '404');
           return;
         }
       }
@@ -549,7 +556,7 @@ function AppContent() {
       window.removeEventListener('popstate', handleUrlChange);
       window.removeEventListener('hashchange', handleUrlChange);
     };
-  }, [products]);
+  }, [products, catalogPending]);
 
   // Synchronize dynamic SEO metadata, canonicals, robots, and JSON-LD on route changes
   useEffect(() => {
@@ -647,7 +654,8 @@ function AppContent() {
       )}
 
       {/* Main Single-Line Header & Navbar with Adaptive Theme */}
-      <Header 
+      <Header
+        navItems={navItems}
         cartCount={totalCartCount}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
@@ -662,8 +670,11 @@ function AppContent() {
         <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center text-[#c5a880]"><div className="w-6 h-6 border-2 border-[#c5a880] border-t-transparent rounded-full animate-spin" /></div>}>
           {currentPage === 'home' && (
             <>
-              <EditorialBanner onShopSale={() => navigateTo('collections', 'sale')} />
-              <ShopByCollection onSelectCollection={(cat) => navigateTo('collections', cat)} />
+              <EditorialBanner
+                discount={maxDiscount}
+                onShopSale={() => navigateTo('collections', 'sale')}
+                onShopCollections={() => navigateTo('collections', 'all')}
+              />
               <NewArrivals
                 products={products}
                 currency={currency}
@@ -682,6 +693,10 @@ function AppContent() {
               />
               <TrustBar />
             </>
+          )}
+
+          {currentPage === 'catalog-loading' && (
+            <p role="status" className="px-6 pb-12 pt-36 text-center">Loading product…</p>
           )}
 
           {/* Dedicated Product Detail Page */}
@@ -869,6 +884,7 @@ function AppContent() {
 
       {/* Luxury Footer with Customer Account Integration */}
       <Footer
+        navItems={navItems}
         onOpenTrackOrder={() => setIsTrackOrderOpen(true)}
         onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
         onSelectCategory={(cat) => navigateTo('collections', cat)}

@@ -5,6 +5,7 @@ import { BRAND_CONFIG } from '../data/brandConfig';
 import './Footer.css';
 
 export default function Footer({ 
+  navItems = [],
   onOpenTrackOrder, 
   onOpenSizeGuide, 
   onSelectCategory,
@@ -193,76 +194,20 @@ export default function Footer({
               Collections
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.84rem', color: '#9c978f' }}>
-              <li>
-                <a 
-                  href="/collections/new-in" 
-                  onClick={(e) => { e.preventDefault(); onSelectCategory('new-in'); }} 
-                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-                  className="hover:text-white transition-colors"
-                >
-                  New In
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/collections/ready-to-wear" 
-                  onClick={(e) => { e.preventDefault(); onSelectCategory('ready-to-wear'); }} 
-                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-                  className="hover:text-white transition-colors"
-                >
-                  Ready to Wear
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/collections/festive" 
-                  onClick={(e) => { e.preventDefault(); onSelectCategory('festive'); }} 
-                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-                  className="hover:text-white transition-colors"
-                >
-                  Festive Collection
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/collections/luxury-pret" 
-                  onClick={(e) => { e.preventDefault(); onSelectCategory('luxury-pret'); }} 
-                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-                  className="hover:text-white transition-colors"
-                >
-                  Luxury Prêt
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/collections/party-wear" 
-                  onClick={(e) => { e.preventDefault(); onSelectCategory('party-wear'); }} 
-                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-                  className="hover:text-white transition-colors"
-                >
-                  Party Wear & Formals
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/collections/winter-collection" 
-                  onClick={(e) => { e.preventDefault(); onSelectCategory('winter-collection'); }} 
-                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-                  className="hover:text-white transition-colors"
-                >
-                  Winter Collection
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="/collections/best-sellers" 
-                  onClick={(e) => { e.preventDefault(); onSelectCategory('best-sellers'); }} 
-                  style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-                  className="hover:text-white transition-colors"
-                >
-                  Best Sellers
-                </a>
-              </li>
+              {navItems.map(({ category, label }) => (
+                <li key={category}>
+                  <a
+                    href={category === 'all' ? '/collections' : `/collections/${category}`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onSelectCategory(category);
+                    }}
+                    className="hover:text-white transition-colors"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 

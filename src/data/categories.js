@@ -70,8 +70,29 @@ export function matchesCategory(p, catId) {
   if (c === 'summer') return catF === 'summer' || fabCat.includes('lawn') || fabF.includes('lawn') || inCols;
   if (c === 'winter' || c === 'winter-collection') return catF === 'winter' || catF === 'winter-collection' || tagF.includes('winter') || inCols;
   if (c === 'festive') return catF === 'festive' || catF === 'party-wear' || occF.includes('festive') || tagF.includes('festive') || inCols;
-  if (c === 'sale') return Boolean((p.originalPrice && Number(p.originalPrice) > Number(p.price)) || p.isSale || inCols || catF === 'sale');
+  if (c === 'sale') return getMarkdownPercent(p) > 0;
   if (c === 'best-sellers') return Boolean(p.isBestSeller || inCols);
   if (c === 'new-in') return Boolean(p.isNew || inCols);
   return catF === c || occF === c || inCols;
+}
+
+export function getMarkdownPercent(product) {
+  const price = Number(product.price);
+  const originalPrice = Number(product.originalPrice);
+  return price > 0 && originalPrice > price
+    ? Math.round((1 - price / originalPrice) * 100)
+    : 0;
+}
+
+export function getStorefrontNav(products) {
+  return [
+    { label: '11.11 Sale', category: 'sale' },
+    { label: 'Collections', category: 'all' },
+    ...['ready-to-wear', 'luxury-pret', 'festive', 'winter-collection'].map((category) => ({
+      category,
+      label: getCategoryLabel(category)
+    }))
+  ].filter(({ category }) => category === 'all' || products.some((product) => (
+    product.inStock && matchesCategory(product, category)
+  )));
 }

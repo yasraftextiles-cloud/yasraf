@@ -39,15 +39,7 @@ export default function AboutPage({ onBackToHome, onExploreCollections }) {
       <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mb-20 sm:mb-28">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
           
-          <div className="lg:col-span-6 overflow-hidden bg-[#ebe6e0]">
-            <img 
-              src="/brand-editorial.jpg" 
-              alt="Yasraf Atelier Craftsmanship" 
-              className="w-full aspect-[4/5] object-cover object-[center_20%]"
-            />
-          </div>
-
-          <div className="lg:col-span-6 space-y-6 text-left">
+          <div className="lg:col-span-8 lg:col-start-3 space-y-6 text-left">
             <span className="text-[11px] uppercase tracking-[0.22em] font-semibold text-[#8c867f]">
               THE PHILOSOPHY
             </span>
