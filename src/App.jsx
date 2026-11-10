@@ -675,6 +675,7 @@ function AppContent() {
                 featuredProducts={['ruby-royale', 'celestial-ice-blue']
                   .map((slug) => products.find((product) => product.slug === slug))
                   .filter((product) => product?.image && product.inStock)}
+                onSelectProduct={(product) => navigateTo('product', product)}
                 onShopSale={() => navigateTo('collections', 'sale')}
                 onShopCollections={() => navigateTo('collections', 'all')}
               />

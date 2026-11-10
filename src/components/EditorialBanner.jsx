@@ -1,6 +1,7 @@
 import React from 'react';
+import { getProductSlug } from '../utils/seo';
 
-export default function EditorialBanner({ discount, featuredProducts, onShopSale, onShopCollections }) {
+export default function EditorialBanner({ discount, featuredProducts, onSelectProduct, onShopSale, onShopCollections }) {
   const onSale = discount > 0;
   const navigate = onSale ? onShopSale : onShopCollections;
 
@@ -28,17 +29,26 @@ export default function EditorialBanner({ discount, featuredProducts, onShopSale
         {featuredProducts.length > 0 && (
           <div className="flex justify-center gap-2 sm:gap-4">
             {featuredProducts.map((product, index) => (
-              <figure key={product.id} className="relative w-full max-w-[340px] overflow-hidden border border-[#653041]/10 bg-[#e9d9d1]">
+              <a
+                key={product.id}
+                href={`/products/${getProductSlug(product)}`}
+                onClick={(event) => {
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                  event.preventDefault();
+                  onSelectProduct(product);
+                }}
+                className="group relative w-full max-w-[340px] overflow-hidden border border-[#653041]/10 bg-[#e9d9d1] focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
                 <img
                   src={product.image}
-                  alt={product.title}
+                  alt=""
                   fetchPriority={index === 0 ? 'high' : 'auto'}
                   className="block aspect-[4/5] w-full object-contain"
                 />
-                <figcaption className="bg-[#f9f2ec] px-2 py-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.12em] sm:text-xs">
+                <span className="block group-hover:underline bg-[#f9f2ec] px-2 py-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.12em] sm:text-xs">
                   {product.title}
-                </figcaption>
-              </figure>
+                </span>
+              </a>
             ))}
           </div>
         )}
