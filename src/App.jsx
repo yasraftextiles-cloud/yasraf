@@ -656,6 +656,8 @@ function AppContent() {
       {/* Main Single-Line Header & Navbar with Adaptive Theme */}
       <Header
         navItems={navItems}
+        saleProduct={currentPage === 'home' && products.find((product) => product.inStock && getMarkdownPercent(product) > 0)}
+        onSelectSaleProduct={(product) => navigateTo('product', product)}
         cartCount={totalCartCount}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
