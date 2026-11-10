@@ -13,7 +13,7 @@ export default function EditorialBanner({ discount, featuredProduct, onShopSale,
               src={featuredProduct.image}
               alt={`Model wearing the YASRAF ${featuredProduct.title} outfit`}
               fetchPriority="high"
-              className="absolute inset-0 -z-20 h-full w-full object-cover object-[center_22%] sm:left-auto sm:right-0 sm:w-[58%]"
+              className="absolute inset-0 -z-20 h-full w-full object-cover object-top sm:left-auto sm:right-0 sm:w-[58%]"
             />
             <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#3c0816] via-[#3c0816]/55 to-transparent sm:bg-gradient-to-r sm:from-[#650e22] sm:via-[#650e22]/95 sm:to-[#3c0816]/10" />
           </>
