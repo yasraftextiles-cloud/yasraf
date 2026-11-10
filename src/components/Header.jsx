@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, User, ShoppingBag, Menu, X, ArrowRight, LogOut, Package, MapPin, Sparkles } from 'lucide-react';
+import { getCategoryLabel } from '../data/categories';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header({ 
@@ -7,7 +8,6 @@ export default function Header({
   onOpenCart,
   onOpenSearch,
   onOpenVIPChannel,
-  currentPage = 'home',
   onNavigateHome,
   onNavigateCollections,
   onNavigatePage
@@ -40,18 +40,13 @@ export default function Header({
   }, []);
 
   const navItems = [
-    { label: 'SUMMER', category: 'summer' },
-    { label: 'WINTER', category: 'winter-collection' },
-    { label: 'FESTIVE', category: 'festive' },
-    { label: 'BEST SELLERS', category: 'best-sellers' },
-    { label: 'COLLECTIONS', category: 'all' },
-    { label: 'READY TO WEAR', category: 'ready-to-wear' },
-    { label: 'UNSTITCHED', category: 'unstitched' },
-    { label: 'SALE', category: 'sale' }
+    { label: '11.11 Sale', category: 'sale' },
+    { label: 'Collections', category: 'all' },
+    ...['ready-to-wear', 'unstitched', 'festive', 'luxury-pret', 'winter-collection'].map((category) => ({
+      category,
+      label: getCategoryLabel(category)
+    }))
   ];
-
-  // Header should be light (solid white with dark text) when scrolled, when mobile menu is open, OR when viewing subpages
-  const isLight = currentPage !== 'home' || isScrolled || isMobileMenuOpen;
 
   const handleNavClick = (e, category) => {
     e.preventDefault();
@@ -87,9 +82,7 @@ export default function Header({
       </div>
 
       {/* Main Navigation Bar */}
-      <div className={`transition-colors duration-300 relative ${
-        isLight ? 'bg-white text-[#1a1814] shadow-[0_1px_0_rgba(0,0,0,0.06)] header-light' : 'bg-transparent text-white'
-      }`}>
+      <div className="relative bg-white text-[#1a1814] shadow-[0_1px_0_rgba(0,0,0,0.06)] header-light">
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
           <div className="flex lg:grid lg:grid-cols-[1fr_auto_1fr] items-center justify-between h-[68px] sm:h-[72px] py-2">
             
@@ -116,7 +109,7 @@ export default function Header({
               <a 
                 href="/" 
                 onClick={handleBrandClick}
-                className={`text-2xl xl:text-3xl font-normal tracking-[0.22em] uppercase transition-colors duration-300 cursor-pointer ${isLight ? 'text-[#1a1814]' : 'text-white'}`}
+                className="text-2xl xl:text-3xl font-normal tracking-[0.22em] uppercase transition-colors duration-300 cursor-pointer text-[#1a1814]"
                 style={{ fontFamily: 'var(--font-family-editorial)' }}
               >
                 YASRAF
@@ -145,7 +138,7 @@ export default function Header({
               <a 
                 href="/" 
                 onClick={handleBrandClick}
-                className={`text-2xl font-normal tracking-[0.22em] uppercase transition-colors duration-300 cursor-pointer ${isLight ? 'text-[#1a1814]' : 'text-white'}`}
+                className="text-2xl font-normal tracking-[0.22em] uppercase transition-colors duration-300 cursor-pointer text-[#1a1814]"
                 style={{ fontFamily: 'var(--font-family-editorial)' }}
               >
                 YASRAF

@@ -50,3 +50,28 @@ export function getCategoryLabel(categoryId) {
     .join(' ');
 }
 
+export function matchesCategory(p, catId) {
+  const c = (catId || '').toLowerCase().trim();
+  if (!c || c === 'all') return true;
+  const inCols = Array.isArray(p.collections) && p.collections.some((col) => {
+    const cl = String(col).toLowerCase().trim();
+    return (c === 'winter-collection' && cl === 'winter') || cl === c || cl === c.replace(/-/g, ' ') || cl.replace(/-/g, ' ') === c.replace(/-/g, ' ');
+  });
+  const catF = (p.category || '').toLowerCase().trim();
+  const occF = (p.occasion || '').toLowerCase().trim();
+  const tagF = (p.tag || '').toLowerCase().trim();
+  const fabF = (p.fabric || '').toLowerCase().trim();
+  const fabCat = (p.fabricCategory || '').toLowerCase().trim();
+
+  if (c === 'ready-to-wear') return catF === 'ready-to-wear' || occF.includes('ready to wear') || inCols;
+  if (c === 'unstitched') return catF === 'unstitched' || (Array.isArray(p.sizes) && p.sizes.some((s) => String(s).toLowerCase().includes('unstitched'))) || inCols;
+  if (c === 'luxury-pret') return catF === 'luxury-pret' || occF.includes('luxury') || inCols;
+  if (c === 'party-wear' || c === 'formal') return catF === 'party-wear' || catF === 'festive' || occF.includes('party') || occF.includes('festive') || occF.includes('formal') || inCols;
+  if (c === 'summer') return catF === 'summer' || fabCat.includes('lawn') || fabF.includes('lawn') || inCols;
+  if (c === 'winter' || c === 'winter-collection') return catF === 'winter' || catF === 'winter-collection' || tagF.includes('winter') || inCols;
+  if (c === 'festive') return catF === 'festive' || catF === 'party-wear' || occF.includes('festive') || tagF.includes('festive') || inCols;
+  if (c === 'sale') return Boolean((p.originalPrice && Number(p.originalPrice) > Number(p.price)) || p.isSale || inCols || catF === 'sale');
+  if (c === 'best-sellers') return Boolean(p.isBestSeller || inCols);
+  if (c === 'new-in') return Boolean(p.isNew || inCols);
+  return catF === c || occF === c || inCols;
+}

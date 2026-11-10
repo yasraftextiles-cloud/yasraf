@@ -1,3 +1,4 @@
+import { matchesCategory } from '../data/categories';
 import React, { useState, useMemo, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import ProductFilters, { PRICE_RANGES } from '../components/ProductFilters';
@@ -19,7 +20,7 @@ export default function CollectionsPage({
   
   // Multi-Filter State
   const [selectedCategories, setSelectedCategories] = useState(() => {
-    return activeCategory && activeCategory !== 'all' ? [activeCategory] : [];
+    return activeCategory && activeCategory !== 'all' && activeCategory !== 'sale' ? [activeCategory] : [];
   });
   const [selectedAvailability, setSelectedAvailability] = useState('all'); // 'all' | 'in_stock' | 'out_of_stock'
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
@@ -31,7 +32,7 @@ export default function CollectionsPage({
 
   // Sync with prop when external navigation happens (e.g. user clicked category in header)
   useEffect(() => {
-    if (activeCategory && activeCategory !== 'all') {
+    if (activeCategory && activeCategory !== 'all' && activeCategory !== 'sale') {
       setSelectedCategories([activeCategory]);
     } else {
       setSelectedCategories([]);
@@ -73,41 +74,18 @@ export default function CollectionsPage({
     setSelectedColors([]);
     setSelectedFabrics([]);
     setSortBy('featured');
-    if (onSelectCategory && activeCategory !== 'all') {
+    if (onSelectCategory && activeCategory !== 'all' && activeCategory !== 'sale') {
       onSelectCategory('all');
     }
   };
 
-  // Helper to match a single product against a category
-  const matchesCategory = (p, catId) => {
-    const c = (catId || '').toLowerCase().trim();
-    if (!c || c === 'all') return true;
-    const inCols = Array.isArray(p.collections) && p.collections.some((col) => {
-      const cl = String(col).toLowerCase().trim();
-      return cl === c || cl === c.replace(/-/g, ' ') || cl.replace(/-/g, ' ') === c.replace(/-/g, ' ');
-    });
-    const catF = (p.category || '').toLowerCase().trim();
-    const occF = (p.occasion || '').toLowerCase().trim();
-    const tagF = (p.tag || '').toLowerCase().trim();
-    const fabF = (p.fabric || '').toLowerCase().trim();
-    const fabCat = (p.fabricCategory || '').toLowerCase().trim();
-
-    if (c === 'ready-to-wear') return catF === 'ready-to-wear' || occF.includes('ready to wear') || inCols;
-    if (c === 'unstitched') return catF === 'unstitched' || (Array.isArray(p.sizes) && p.sizes.some((s) => String(s).toLowerCase().includes('unstitched'))) || inCols;
-    if (c === 'luxury-pret') return catF === 'luxury-pret' || occF.includes('luxury') || inCols;
-    if (c === 'party-wear' || c === 'formal') return catF === 'party-wear' || catF === 'festive' || occF.includes('party') || occF.includes('festive') || occF.includes('formal') || inCols;
-    if (c === 'summer') return catF === 'summer' || fabCat.includes('lawn') || fabF.includes('lawn') || inCols;
-    if (c === 'winter' || c === 'winter-collection') return catF === 'winter' || catF === 'winter-collection' || tagF.includes('winter') || inCols;
-    if (c === 'festive') return catF === 'festive' || catF === 'party-wear' || occF.includes('festive') || tagF.includes('festive') || inCols;
-    if (c === 'sale') return Boolean((p.originalPrice && Number(p.originalPrice) > Number(p.price)) || p.isSale || inCols || catF === 'sale');
-    if (c === 'best-sellers') return Boolean(p.isBestSeller || inCols);
-    if (c === 'new-in') return Boolean(p.isNew || inCols);
-    return catF === c || occF === c || inCols;
-  };
+  const catalogProducts = useMemo(() => (
+    activeCategory === 'sale' ? products.filter((product) => matchesCategory(product, 'sale')) : products
+  ), [activeCategory, products]);
 
   // Multi-Criteria Filtering & Sorting
   const filteredProducts = useMemo(() => {
-    let list = [...products];
+    let list = [...catalogProducts];
 
     // 1. Category Filter (Multi-select)
     if (selectedCategories.length > 0) {
@@ -209,7 +187,7 @@ export default function CollectionsPage({
 
     return list;
   }, [
-    products, 
+    catalogProducts,
     selectedCategories, 
     selectedAvailability, 
     selectedPriceRange, 
@@ -222,7 +200,9 @@ export default function CollectionsPage({
   ]);
 
   // Page Heading & SEO Data
-  const effectiveCategoryKey = selectedCategories.length === 1 ? selectedCategories[0] : (activeCategory || 'all');
+  const effectiveCategoryKey = activeCategory === 'sale' || selectedCategories.length !== 1
+    ? activeCategory || 'all'
+    : selectedCategories[0];
   const colData = COLLECTION_SEO_DATA[effectiveCategoryKey] || COLLECTION_SEO_DATA['all'];
 
   // Check if any filter is actively applied
@@ -461,7 +441,7 @@ export default function CollectionsPage({
       <ProductFilters
         isOpen={isFilterDrawerOpen}
         onClose={() => setIsFilterDrawerOpen(false)}
-        products={products}
+        products={catalogProducts}
         // Categories
         selectedCategories={selectedCategories}
         onToggleCategory={handleToggleCategory}

@@ -1,3 +1,4 @@
+import { PRODUCT_CATEGORIES, matchesCategory } from '../data/categories';
 import React, { useMemo, useEffect } from 'react';
 import { 
   X, 
@@ -128,18 +129,8 @@ export default function ProductFilters({
     maxCatalogPrice
   } = useMemo(() => {
     // 1. Categories
-    const canonicalCategories = [
-      { id: 'ready-to-wear', label: 'Ready to Wear' },
-      { id: 'unstitched', label: 'Unstitched' },
-      { id: 'luxury-pret', label: 'Luxury Prêt' },
-      { id: 'party-wear', label: 'Party Wear / Formal' },
-      { id: 'summer', label: 'Summer' },
-      { id: 'winter', label: 'Winter' },
-      { id: 'festive', label: 'Festive' }
-    ];
-
+    const canonicalCategories = PRODUCT_CATEGORIES;
     const catCounts = {};
-    canonicalCategories.forEach((c) => { catCounts[c.id] = 0; });
 
     // 2. Sizes
     const sizeMap = new Map(); // size -> count
@@ -163,28 +154,7 @@ export default function ProductFilters({
       // Check category match
       canonicalCategories.forEach((c) => {
         const catId = c.id;
-        const cLower = catId.toLowerCase();
-        const inCols = Array.isArray(p.collections) && p.collections.some((col) => {
-          const cl = String(col).toLowerCase().trim();
-          return cl === cLower || cl === cLower.replace(/-/g, ' ');
-        });
-        const catF = (p.category || '').toLowerCase().trim();
-        const occF = (p.occasion || '').toLowerCase().trim();
-        const tagF = (p.tag || '').toLowerCase().trim();
-        const fabF = (p.fabric || '').toLowerCase().trim();
-        const fabCat = (p.fabricCategory || '').toLowerCase().trim();
-
-        let matches = false;
-        if (catId === 'ready-to-wear') matches = catF === 'ready-to-wear' || occF.includes('ready to wear') || inCols;
-        else if (catId === 'unstitched') matches = catF === 'unstitched' || (Array.isArray(p.sizes) && p.sizes.some((s) => String(s).toLowerCase().includes('unstitched'))) || inCols;
-        else if (catId === 'luxury-pret') matches = catF === 'luxury-pret' || occF.includes('luxury') || inCols;
-        else if (catId === 'party-wear') matches = catF === 'party-wear' || catF === 'festive' || occF.includes('party') || occF.includes('festive') || occF.includes('formal') || inCols;
-        else if (catId === 'summer') matches = catF === 'summer' || fabCat.includes('lawn') || fabF.includes('lawn') || inCols;
-        else if (catId === 'winter') matches = catF === 'winter' || catF === 'winter-collection' || tagF.includes('winter') || inCols;
-        else if (catId === 'festive') matches = catF === 'festive' || catF === 'party-wear' || occF.includes('festive') || tagF.includes('festive') || inCols;
-        else matches = catF === catId || occF === catId || inCols;
-
-        if (matches) {
+        if (matchesCategory(p, catId)) {
           catCounts[catId] = (catCounts[catId] || 0) + 1;
         }
       });

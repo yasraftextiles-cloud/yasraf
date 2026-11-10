@@ -13,17 +13,10 @@ import {
 } from './services/customerCartService';
 
 import Header from './components/Header';
-import HeroSlider from './components/HeroSlider';
 import ShopByCollection from './components/ShopByCollection';
 import NewArrivals from './components/NewArrivals';
-import BrandStory from './components/BrandStory';
-import CategoryLookbook from './components/CategoryLookbook';
 import EditorialBanner from './components/EditorialBanner';
-import EditorialStatement from './components/EditorialStatement';
-import DualEditorialSplit from './components/DualEditorialSplit';
 import SignatureEdit from './components/SignatureEdit';
-import EditorialSplitPromo from './components/EditorialSplitPromo';
-import BrandStatement from './components/BrandStatement';
 import TrustBar from './components/TrustBar';
 import Footer from './components/Footer';
 import WhatsAppFloat from './components/WhatsAppFloat';
@@ -659,7 +652,6 @@ function AppContent() {
         onOpenCart={() => setIsCartOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenVIPChannel={() => setIsWhatsAppChannelOpen(true)}
-        currentPage={currentPage}
         onNavigateHome={() => navigateTo('home')}
         onNavigateCollections={(cat) => navigateTo('collections', cat)}
         onNavigatePage={(page, param) => navigateTo(page, param)}
@@ -670,7 +662,7 @@ function AppContent() {
         <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center text-[#c5a880]"><div className="w-6 h-6 border-2 border-[#c5a880] border-t-transparent rounded-full animate-spin" /></div>}>
           {currentPage === 'home' && (
             <>
-              <HeroSlider onSelectCategory={(cat) => navigateTo('collections', cat)} />
+              <EditorialBanner onShopSale={() => navigateTo('collections', 'sale')} />
               <ShopByCollection onSelectCollection={(cat) => navigateTo('collections', cat)} />
               <NewArrivals
                 products={products}
@@ -680,11 +672,6 @@ function AppContent() {
                 onToggleWishlist={handleToggleWishlist}
                 onSelectCategory={(cat) => navigateTo('collections', cat)}
               />
-              <BrandStory onOpenStory={() => navigateTo('about')} />
-              <CategoryLookbook onSelectCategory={(cat) => navigateTo('collections', cat)} />
-              <EditorialBanner onShopSale={() => navigateTo('collections', 'sale')} />
-              <EditorialStatement onViewCollection={() => navigateTo('collections', 'all')} />
-              <DualEditorialSplit />
               <SignatureEdit
                 products={products}
                 currency={currency}
@@ -693,8 +680,6 @@ function AppContent() {
                 onToggleWishlist={handleToggleWishlist}
                 onDiscover={() => navigateTo('collections', 'all')}
               />
-              <EditorialSplitPromo onShopFestive={() => navigateTo('collections', 'festive')} />
-              <BrandStatement />
               <TrustBar />
             </>
           )}

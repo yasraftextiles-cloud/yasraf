@@ -9,11 +9,11 @@ export default function EditorialBanner({ onShopSale }) {
   };
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#f4ebe1]">
+    <section className="relative w-full bg-[#f4ebe1] pt-[104px] sm:pt-[110px]">
       <a 
         href="/collections/sale" 
         onClick={handleClick}
-        className="block relative w-full aspect-[1024/341] max-h-[580px] overflow-hidden group cursor-pointer"
+        className="block relative w-full overflow-hidden group cursor-pointer"
         aria-label="Shop Yasraf 11.11 Sale - Up to 40% Off"
       >
         <picture>
@@ -21,13 +21,17 @@ export default function EditorialBanner({ onShopSale }) {
           <img 
             src="/images/yasraf-11-11-sale-banner.jpg" 
             alt="YASRAF Textiles 11.11 Sale - Up to 40% Off Special Savings on Selected Styles" 
-            className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.015]"
-            loading="lazy"
+            className="block w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.015]"
+            fetchPriority="high"
             decoding="async"
             width={1024}
             height={341}
           />
         </picture>
+        <div className="flex items-center justify-between gap-3 px-4 py-3 text-[#670e1a] sm:hidden" aria-hidden="true">
+          <span className="text-sm font-semibold">11.11 Sale · Up to 40% Off</span>
+          <span className="shrink-0 bg-[#670e1a] px-3 py-2 text-xs font-semibold text-white">Shop Sale →</span>
+        </div>
       </a>
     </section>
   );

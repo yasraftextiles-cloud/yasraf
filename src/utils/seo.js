@@ -125,10 +125,10 @@ export const COLLECTION_SEO_DATA = {
     canonicalPath: '/collections/summer'
   },
   'sale': {
-    title: "Sale | Exclusive Offers on Women's Clothing | YASRAF Textiles",
+    title: "11.11 Sale | Women's Clothing | YASRAF Textiles",
     description: "Shop seasonal sales and special discounts on women's Pakistani dresses at YASRAF Textiles. Limited-time offers on ready to wear and luxury prêt.",
-    h1: "Special Offers & Sale",
-    intro: "Limited-edition archived styles and seasonal privilege pieces at exceptional value. All crafted with our signature authentic standards.",
+    h1: "11.11 Sale",
+    intro: "Shop selected YASRAF styles during the 11.11 sale.",
     canonicalPath: '/collections/sale'
   }
 };
