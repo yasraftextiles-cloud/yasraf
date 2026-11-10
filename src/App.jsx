@@ -15,7 +15,6 @@ import {
 
 import Header from './components/Header';
 import NewArrivals from './components/NewArrivals';
-import ProductCard from './components/ProductCard';
 import EditorialBanner from './components/EditorialBanner';
 import SignatureEdit from './components/SignatureEdit';
 import TrustBar from './components/TrustBar';
@@ -693,25 +692,6 @@ function AppContent() {
                 onToggleWishlist={handleToggleWishlist}
                 onDiscover={() => navigateTo('collections', 'all')}
               />
-              {products.length > 0 && (
-                <section aria-labelledby="all-products-heading" className="mx-auto w-full max-w-[2000px] px-2 py-14 sm:px-4 lg:px-8">
-                  <h2 id="all-products-heading" className="mb-8 text-center text-3xl text-[#67615c] sm:text-4xl" style={{ fontFamily: 'var(--font-family-editorial)' }}>
-                    All Products
-                  </h2>
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
-                    {products.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        currency={currency}
-                        onQuickView={(item) => navigateTo('product', item)}
-                        isWishlisted={wishlistIds.includes(product.id)}
-                        onToggleWishlist={handleToggleWishlist}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
               <TrustBar />
             </>
           )}

@@ -11,14 +11,7 @@ export default function SignatureEdit({
 }) {
   const displayItems = useMemo(() => {
     return products
-      .filter((p) => {
-        const isPublished = p.isPublished ?? p.is_published ?? true;
-        const inSigEdit = Boolean(
-          p.showInSignatureEdit ?? p.show_in_signature_edit ?? p.isFeatured ?? p.is_featured
-        );
-        return isPublished && inSigEdit;
-      })
-      .slice()
+      .filter((product) => product.isPublished ?? product.is_published ?? true)
       .sort((a, b) => {
         if (a.created_at && b.created_at) {
           return new Date(b.created_at) - new Date(a.created_at);
