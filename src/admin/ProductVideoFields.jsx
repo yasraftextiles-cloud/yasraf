@@ -5,20 +5,21 @@ import { validateProductVideo } from '../utils/productVideo.js';
 
 export default function ProductVideoFields({ value, onChange, disabled, progress }) {
   const [error, setError] = useState('');
-  const [savedPreview, setPreview] = useState(null);
-  const [localPreview, setLocalPreview] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const preview = value.file ? (localPreview?.file === value.file ? localPreview.url : null) : savedPreview;
 
   useEffect(() => () => {
-    if (localPreview) URL.revokeObjectURL(localPreview.url);
-  }, [localPreview]);
+    if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
+  }, [preview]);
 
-  async function showSavedVideo() {
-    setLoading(true);
+  async function showPreview() {
     setError('');
-    try { setPreview(await getProductVideoUrl(value.path)); }
-    catch (err) { setError(err.message); }
+    setLoading(true);
+    try {
+      setPreview(value.file ? URL.createObjectURL(value.file) : await getProductVideoUrl(value.path));
+    } catch {
+      setError('The video preview could not be opened. Your product changes are still here.');
+    }
     finally { setLoading(false); }
   }
 
@@ -41,14 +42,13 @@ export default function ProductVideoFields({ value, onChange, disabled, progress
             setError(message || '');
             if (!message) {
               setPreview(null);
-              setLocalPreview({ file, url: URL.createObjectURL(file) });
               onChange({ ...value, file });
             }
           }} />
         </label>
         {(value.path || value.file) && (
           <button type="button" className="inline-flex items-center gap-1.5 text-xs text-[#9b1c1c] underline underline-offset-2 disabled:opacity-50" disabled={disabled || loading} onClick={() => {
-            setPreview(null); setLocalPreview(null); setError(''); onChange({ path: null, file: null, instagram: '' });
+            setPreview(null); setError(''); onChange({ path: null, file: null, instagram: '' });
           }}>
             <Trash2 size={14} aria-hidden="true" /> Remove video
           </button>
@@ -56,12 +56,17 @@ export default function ProductVideoFields({ value, onChange, disabled, progress
       </div>
 
       {value.file && <p className="text-xs break-all">Selected: {value.file.name}</p>}
-      {value.path && !value.file && !preview && (
-        <button type="button" className="text-xs underline underline-offset-2" onClick={showSavedVideo} disabled={disabled || loading}>
-          {loading ? 'Loading preview…' : 'Preview uploaded video'}
+      {(value.file || value.path) && !preview && (
+        <button type="button" className="text-xs underline underline-offset-2" onClick={showPreview} disabled={disabled || loading}>
+          {loading ? 'Loading preview…' : value.file ? 'Preview selected video' : 'Preview uploaded video'}
         </button>
       )}
-      {preview && <video key={preview} src={preview} controls playsInline preload="metadata" aria-label="Product video preview" className="max-h-56 w-auto max-w-full bg-black" onError={() => { setError('The preview could not be played. Try an H.264 MP4 export.'); setPreview(null); setLocalPreview(null); }} />}
+      {preview && !disabled && (
+        <div className="space-y-2">
+          <video key={preview} src={preview} controls playsInline preload="none" aria-label="Product video preview" className="max-h-56 w-auto max-w-full bg-black" onError={() => { setError('The preview could not be played. Try an H.264 MP4 export.'); setPreview(null); }} />
+          <button type="button" className="text-xs underline underline-offset-2" onClick={() => setPreview(null)}>Close preview</button>
+        </div>
+      )}
       {progress !== null && <div role="status" className="text-xs"><progress aria-label="Video upload progress" value={progress} max="100" /> Uploading video: {progress}%</div>}
       {error && <p role="alert" className="text-xs text-[#9b1c1c]">{error}</p>}
 

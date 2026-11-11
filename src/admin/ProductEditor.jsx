@@ -7,6 +7,7 @@ import { uploadProductImage, saveProduct, getCollections } from '../services/sup
 import { PRODUCT_CATEGORIES, BASE_COLLECTIONS, getCategoryLabel } from '../data/categories.js';
 import { supabase } from '../lib/supabase.js';
 import ProductVideoFields from './ProductVideoFields.jsx';
+import ErrorBoundary from '../components/ErrorBoundary.jsx';
 import { uploadProductVideo } from '../services/productVideoService.js';
 import { normalizeInstagramPost } from '../utils/productVideo.js';
 
@@ -1149,7 +1150,9 @@ export default function ProductEditor({
             )}
           </div>
 
-          <ProductVideoFields value={video} onChange={updateVideo} disabled={isSaving} progress={videoProgress} />
+          <ErrorBoundary title="Product video controls could not be displayed" message="Your other product edits are still here. Try reloading just the video controls.">
+            <ProductVideoFields value={video} onChange={updateVideo} disabled={isSaving} progress={videoProgress} />
+          </ErrorBoundary>
 
           {/* Section C: Pricing & Commercials */}
           <div className="bg-white border border-[#ebe6e0] p-6 shadow-2xs space-y-5">
