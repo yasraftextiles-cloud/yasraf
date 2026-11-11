@@ -11,7 +11,7 @@ const getEnvVar = (key) => {
   return '';
 };
 
-const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
+export const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
 const supabaseKey = getEnvVar('VITE_SUPABASE_PUBLISHABLE_KEY') || getEnvVar('VITE_SUPABASE_ANON_KEY');
 
 export const isSupabaseConfigured = Boolean(

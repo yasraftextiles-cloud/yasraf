@@ -6,6 +6,9 @@ import {
 import { uploadProductImage, saveProduct, getCollections } from '../services/supabaseService.js';
 import { PRODUCT_CATEGORIES, BASE_COLLECTIONS, getCategoryLabel } from '../data/categories.js';
 import { supabase } from '../lib/supabase.js';
+import ProductVideoFields from './ProductVideoFields.jsx';
+import { uploadProductVideo } from '../services/productVideoService.js';
+import { normalizeInstagramPost } from '../utils/productVideo.js';
 
 // Product categories and base collections imported from canonical ../data/categories.js
 
@@ -55,6 +58,13 @@ export default function ProductEditor({
   });
 
   // 4. Photography & Media
+  const [video, setVideo] = useState(() => ({
+    path: product?.product_video_path || null,
+    file: null,
+    instagram: product?.product_instagram_url || '',
+  }));
+  const [videoProgress, setVideoProgress] = useState(null);
+  const updateVideo = (next) => { setVideo(next); setIsDirty(true); };
   const [images, setImages] = useState(() => {
     if (!product) return [];
     if (Array.isArray(product.images) && product.images.length > 0) {
@@ -542,6 +552,14 @@ export default function ProductEditor({
       return;
     }
 
+    const instagramUrl = normalizeInstagramPost(video.instagram);
+    const hasVideo = Boolean(video.file || video.path);
+    if (video.instagram.trim() && (!instagramUrl || !hasVideo)) {
+      setFormError('The Instagram link requires a video and must be a valid Instagram Reel or post URL.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     // B. Required & Unique SKU Validations (In-Form duplicates)
     const formSkuErrors = {};
     const seenSkus = new Map();
@@ -660,6 +678,21 @@ export default function ProductEditor({
         }))
       };
 
+      let videoPath = video.path;
+      if (video.file) {
+        setVideoProgress(0);
+        try {
+          videoPath = await uploadProductVideo(video.file, setVideoProgress);
+          setVideo({ ...video, path: videoPath, file: null });
+        } finally {
+          setVideoProgress(null);
+        }
+      }
+
+      if (videoPath !== (product?.product_video_path || null) || instagramUrl !== (product?.product_instagram_url || null)) {
+        payload.product_video_path = videoPath;
+        payload.product_instagram_url = instagramUrl;
+      }
       const result = await saveProduct(payload);
 
       setIsPublished(targetPublishState);
@@ -1115,6 +1148,8 @@ export default function ProductEditor({
               </div>
             )}
           </div>
+
+          <ProductVideoFields value={video} onChange={updateVideo} disabled={isSaving} progress={videoProgress} />
 
           {/* Section C: Pricing & Commercials */}
           <div className="bg-white border border-[#ebe6e0] p-6 shadow-2xs space-y-5">
