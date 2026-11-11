@@ -196,6 +196,14 @@ export async function saveProduct(productData) {
     show_in_signature_edit: targetSignatureEdit
   };
 
+  // Media and product changes must commit together; the legacy fallback cannot do that.
+  if ('product_video_path' in rpcPayload || 'product_instagram_url' in rpcPayload) {
+    const { data, error } = await supabase.rpc('save_product_with_media', { payload: rpcPayload });
+    if (error) throw error;
+    if (!data?.success) throw new Error('Could not save the product video.');
+    return data;
+  }
+
   // 1. First attempt atomic RPC save_product_with_variants
   try {
     const { data, error } = await supabase.rpc('save_product_with_variants', {
