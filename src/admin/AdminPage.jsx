@@ -8,6 +8,7 @@ import ProductEditor from './ProductEditor.jsx';
 import StoreSettingsTab from './StoreSettingsTab.jsx';
 import CollectionsTab from './CollectionsTab.jsx';
 import OrdersTab from './OrdersTab.jsx';
+import BlogTab from './blog/BlogTab.jsx';
 import { Loader2 } from 'lucide-react';
 
 export default function AdminPage({ onBackToStore }) {
@@ -16,10 +17,11 @@ export default function AdminPage({ onBackToStore }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  // View state: 'dashboard' | 'new-product' | 'edit-product' | 'collections' | 'settings'
+  // View state: 'products' | 'orders' | 'collections' | 'blog' | 'settings'
   const [currentTab, setCurrentTab] = useState('products');
   const [productView, setProductView] = useState('list'); // 'list' | 'new' | 'edit'
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [blogSubView, setBlogSubView] = useState('list'); // 'list' | 'new'
 
   // Data state
   const [products, setProducts] = useState([]);
@@ -132,8 +134,16 @@ export default function AdminPage({ onBackToStore }) {
     <AdminLayout
       currentTab={currentTab}
       onSelectTab={(tab) => {
-        setCurrentTab(tab);
-        setProductView('list');
+        if (tab === 'blog' || tab === 'blog-list') {
+          setCurrentTab('blog');
+          setBlogSubView('list');
+        } else if (tab === 'blog-new') {
+          setCurrentTab('blog');
+          setBlogSubView('new');
+        } else {
+          setCurrentTab(tab);
+          setProductView('list');
+        }
       }}
       user={user}
       onLogout={handleLogout}
@@ -184,6 +194,11 @@ export default function AdminPage({ onBackToStore }) {
       {/* Tab: Collections */}
       {currentTab === 'collections' && (
         <CollectionsTab />
+      )}
+
+      {/* Tab: Blog & Editorial */}
+      {currentTab === 'blog' && (
+        <BlogTab key={blogSubView} initialSubView={blogSubView} />
       )}
 
       {/* Tab: Store Settings */}

@@ -762,3 +762,108 @@ REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_order_checkout(jsonb) TO service_role;
 GRANT EXECUTE ON FUNCTION public.track_order_secure(text, text, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO anon, authenticated;
+
+-- =====================================================================
+-- 12. BLOG CMS, STORAGE BUCKET & RLS POLICIES
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS public.blog_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL CHECK (char_length(trim(title)) > 0),
+  slug TEXT UNIQUE NOT NULL CHECK (char_length(trim(slug)) > 0),
+  excerpt TEXT,
+  content_html TEXT NOT NULL CHECK (char_length(trim(content_html)) > 0),
+  cover_image_url TEXT,
+  cover_image_alt TEXT,
+  author_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  author_name TEXT DEFAULT 'YASRAF Atelier Editorial',
+  category TEXT DEFAULT 'Styling Guide',
+  tags TEXT[] DEFAULT '{}',
+  reading_time INTEGER DEFAULT 3 CHECK (reading_time >= 0),
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
+  seo_title TEXT,
+  seo_description TEXT,
+  focus_keyword TEXT,
+  canonical_url TEXT,
+  social_image_url TEXT,
+  published_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON public.blog_posts(slug);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_status_published ON public.blog_posts(status, published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_category ON public.blog_posts(category);
+
+CREATE OR REPLACE FUNCTION public.handle_blog_posts_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = timezone('utc'::text, now());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS set_blog_posts_updated_at ON public.blog_posts;
+CREATE TRIGGER set_blog_posts_updated_at
+  BEFORE UPDATE ON public.blog_posts
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_blog_posts_updated_at();
+
+ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can view published blog posts" ON public.blog_posts;
+CREATE POLICY "Public can view published blog posts" ON public.blog_posts
+  FOR SELECT USING (status = 'published' OR public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can insert blog posts" ON public.blog_posts;
+CREATE POLICY "Admins can insert blog posts" ON public.blog_posts
+  FOR INSERT TO authenticated
+  WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can update blog posts" ON public.blog_posts;
+CREATE POLICY "Admins can update blog posts" ON public.blog_posts
+  FOR UPDATE TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete blog posts" ON public.blog_posts;
+CREATE POLICY "Admins can delete blog posts" ON public.blog_posts
+  FOR DELETE TO authenticated
+  USING (public.is_admin());
+
+-- Blog images storage bucket
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'blog-images',
+  'blog-images',
+  true,
+  5242880,
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = true,
+  file_size_limit = 5242880,
+  allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+DROP POLICY IF EXISTS "Public can view blog images" ON storage.objects;
+CREATE POLICY "Public can view blog images" ON storage.objects
+  FOR SELECT USING (bucket_id = 'blog-images');
+
+DROP POLICY IF EXISTS "Admins can upload blog images" ON storage.objects;
+CREATE POLICY "Admins can upload blog images" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'blog-images' AND public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can update blog images" ON storage.objects;
+CREATE POLICY "Admins can update blog images" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'blog-images' AND public.is_admin())
+  WITH CHECK (bucket_id = 'blog-images' AND public.is_admin());
+
+DROP POLICY IF EXISTS "Admins can delete blog images" ON storage.objects;
+CREATE POLICY "Admins can delete blog images" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (bucket_id = 'blog-images' AND public.is_admin());
+
+GRANT SELECT ON public.blog_posts TO anon, authenticated;
+GRANT ALL ON public.blog_posts TO authenticated;
+

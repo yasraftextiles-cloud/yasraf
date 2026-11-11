@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Package, ShoppingBag, Settings, LogOut, ExternalLink, Menu, X, 
-  Layers, Shield, ChevronRight, Sparkles 
+  Layers, Shield, ChevronRight, Sparkles, BookOpen, List, Plus 
 } from 'lucide-react';
 
 export default function AdminLayout({ 
@@ -18,6 +18,16 @@ export default function AdminLayout({
     { id: 'products', label: 'Products & Catalog', icon: Package, count: null },
     { id: 'orders', label: 'Orders & Line Items', icon: ShoppingBag, count: null },
     { id: 'collections', label: 'Collections', icon: Layers, count: null },
+    { 
+      id: 'blog', 
+      label: 'Blog', 
+      icon: BookOpen, 
+      count: null,
+      subItems: [
+        { id: 'blog-list', label: 'All Posts', icon: List },
+        { id: 'blog-new', label: 'Add New Post', icon: Plus }
+      ]
+    },
     { id: 'settings', label: 'Store Settings', icon: Settings, count: null }
   ];
 
@@ -103,27 +113,56 @@ export default function AdminLayout({
 
             {navigationItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentTab === item.id;
+              const isItemActive = currentTab === item.id || (item.subItems && (currentTab === 'blog-list' || currentTab === 'blog-new'));
               return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onSelectTab(item.id);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`
-                    w-full flex items-center justify-between px-3.5 py-2.5 rounded-none text-[12.5px] tracking-wide transition-all duration-150 cursor-pointer text-left group focus:outline-none focus:ring-1 focus:ring-[#c5a880]
-                    ${isActive 
-                      ? 'bg-[#24211e] text-[#faf8f6] font-semibold border-l-[3px] border-[#c5a880] shadow-sm' 
-                      : 'text-[#a8a29e] hover:bg-[#1c1a17] hover:text-[#faf8f6] border-l-[3px] border-transparent font-medium'}
-                  `}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon size={17} className={isActive ? 'text-[#c5a880]' : 'text-[#8c867f] group-hover:text-[#c5a880] transition-colors'} />
-                    <span>{item.label}</span>
-                  </div>
-                  {isActive && <ChevronRight size={14} className="text-[#c5a880]" />}
-                </button>
+                <div key={item.id} className="space-y-1">
+                  <button
+                    onClick={() => {
+                      onSelectTab(item.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`
+                      w-full flex items-center justify-between px-3.5 py-2.5 rounded-none text-[12.5px] tracking-wide transition-all duration-150 cursor-pointer text-left group focus:outline-none focus:ring-1 focus:ring-[#c5a880]
+                      ${isItemActive 
+                        ? 'bg-[#24211e] text-[#faf8f6] font-semibold border-l-[3px] border-[#c5a880] shadow-sm' 
+                        : 'text-[#a8a29e] hover:bg-[#1c1a17] hover:text-[#faf8f6] border-l-[3px] border-transparent font-medium'}
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon size={17} className={isItemActive ? 'text-[#c5a880]' : 'text-[#8c867f] group-hover:text-[#c5a880] transition-colors'} />
+                      <span>{item.label}</span>
+                    </div>
+                    {isItemActive && <ChevronRight size={14} className="text-[#c5a880]" />}
+                  </button>
+
+                  {/* Sub-items for Blog */}
+                  {item.subItems && (isItemActive || currentTab === 'blog') && (
+                    <div className="pl-9 pr-2 py-1 space-y-1">
+                      {item.subItems.map((sub) => {
+                        const SubIcon = sub.icon;
+                        const isSubActive = currentTab === sub.id;
+                        return (
+                          <button
+                            key={sub.id}
+                            onClick={() => {
+                              onSelectTab(sub.id);
+                              setIsMobileMenuOpen(false);
+                            }}
+                            className={`
+                              w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded-none transition-colors cursor-pointer text-left
+                              ${isSubActive
+                                ? 'text-[#c5a880] font-semibold bg-white/5'
+                                : 'text-[#8c867f] hover:text-[#e5dfd7] font-medium'}
+                            `}
+                          >
+                            <SubIcon size={12} className={isSubActive ? 'text-[#c5a880]' : 'text-[#8c867f]'} />
+                            <span>{sub.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </nav>

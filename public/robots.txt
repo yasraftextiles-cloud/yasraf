@@ -5,6 +5,8 @@ Allow: /collections/
 Allow: /about
 Allow: /contact
 Allow: /shipping
+Allow: /blog
+Allow: /blog/
 Allow: /assets/
 Allow: /images/
 

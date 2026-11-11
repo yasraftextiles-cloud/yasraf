@@ -32,7 +32,8 @@ async function generateSitemap() {
     { url: `${PRODUCTION_DOMAIN}/collections/sale`, changefreq: 'weekly', priority: '0.7' },
     { url: `${PRODUCTION_DOMAIN}/about`, changefreq: 'monthly', priority: '0.6' },
     { url: `${PRODUCTION_DOMAIN}/contact`, changefreq: 'monthly', priority: '0.6' },
-    { url: `${PRODUCTION_DOMAIN}/shipping`, changefreq: 'monthly', priority: '0.6' }
+    { url: `${PRODUCTION_DOMAIN}/shipping`, changefreq: 'monthly', priority: '0.6' },
+    { url: `${PRODUCTION_DOMAIN}/blog`, changefreq: 'daily', priority: '0.8' }
   ];
 
   // 2. Load Products Catalog
@@ -42,6 +43,15 @@ async function generateSitemap() {
     products = productsModule.PRODUCTS || [];
   } catch (err) {
     console.warn('[Sitemap Generator] Could not load local products.js:', err.message);
+  }
+
+  // 3. Load Published Blog Posts
+  let blogPosts = [];
+  try {
+    const blogModule = await import('../src/data/initialBlogPosts.js');
+    blogPosts = (blogModule.INITIAL_BLOG_POSTS || []).filter(p => p.status === 'published');
+  } catch (err) {
+    console.warn('[Sitemap Generator] Could not load blog posts:', err.message);
   }
 
   // Generate clean readable slug helper
@@ -62,7 +72,13 @@ async function generateSitemap() {
     priority: '0.8'
   }));
 
-  const allEntries = [...staticPages, ...productPages];
+  const blogPages = blogPosts.map((post) => ({
+    url: `${PRODUCTION_DOMAIN}/blog/${post.slug}`,
+    changefreq: 'weekly',
+    priority: '0.7'
+  }));
+
+  const allEntries = [...staticPages, ...productPages, ...blogPages];
 
   // Build XML content
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

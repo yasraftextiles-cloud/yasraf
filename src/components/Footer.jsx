@@ -249,6 +249,16 @@ export default function Footer({
               </li>
               <li>
                 <a 
+                  href="/blog" 
+                  onClick={(e) => { e.preventDefault(); onNavigatePage && onNavigatePage('blog'); }} 
+                  style={{ color: '#c5a880', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
+                  className="hover:underline"
+                >
+                  The Atelier Journal (Blog)
+                </a>
+              </li>
+              <li>
+                <a 
                   href="/about" 
                   onClick={(e) => { e.preventDefault(); onNavigatePage && onNavigatePage('about'); }} 
                   style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}

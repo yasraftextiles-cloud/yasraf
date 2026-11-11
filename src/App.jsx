@@ -30,6 +30,10 @@ const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const ShippingPolicyPage = lazy(() => import('./pages/ShippingPolicyPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const BlogPage = lazy(() => import('./pages/BlogPage'));
+const BlogPostPage = lazy(() => import('./pages/BlogPostPage'));
+
+import { getBlogPostBySlug } from './services/blogService';
 
 // Code-split Customer Auth & Account Pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -106,9 +110,11 @@ function AppContent() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Page Routing State ('home' | 'product' | 'collections' | 'about' | 'contact' | 'shipping' | 'login' | 'register' | 'forgot-password' | 'reset-password' | 'auth-callback' | 'account' | 'admin')
+  // Page Routing State ('home' | 'product' | 'collections' | 'about' | 'contact' | 'shipping' | 'login' | 'register' | 'forgot-password' | 'reset-password' | 'auth-callback' | 'account' | 'admin' | 'blog' | 'blog-post')
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedBlogSlug, setSelectedBlogSlug] = useState(null);
+  const [selectedBlogPost, setSelectedBlogPost] = useState(null);
   const [accountParams, setAccountParams] = useState({ tab: 'overview', orderId: null });
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
 
@@ -426,6 +432,17 @@ function AppContent() {
       window.history.pushState({ page: 'contact' }, '', '/contact');
     } else if (page === 'shipping') {
       window.history.pushState({ page: 'shipping' }, '', '/shipping');
+    } else if (page === 'blog') {
+      setSelectedBlogSlug(null);
+      setSelectedBlogPost(null);
+      window.history.pushState({ page: 'blog' }, '', '/blog');
+    } else if (page === 'blog-post') {
+      const slug = typeof param === 'string' ? param : param?.slug;
+      setSelectedBlogSlug(slug);
+      if (param && typeof param === 'object') {
+        setSelectedBlogPost(param);
+      }
+      window.history.pushState({ page: 'blog-post', slug }, '', `/blog/${slug}`);
     } else if (page === 'login') {
       window.history.pushState({ page: 'login' }, '', '/login');
     } else if (page === 'register') {
@@ -535,13 +552,34 @@ function AppContent() {
         return;
       }
 
-      // 6. Homepage
+      // 6. Blog Routes: /blog or /blog/:slug or hash #blog/...
+      if (pathname === '/blog' || hash === 'blog') {
+        setCurrentPage('blog');
+        setSelectedBlogSlug(null);
+        setSelectedBlogPost(null);
+        return;
+      }
+      if (pathname.startsWith('/blog/') || hash.startsWith('blog/')) {
+        const slug = pathname.startsWith('/blog/')
+          ? pathname.replace(/^\/blog\//, '').trim()
+          : rawHash.replace(/^blog\//i, '').trim();
+        if (slug) {
+          setSelectedBlogSlug(slug);
+          setCurrentPage('blog-post');
+          return;
+        } else {
+          setCurrentPage('blog');
+          return;
+        }
+      }
+
+      // 7. Homepage
       if (pathname === '/' && (!rawHash || rawHash === '')) {
         setCurrentPage('home');
         return;
       }
 
-      // 7. Unknown route -> 404
+      // 8. Unknown route -> 404
       if (pathname !== '/') {
         setCurrentPage('404');
         return;
@@ -559,15 +597,31 @@ function AppContent() {
     };
   }, [products, catalogPending]);
 
+  // Synchronize blog post data for SEO and sharing
+  useEffect(() => {
+    if (currentPage === 'blog-post' && selectedBlogSlug) {
+      let isMounted = true;
+      getBlogPostBySlug(selectedBlogSlug, true).then((p) => {
+        if (isMounted && p) {
+          setSelectedBlogPost(p);
+        }
+      });
+      return () => { isMounted = false; };
+    } else if (currentPage !== 'blog-post') {
+      setSelectedBlogPost(null);
+    }
+  }, [currentPage, selectedBlogSlug]);
+
   // Synchronize dynamic SEO metadata, canonicals, robots, and JSON-LD on route changes
   useEffect(() => {
     updateDocumentSeo({
       page: currentPage,
       product: selectedProduct,
       category: activeCategory,
-      currency
+      currency,
+      blogPost: selectedBlogPost
     });
-  }, [currentPage, selectedProduct, activeCategory, currency]);
+  }, [currentPage, selectedProduct, activeCategory, currency, selectedBlogPost]);
 
   // Login Success Callback preserving destination
   const handleLoginSuccess = (targetOverride = null, authUser = null) => {
@@ -881,6 +935,25 @@ function AppContent() {
             <ShippingPolicyPage
               onBackToHome={() => navigateTo('home')}
               onOpenConcierge={() => navigateTo('contact')}
+            />
+          )}
+
+          {/* Dedicated Atelier Blog Overview Page */}
+          {currentPage === 'blog' && (
+            <BlogPage
+              onNavigateHome={() => navigateTo('home')}
+              onNavigatePost={(slug) => navigateTo('blog-post', slug)}
+            />
+          )}
+
+          {/* Dedicated Atelier Blog Post Detail Page */}
+          {currentPage === 'blog-post' && (
+            <BlogPostPage
+              slug={selectedBlogSlug}
+              onNavigateHome={() => navigateTo('home')}
+              onNavigateBlog={() => navigateTo('blog')}
+              onNavigatePost={(slug) => navigateTo('blog-post', slug)}
+              onNotFound={() => setCurrentPage('404')}
             />
           )}
 

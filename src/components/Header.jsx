@@ -148,6 +148,16 @@ export default function Header({
                   {item.label}
                 </a>
               ))}
+              <a
+                href="/blog"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onNavigatePage) onNavigatePage('blog');
+                }}
+                className="nav-link text-[11px] font-medium tracking-[0.11em] uppercase whitespace-nowrap px-1 py-1 cursor-pointer focus:outline-none hover:text-[#c5a880] transition-colors"
+              >
+                Journal
+              </a>
             </nav>
 
             {/* Mobile Center Brand */}
@@ -342,6 +352,18 @@ export default function Header({
                   {item.label}
                 </a>
               ))}
+
+              <a
+                href="/blog"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsMobileMenuOpen(false);
+                  if (onNavigatePage) onNavigatePage('blog');
+                }}
+                className="block text-[13px] font-medium tracking-[0.1em] text-[#c5a880] uppercase transition-colors hover:text-[#1a1814] cursor-pointer"
+              >
+                The Atelier Journal
+              </a>
 
               {/* Client Account Section in Mobile Menu */}
               <div className="pt-4 border-t border-gray-100 space-y-3">

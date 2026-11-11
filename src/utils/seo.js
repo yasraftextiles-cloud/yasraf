@@ -223,7 +223,8 @@ export function getOrganizationAndWebsiteJsonLd() {
 export function updateDocumentSeo({
   page = 'home',
   product = null,
-  category = 'all'
+  category = 'all',
+  blogPost = null
 }) {
   let title = "YASRAF Textiles | Premium Women's Clothing in Pakistan";
   let description = "Shop YASRAF Textiles for elegant women's clothing in Pakistan. Discover ready to wear, festive, winter and luxury prêt collections crafted for timeless style.";
@@ -273,6 +274,95 @@ export function updateDocumentSeo({
         "name": "YASRAF Textiles",
         "url": `${PRODUCTION_DOMAIN}/`
       }
+    };
+  } else if (page === 'blog') {
+    title = "The Atelier Journal | Fashion, Craft & Styling Guides | YASRAF Textiles";
+    description = "Read the latest essays, Pakistani luxury lawn styling tips, and artisanal textile preservation guides from the YASRAF couture atelier.";
+    canonicalPath = '/blog';
+    ogType = 'website';
+    jsonLdData = {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      "name": "The Atelier Journal",
+      "url": `${PRODUCTION_DOMAIN}/blog`,
+      "description": "Fashion essays, textile heritage, and styling guides by YASRAF Textiles.",
+      "publisher": {
+        "@id": `${PRODUCTION_DOMAIN}/#organization`
+      }
+    };
+  } else if (page === 'blog-post' && blogPost) {
+    title = blogPost.seo_title 
+      ? (blogPost.seo_title.includes('YASRAF') ? blogPost.seo_title : `${blogPost.seo_title} | YASRAF Textiles`)
+      : `${blogPost.title} | YASRAF Textiles`;
+    description = blogPost.seo_description || blogPost.excerpt || 'Read the full story from the YASRAF couture atelier.';
+    canonicalPath = `/blog/${blogPost.slug}`;
+    ogType = 'article';
+    
+    // Ensure draft posts are not indexed by search engines
+    if (blogPost.status !== 'published') {
+      robots = 'noindex, nofollow';
+    } else {
+      robots = 'index, follow';
+    }
+
+    const rawImg = blogPost.social_image_url || blogPost.cover_image_url;
+    if (rawImg) {
+      ogImage = rawImg.startsWith('http') ? rawImg : `${PRODUCTION_DOMAIN}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+    }
+
+    jsonLdData = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BlogPosting",
+          "@id": `${PRODUCTION_DOMAIN}/blog/${blogPost.slug}#article`,
+          "headline": blogPost.title,
+          "description": description,
+          "image": [ogImage],
+          "datePublished": blogPost.published_at || blogPost.created_at,
+          "dateModified": blogPost.updated_at || blogPost.published_at || blogPost.created_at,
+          "author": {
+            "@type": "Person",
+            "name": blogPost.author_name || "YASRAF Atelier Editorial"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "YASRAF Textiles",
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${PRODUCTION_DOMAIN}/favicon-512x512.png`
+            }
+          },
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `${PRODUCTION_DOMAIN}/blog/${blogPost.slug}`
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": `${PRODUCTION_DOMAIN}/blog/${blogPost.slug}#breadcrumb`,
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": `${PRODUCTION_DOMAIN}/`
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Journal",
+              "item": `${PRODUCTION_DOMAIN}/blog`
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": blogPost.title,
+              "item": `${PRODUCTION_DOMAIN}/blog/${blogPost.slug}`
+            }
+          ]
+        }
+      ]
     };
   } else if (page === 'about') {
     title = "The Atelier Story | About Us | YASRAF Textiles";

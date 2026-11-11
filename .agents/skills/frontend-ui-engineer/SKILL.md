@@ -9,6 +9,95 @@ This skill guides the AI coding agent whenever working on frontend, UI/UX, anima
 
 ---
 
+## FAST EDIT PROTOCOL (HIGH PRIORITY)
+
+### 1. Task Classification
+
+- **SMALL TASK**:
+  Text, colors, spacing, buttons, hover effects, icons, minor CSS and single-component changes.
+  &rarr; **Immediately use FAST EDIT MODE.**
+- **MEDIUM TASK**:
+  Multiple related components or page-level changes.
+  &rarr; **Inspect only affected components and dependencies.**
+- **COMPLEX TASK**:
+  Backend, authentication, database, architecture, security, or major functionality changes.
+  &rarr; **Use deeper analysis and appropriate testing.**
+
+### 2. Fast Edit Mode
+
+For small tasks:
+- No full project analysis.
+- No unnecessary planning.
+- No scanning the entire repository.
+- No reading unrelated files.
+- No unnecessary web research.
+- No installing dependencies.
+- No unrelated refactoring.
+- No repeated codebase searches.
+
+**Workflow**:
+Locate &rarr; Inspect &rarr; Edit &rarr; Verify &rarr; Finish
+
+### 3. Targeted File Search
+
+Search only relevant files.
+Exclude:
+- `node_modules/`
+- `dist/`
+- `build/`
+- `coverage/`
+- `.git/`
+
+Once the correct component is identified, **STOP exploring unrelated code**.
+
+### 4. Minimum Tool Usage
+
+- Avoid excessive terminal commands.
+- Avoid repeatedly reading the same files.
+- Use targeted searches and focused file reads.
+- Batch related edits where safe.
+
+### 5. Smart Verification
+
+- **For simple CSS/text changes**:
+  - Check affected component.
+  - Perform relevant targeted verification.
+- **For functional changes**:
+  - Run appropriate tests/build checks.
+  - Verify related dependencies.
+- **Never skip critical checks for risky changes.**
+
+### 6. No Unnecessary Documentation
+
+Do not automatically create:
+- Implementation plans
+- Walkthrough files
+- Progress reports
+- Unrelated documentation
+
+*(Unless explicitly requested).*
+
+### 7. Response Style
+
+After completing a task, respond briefly:
+
+- **Changed**:
+- **Files**:
+- **Verified**:
+- **Issues**:
+
+*(No lengthy explanations).*
+
+### 8. Strict Scope & Preservation
+
+- Only modify the files required for the task.
+- Do not modify unrelated components.
+- Do not touch working functionality.
+- Do not commit, push or deploy unless requested.
+- **Speed must never compromise correctness, security, or existing functionality.**
+
+---
+
 ## 1. Strict Task Scope
 
 - Do **EXACTLY** what the user requests.
@@ -151,7 +240,7 @@ Never accidentally break:
 - Navigation
 - Mobile layouts
 
-Before editing, thoroughly understand the affected component. Preserve existing behavior unless explicitly asked to change it.
+Before editing, inspect only the code necessary to safely complete the requested change. Stop analyzing once sufficient context is available. Preserve existing behavior unless explicitly asked to change it.
 
 ---
 
@@ -207,11 +296,12 @@ Never claim something was tested if it was not. Never claim successful deploymen
 
 Keep responses short and professional.
 
-After completing a task, report:
-1. What changed.
-2. Which files changed.
-3. What was tested.
-4. Any remaining issue.
+After completing a task, report using the brief format:
+
+- **Changed**:
+- **Files**:
+- **Verified**:
+- **Issues**:
 
 Avoid long explanations and unnecessary suggestions.
 
@@ -225,4 +315,3 @@ Avoid long explanations and unnecessary suggestions.
 - If the user says: *"Do not change existing design"* &rarr; Preserve the existing design exactly.
 - If the user says: *"Create a separate testing page"* &rarr; Create an isolated page without modifying the homepage or production experience.
 - Never assume permission for extra changes.
-
