@@ -259,7 +259,6 @@ export default function ProductDetailPage({
           <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-6 text-left">
             
             {/* Header / Category & Title */}
-            <div className={product.product_video_path ? 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' : undefined}>
             <div>
               <span className="text-[10.5px] uppercase tracking-[0.24em] font-medium text-[#8c867f] block mb-2">
                 {product.tag || product.categoryLabel || 'HAUTE COUTURE'}
@@ -291,9 +290,6 @@ export default function ProductDetailPage({
               <p className="text-[11px] text-[#8c867f] tracking-wide">
                 Taxes included. Complimentary shipping on orders over Rs. 4,990.
               </p>
-            </div>
-            {product.product_video_path && <ProductVideo key={`${product.id}:${product.product_video_path}`} path={product.product_video_path}
-              poster={images[0]} title={product.title} instagram={product.product_instagram_url} />}
             </div>
 
             {/* Cash on Delivery / Express Dispatch Trust Banner */}
@@ -536,6 +532,9 @@ export default function ProductDetailPage({
 
         </div>
       </div>
+
+      {product.product_video_path && <ProductVideo key={`${product.id}:${product.product_video_path}`} path={product.product_video_path}
+        poster={images[0]} title={product.title} instagram={product.product_instagram_url} />}
 
       {/* 3. "Complete The Look" / "You May Also Like" 4-Column Grid matching Jahaan */}
       {relatedProducts.length > 0 && (
