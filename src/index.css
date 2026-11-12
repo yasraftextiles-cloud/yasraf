@@ -134,6 +134,13 @@ body {
   overflow-x: hidden;
 }
 
+/* The signed-in admin workspace owns scrolling; the storefront is unchanged. */
+html:has([data-admin-shell]),
+body:has([data-admin-shell]) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* WCAG 2.2 AA Focus Visible & Keyboard Accessibility */
 :focus-visible {
   outline: 2px solid var(--color-text-primary);

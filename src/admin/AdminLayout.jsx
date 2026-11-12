@@ -38,7 +38,7 @@ export default function AdminLayout({
   ];
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#faf8f6] text-[#1a1814] antialiased md:flex-row">
+    <div data-admin-shell className="fixed inset-0 flex flex-col overflow-hidden bg-[#faf8f6] text-[#1a1814] antialiased md:flex-row">
       
       {/* 1. Mobile Top Navigation Bar */}
       <div className="md:hidden bg-[#141311] text-white px-4 py-3.5 flex items-center justify-between border-b border-black/20 shrink-0 z-40">
