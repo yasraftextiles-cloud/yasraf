@@ -133,6 +133,7 @@ export default function AdminPage({ onBackToStore }) {
   return (
     <AdminLayout
       currentTab={currentTab}
+      workspaceKey={currentTab === 'products' ? `products:${productView}:${selectedProduct?.id ?? ''}` : currentTab === 'blog' ? `blog:${blogSubView}` : currentTab}
       onSelectTab={(tab) => {
         if (tab === 'blog' || tab === 'blog-list') {
           setCurrentTab('blog');

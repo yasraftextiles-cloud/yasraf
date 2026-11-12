@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { 
   Package, ShoppingBag, Settings, LogOut, ExternalLink, Menu, X, 
   Layers, Shield, ChevronRight, Sparkles, BookOpen, List, Plus 
@@ -6,6 +6,7 @@ import {
 
 export default function AdminLayout({ 
   currentTab = 'products', 
+  workspaceKey = currentTab,
   onSelectTab, 
   user, 
   onLogout, 
@@ -13,6 +14,11 @@ export default function AdminLayout({
   children 
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const workspace = useRef(null);
+
+  useLayoutEffect(() => {
+    if (workspace.current) workspace.current.scrollTop = 0;
+  }, [workspaceKey]);
 
   const navigationItems = [
     { id: 'products', label: 'Products & Catalog', icon: Package, count: null },
@@ -32,7 +38,7 @@ export default function AdminLayout({
   ];
 
   return (
-    <div className="h-screen w-full bg-[#faf8f6] text-[#1a1814] flex flex-col md:flex-row antialiased overflow-hidden">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#faf8f6] text-[#1a1814] antialiased md:flex-row">
       
       {/* 1. Mobile Top Navigation Bar */}
       <div className="md:hidden bg-[#141311] text-white px-4 py-3.5 flex items-center justify-between border-b border-black/20 shrink-0 z-40">
@@ -79,7 +85,7 @@ export default function AdminLayout({
 
       {/* 2. Desktop & Mobile Slide-Out Charcoal Sidebar (Fixed left navigation) */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 h-full bg-[#141311] text-[#e5dfd7] flex flex-col justify-between border-r border-[#262320] transition-transform duration-300 ease-in-out md:static md:w-64 md:h-screen md:shrink-0 md:translate-x-0 overflow-y-auto
+        fixed inset-y-0 left-0 z-50 flex w-64 min-h-0 flex-col justify-between overflow-y-auto overscroll-y-contain border-r border-[#262320] bg-[#141311] text-[#e5dfd7] transition-transform duration-300 ease-in-out md:static md:shrink-0 md:translate-x-0
         ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'}
       `}>
         {/* Brand & Logo Area */}
@@ -221,7 +227,7 @@ export default function AdminLayout({
       )}
 
       {/* 3. Main Workspace Canvas (Independent Vertical Scroll) */}
-      <div className="flex-1 flex flex-col min-w-0 h-full md:h-screen overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         
         {/* Desktop Sticky Header Bar */}
         <header className="hidden md:flex h-16 shrink-0 bg-white border-b border-[#ebe6e0] px-8 items-center justify-between z-30">
@@ -262,7 +268,7 @@ export default function AdminLayout({
         </header>
 
         {/* Dynamic Page Content (Independent Scroll Container) */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto">
+        <main ref={workspace} className="mx-auto min-h-0 w-full max-w-[1600px] flex-1 overflow-y-auto overscroll-y-contain p-4 sm:p-6 lg:p-8">
           {children}
         </main>
 

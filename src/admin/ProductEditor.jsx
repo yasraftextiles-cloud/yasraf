@@ -22,6 +22,11 @@ export default function ProductEditor({
   onCancel 
 }) {
   const isEditing = Boolean(product && product.id);
+  const editor = useRef(null);
+
+  const scrollWorkspace = (top = 0) => {
+    editor.current?.closest('main')?.scrollTo({ top, behavior: 'smooth' });
+  };
 
   // Available collections list (merged from DB and defaults)
   const [availableCollections, setAvailableCollections] = useState(BASE_COLLECTIONS);
@@ -524,27 +529,27 @@ export default function ProductEditor({
     // A. Form field validations
     if (!title.trim()) {
       setFormError('Product title is required.');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollWorkspace();
       return;
     }
 
     const numPrice = parseFloat(price);
     if (isNaN(numPrice) || numPrice <= 0) {
       setFormError('Please enter a valid positive regular price in PKR.');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollWorkspace();
       return;
     }
 
     const numOrig = originalPrice.trim() ? parseFloat(originalPrice) : null;
     if (numOrig !== null && (isNaN(numOrig) || numOrig < numPrice)) {
       setFormError('Compare-at price cannot be lower than the regular price.');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollWorkspace();
       return;
     }
 
     if (images.length === 0) {
       setFormError('Please upload at least one product photo or add via URL.');
-      window.scrollTo({ top: 200, behavior: 'smooth' });
+      scrollWorkspace();
       return;
     }
 
@@ -557,7 +562,7 @@ export default function ProductEditor({
     const hasVideo = Boolean(video.file || video.path);
     if (video.instagram.trim() && (!instagramUrl || !hasVideo)) {
       setFormError('The Instagram link requires a video and must be a valid Instagram Reel or post URL.');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollWorkspace();
       return;
     }
 
@@ -729,7 +734,7 @@ export default function ProductEditor({
   };
 
   return (
-    <div className="space-y-8 text-left pb-24">
+    <div ref={editor} className="space-y-8 text-left">
       
       {/* 1. Header & Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#ebe6e0]">
