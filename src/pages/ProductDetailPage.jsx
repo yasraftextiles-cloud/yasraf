@@ -484,48 +484,6 @@ export default function ProductDetailPage({
                   </div>
                 )}
               </div>
-
-              {/* 3. Shipping & Delivery */}
-              <div>
-                <button
-                  onClick={() => setOpenAccordion(openAccordion === 'shipping' ? '' : 'shipping')}
-                  className="w-full py-3.5 flex items-center justify-between text-left text-[12px] uppercase tracking-[0.16em] font-medium text-[#1a1814] hover:text-[#67615c] transition-colors cursor-pointer"
-                >
-                  <span>Shipping & Returns</span>
-                  <ChevronDown 
-                    size={16} 
-                    className={`transition-transform duration-300 ${openAccordion === 'shipping' ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {openAccordion === 'shipping' && (
-                  <div className="pb-4 text-[12.5px] text-[#67615c] font-light leading-relaxed space-y-1.5">
-                    <p>• <strong>Complimentary Shipping:</strong> Free nationwide on orders over Rs. 4,990.</p>
-                    <p>• <strong>Delivery Time:</strong> 2 to 4 business days across major cities of Pakistan (Karachi, Lahore, Islamabad, etc.).</p>
-                    <p>• <strong>Cash on Delivery (COD):</strong> Available throughout Pakistan.</p>
-                    <p>• <strong>7-Day Exchange Window:</strong> Hassle-free exchanges via our WhatsApp concierge.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* 4. Fabric Care */}
-              <div>
-                <button
-                  onClick={() => setOpenAccordion(openAccordion === 'care' ? '' : 'care')}
-                  className="w-full py-3.5 flex items-center justify-between text-left text-[12px] uppercase tracking-[0.16em] font-medium text-[#1a1814] hover:text-[#67615c] transition-colors cursor-pointer"
-                >
-                  <span>Care Instructions</span>
-                  <ChevronDown 
-                    size={16} 
-                    className={`transition-transform duration-300 ${openAccordion === 'care' ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {openAccordion === 'care' && (
-                  <div className="pb-4 text-[12.5px] text-[#67615c] font-light leading-relaxed">
-                    <p>{product.careInstructions || 'Dry clean recommended to preserve hand-embellished threadwork. Gentle cold wash separately. Do not tumble dry or expose to harsh direct sunlight.'}</p>
-                  </div>
-                )}
-              </div>
-
             </div>
 
           </div>
