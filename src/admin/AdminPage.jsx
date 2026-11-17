@@ -23,6 +23,7 @@ export default function AdminPage({ onBackToStore }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [blogSubView, setBlogSubView] = useState('list'); // 'list' | 'new'
   const [targetOrderId, setTargetOrderId] = useState(null);
+  const clearTargetOrder = useCallback(() => setTargetOrderId(null), []);
 
   const handleOpenOrder = (orderIdentifier) => {
     setTargetOrderId(orderIdentifier);
@@ -198,7 +199,7 @@ export default function AdminPage({ onBackToStore }) {
       {currentTab === 'orders' && (
         <OrdersTab 
           initialOrderId={targetOrderId} 
-          onClearInitialOrder={() => setTargetOrderId(null)}
+          onClearInitialOrder={clearTargetOrder}
           currentUser={user}
         />
       )}

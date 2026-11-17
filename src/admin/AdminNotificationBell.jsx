@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useId } from 'react';
 import { Bell, Check, CheckCheck, Clock, ShoppingBag, ExternalLink, X } from 'lucide-react';
 import { 
   getAdminNotifications, 
@@ -33,17 +33,20 @@ export default function AdminNotificationBell({ onOpenOrder }) {
   const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasNewAlert, setHasNewAlert] = useState(false);
+  const channelId = useId();
   const panelRef = useRef(null);
+  const latestRequest = useRef(0);
 
-  const fetchNotifications = useCallback(async () => {
-    setIsLoading(true);
+  const fetchNotifications = useCallback(async (quiet = false) => {
+    const request = ++latestRequest.current;
+    if (!quiet) setIsLoading(true);
     try {
       const data = await getAdminNotifications({ limit: 25 });
-      setNotifications(data || []);
+      if (request === latestRequest.current) setNotifications(data || []);
     } catch (err) {
       console.warn('Error fetching notifications:', err);
     } finally {
-      setIsLoading(false);
+      if (!quiet) setIsLoading(false);
     }
   }, []);
 
@@ -52,20 +55,25 @@ export default function AdminNotificationBell({ onOpenOrder }) {
 
     // Listen to Supabase Realtime for new order notifications
     const unsubscribe = subscribeToAdminNotifications((newNotification) => {
-      setNotifications(prev => [newNotification, ...prev]);
+      latestRequest.current++;
+      setNotifications(prev => [newNotification, ...prev.filter(n => n.id !== newNotification.id)].slice(0, 25));
       setHasNewAlert(true);
       // Optional subtle audio chime could be played here if supported
       try {
+        if (!panelRef.current?.offsetParent) return;
         const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbqWE2Mmih2+vEYzk0Z6DS6MdgNTRnoNDox2A1NGeg0OjHYDU0Z6DQ6MdgNTRnoNDox2A1NGeg0OjHYDU0');
         audio.volume = 0.3;
         audio.play().catch(() => {});
       } catch {}
-    });
+    }, channelId, () => fetchNotifications(true));
 
+    const timer = window.setInterval(() => fetchNotifications(true), 30_000);
     return () => {
+      window.clearInterval(timer);
+      latestRequest.current++;
       if (typeof unsubscribe === 'function') unsubscribe();
     };
-  }, [fetchNotifications]);
+  }, [fetchNotifications, channelId]);
 
   // Close panel on outside click
   useEffect(() => {
@@ -85,6 +93,7 @@ export default function AdminNotificationBell({ onOpenOrder }) {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const handleToggle = () => {
+    if (!isOpen) fetchNotifications(true);
     setIsOpen(prev => !prev);
     setHasNewAlert(false);
   };
@@ -93,6 +102,7 @@ export default function AdminNotificationBell({ onOpenOrder }) {
     if (e) e.stopPropagation();
     try {
       await markNotificationRead(id);
+      latestRequest.current++;
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
     } catch (err) {
       console.warn('Failed to mark notification read:', err);
@@ -102,6 +112,7 @@ export default function AdminNotificationBell({ onOpenOrder }) {
   const handleMarkAllRead = async () => {
     try {
       await markAllNotificationsRead();
+      latestRequest.current++;
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     } catch (err) {
       console.warn('Failed to mark all read:', err);
@@ -113,8 +124,8 @@ export default function AdminNotificationBell({ onOpenOrder }) {
       handleMarkRead(notif.id);
     }
     setIsOpen(false);
-    if (typeof onOpenOrder === 'function' && (notif.order_number || notif.order_id)) {
-      onOpenOrder(notif.order_number || notif.order_id);
+    if (typeof onOpenOrder === 'function' && notif.order_id) {
+      onOpenOrder(notif.order_id);
     }
   };
 

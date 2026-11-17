@@ -728,6 +728,16 @@ export async function getAdminOrders(options = {}) {
   }
 }
 
+export async function getAdminOrderById(orderId) {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*, order_items(*), order_status_history(*)')
+    .eq('order_id', orderId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 /**
  * Fetch Order Summary KPIs (Total, Pending, Shipped, Delivered)
  */
@@ -779,60 +789,24 @@ export async function getOrderSummaryStats() {
  * Update an order's status and record in status history
  * Uses consistent lowercase database values ('confirmed', 'processing', etc.)
  */
-export async function updateOrderStatus(orderId, newStatus, notes = '', adminEmail = '') {
+export async function updateOrderStatus(orderId, newStatus, notes = '') {
   if (!isSupabaseConfigured || !orderId || !newStatus) {
     throw new Error('Order ID and new status are required.');
   }
 
   const canonicalStatus = normalizeStatus(newStatus);
-  const currentStep = getTrackingStep(canonicalStatus);
-
-  // 1. Fetch current status to record in history
-  let previousStatus = null;
-  try {
-    const { data: currentOrder } = await supabase
-      .from('orders')
-      .select('status')
-      .eq('order_id', orderId)
-      .maybeSingle();
-    previousStatus = currentOrder?.status ? normalizeStatus(currentOrder.status) : null;
-  } catch {}
-
-  // 2. Update orders row
-  const { data, error } = await supabase
-    .from('orders')
-    .update({
-      status: canonicalStatus,
-      current_step: currentStep,
-      updated_at: new Date().toISOString()
-    })
-    .eq('order_id', orderId)
-    .select();
+  const { data, error } = await supabase.rpc('admin_update_order_status', {
+    p_order_id: orderId,
+    p_status: canonicalStatus,
+    p_notes: notes || null
+  });
 
   if (error) {
     console.error('[SupabaseService] Update order status error:', error.message);
-    if (/orders_status_check/i.test(error.message)) {
-      throw new Error(`Database Check Constraint Notice: The status "${canonicalStatus}" is restricted by an existing check constraint in your Supabase database. Please apply the migration "supabase/migrations/20261117010000_fix_orders_status_check_constraint.sql" in your Supabase SQL Editor to allow all updated statuses.`);
-    }
     throw new Error(error.message || 'Failed to update order status');
   }
-
-  // 3. Record in order_status_history table
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from('order_status_history').insert({
-      order_id: orderId,
-      previous_status: previousStatus,
-      new_status: canonicalStatus,
-      changed_by_user_id: user?.id || null,
-      changed_by_email: adminEmail || user?.email || 'admin@yasrafcouture.com',
-      notes: notes || null
-    });
-  } catch (histErr) {
-    console.warn('[SupabaseService] Notice writing order status history:', histErr.message);
-  }
-
-  return data?.[0] || true;
+  if (!data) throw new Error('No order was updated.');
+  return data;
 }
 
 /**
@@ -854,14 +828,15 @@ export async function archiveOrder(orderId, shouldArchive = true) {
     .from('orders')
     .update(updatePayload)
     .eq('order_id', orderId)
-    .select();
+    .select()
+    .single();
 
   if (error) {
     console.error('[SupabaseService] Archive order error:', error.message);
     throw new Error(error.message || 'Failed to update order archive status');
   }
 
-  return data?.[0] || true;
+  return data;
 }
 
 /**
@@ -875,7 +850,10 @@ export async function deleteOrderPermanently(orderId) {
   const { error } = await supabase
     .from('orders')
     .delete()
-    .eq('order_id', orderId);
+    .eq('order_id', orderId)
+    .eq('is_archived', true)
+    .select('id')
+    .single();
 
   if (error) {
     console.error('[SupabaseService] Delete order error:', error.message);
@@ -942,14 +920,13 @@ export async function getAdminNotifications({ limit = 30, unreadOnly = false } =
 export async function markNotificationRead(notificationId) {
   if (!isSupabaseConfigured || !notificationId) return;
 
-  try {
-    await supabase
-      .from('admin_notifications')
-      .update({ is_read: true, read_at: new Date().toISOString() })
-      .eq('id', notificationId);
-  } catch (err) {
-    console.warn('Failed to mark notification read:', err);
-  }
+  const { error } = await supabase
+    .from('admin_notifications')
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq('id', notificationId)
+    .select('id')
+    .single();
+  if (error) throw error;
 }
 
 /**
@@ -958,25 +935,22 @@ export async function markNotificationRead(notificationId) {
 export async function markAllNotificationsRead() {
   if (!isSupabaseConfigured) return;
 
-  try {
-    await supabase
-      .from('admin_notifications')
-      .update({ is_read: true, read_at: new Date().toISOString() })
-      .eq('is_read', false);
-  } catch (err) {
-    console.warn('Failed to mark all notifications read:', err);
-  }
+  const { error } = await supabase
+    .from('admin_notifications')
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq('is_read', false);
+  if (error) throw error;
 }
 
 /**
  * Realtime subscription to Admin Notifications
  */
-export function subscribeToAdminNotifications(onNotification) {
+export function subscribeToAdminNotifications(onNotification, channelId = 'default', onReady) {
   if (!isSupabaseConfigured) return () => {};
 
   try {
     const channel = supabase
-      .channel('admin_notifications_realtime')
+      .channel(`admin_notifications_realtime_${channelId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'admin_notifications' },
@@ -986,7 +960,9 @@ export function subscribeToAdminNotifications(onNotification) {
           }
         }
       )
-      .subscribe();
+      .subscribe(state => {
+        if (state === 'SUBSCRIBED') onReady?.();
+      });
 
     return () => {
       supabase.removeChannel(channel);

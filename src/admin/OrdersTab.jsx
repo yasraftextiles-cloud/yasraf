@@ -6,16 +6,15 @@ import {
   ChevronLeft, ChevronRight, MessageSquare, AlertCircle, Sparkles
 } from 'lucide-react';
 import { 
-  getAdminOrders, 
+  getAdminOrders,
+  getAdminOrderById,
   getOrderSummaryStats, 
   ORDER_STATUSES, 
   getStatusBadgeClass,
   getStatusLabel,
   normalizeStatus,
   archiveOrder,
-  deleteOrderPermanently,
-  updateOrderStatus,
-  subscribeToAdminOrders
+  updateOrderStatus
 } from '../services/supabaseService.js';
 import OrderDetailsDrawer from './OrderDetailsDrawer.jsx';
 
@@ -43,8 +42,8 @@ export default function OrdersTab({ initialOrderId = null, onClearInitialOrder, 
   const [copiedOrderId, setCopiedOrderId] = useState(null);
 
   // Fetch orders and KPI stats
-  const fetchOrdersAndStats = useCallback(async () => {
-    setIsLoading(true);
+  const fetchOrdersAndStats = useCallback(async (quiet = false) => {
+    if (quiet !== true) setIsLoading(true);
     try {
       const [orderList, summary] = await Promise.all([
         getAdminOrders({ includeArchived: viewMode === 'archived' }),
@@ -56,33 +55,39 @@ export default function OrdersTab({ initialOrderId = null, onClearInitialOrder, 
     } catch (err) {
       console.warn('Failed to load orders for admin:', err);
     } finally {
-      setIsLoading(false);
+      if (quiet !== true) setIsLoading(false);
     }
   }, [viewMode]);
 
   useEffect(() => {
     fetchOrdersAndStats();
 
-    // Subscribe to realtime order updates
-    const unsubscribe = subscribeToAdminOrders(() => {
-      fetchOrdersAndStats();
-    });
-
-    return () => {
-      if (typeof unsubscribe === 'function') unsubscribe();
-    };
+    const timer = window.setInterval(() => fetchOrdersAndStats(true), 30_000);
+    return () => window.clearInterval(timer);
   }, [fetchOrdersAndStats]);
 
   // Handle incoming initialOrderId from notification bell
   useEffect(() => {
-    if (initialOrderId && orders.length > 0) {
-      const target = orders.find(o => o.order_number === initialOrderId || o.order_id === initialOrderId);
-      if (target) {
-        setSelectedOrder(target);
-      }
-      if (onClearInitialOrder) onClearInitialOrder();
-    }
-  }, [initialOrderId, orders, onClearInitialOrder]);
+    if (!initialOrderId) return;
+    let cancelled = false;
+    getAdminOrderById(initialOrderId)
+      .then(target => {
+        if (cancelled) return;
+        if (target) {
+          setViewMode(target.is_archived ? 'archived' : 'active');
+          setSelectedOrder(target);
+        } else {
+          alert('This order is no longer available.');
+        }
+      })
+      .catch(error => {
+        if (!cancelled) alert(`Could not open order: ${error.message}`);
+      })
+      .finally(() => {
+        if (!cancelled) onClearInitialOrder?.();
+      });
+    return () => { cancelled = true; };
+  }, [initialOrderId, onClearInitialOrder]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -167,10 +172,10 @@ export default function OrdersTab({ initialOrderId = null, onClearInitialOrder, 
 
   // Quick Status change from table
   const handleQuickStatusChange = async (order, newStatus) => {
-    if (order.status === newStatus) return;
+    if (normalizeStatus(order.status) === newStatus) return;
     try {
-      await updateOrderStatus(order.order_id, newStatus, 'Quick table update', currentUser?.email);
-      setOrders(prev => prev.map(o => o.order_id === order.order_id ? { ...o, status: newStatus } : o));
+      const updatedOrder = await updateOrderStatus(order.order_id, newStatus, 'Quick table update');
+      setOrders(prev => prev.map(o => o.order_id === order.order_id ? { ...o, ...updatedOrder } : o));
       const summary = await getOrderSummaryStats();
       if (summary) setStats(summary);
     } catch (err) {
@@ -675,7 +680,9 @@ export default function OrdersTab({ initialOrderId = null, onClearInitialOrder, 
           currentUser={currentUser}
           onClose={() => setSelectedOrder(null)}
           onOrderUpdated={(updated) => {
-            setOrders(prev => prev.map(o => o.order_id === updated.order_id ? updated : o));
+            setOrders(prev => prev.flatMap(o => o.order_id !== updated.order_id
+              ? [o]
+              : Boolean(updated.is_archived) === (viewMode === 'archived') ? [updated] : []));
             setSelectedOrder(updated);
             getOrderSummaryStats().then(s => s && setStats(s));
           }}

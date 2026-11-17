@@ -79,11 +79,10 @@ export default function OrderDetailsDrawer({
     setIsUpdatingStatus(true);
     setStatusMessage(null);
     try {
-      await updateOrderStatus(
+      const updatedOrder = await updateOrderStatus(
         order.order_id, 
         currentStatus, 
-        statusNotes.trim(),
-        currentUser?.email
+        statusNotes.trim()
       );
 
       setStatusMessage({ type: 'success', text: `Status updated to "${getStatusLabel(currentStatus)}"` });
@@ -94,7 +93,7 @@ export default function OrderDetailsDrawer({
       setHistory(newHistory || []);
 
       if (onOrderUpdated) {
-        onOrderUpdated({ ...order, status: currentStatus });
+        onOrderUpdated({ ...order, ...updatedOrder });
       }
     } catch (err) {
       console.error('Failed to update status:', err);
@@ -121,6 +120,7 @@ export default function OrderDetailsDrawer({
   };
 
   const handleDelete = async () => {
+    if (!order.is_archived) return;
     if (deleteInput !== orderNumber && deleteInput !== 'DELETE') {
       alert('Please type DELETE or the exact Order Number to confirm.');
       return;
@@ -246,13 +246,13 @@ export default function OrderDetailsDrawer({
                 )}
               </button>
 
-              <button
+              {order.is_archived && <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-rose-700 hover:bg-rose-700 hover:text-white border border-rose-200 transition-colors cursor-pointer"
                 title="Permanently delete test order"
               >
                 <Trash2 size={12} /> <span>Delete</span>
-              </button>
+              </button>}
             </div>
           </div>
 
@@ -303,7 +303,7 @@ export default function OrderDetailsDrawer({
 
                   <button
                     type="submit"
-                    disabled={isUpdatingStatus || (currentStatus === order.status && !statusNotes.trim())}
+                    disabled={isUpdatingStatus || (currentStatus === normalizeStatus(order.status) && !statusNotes.trim())}
                     className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#1a1814] text-white text-xs uppercase tracking-wider font-medium hover:bg-[#333] disabled:opacity-50 transition-colors cursor-pointer"
                   >
                     {isUpdatingStatus ? (
