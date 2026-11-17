@@ -3,6 +3,7 @@ import {
   Package, ShoppingBag, Settings, LogOut, ExternalLink, Menu, X, 
   Layers, Shield, ChevronRight, Sparkles, BookOpen, List, Plus 
 } from 'lucide-react';
+import AdminNotificationBell from './AdminNotificationBell.jsx';
 
 export default function AdminLayout({ 
   currentTab = 'products', 
@@ -10,7 +11,8 @@ export default function AdminLayout({
   onSelectTab, 
   user, 
   onLogout, 
-  onViewStore, 
+  onViewStore,
+  onOpenOrder,
   children 
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -62,6 +64,9 @@ export default function AdminLayout({
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="text-white">
+            <AdminNotificationBell onOpenOrder={onOpenOrder} />
+          </div>
           <a
             href="/"
             target="_blank"
@@ -245,6 +250,8 @@ export default function AdminLayout({
           </div>
 
           <div className="flex items-center gap-3">
+            <AdminNotificationBell onOpenOrder={onOpenOrder} />
+
             <a
               href="/"
               target="_blank"

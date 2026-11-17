@@ -81,6 +81,24 @@ function getBackendSupabaseClient() {
     } catch {}
   }
 
+  if (!serviceKey && process.env.NODE_ENV !== 'production') {
+    // In local development, use anon/publishable key fallback if service key is not configured locally
+    try {
+      if (fs.existsSync('.env')) {
+        const envContent = fs.readFileSync('.env', 'utf-8');
+        envContent.split('\n').forEach(line => {
+          const [k, ...v] = line.split('=');
+          if (k && v && (k.trim() === 'VITE_SUPABASE_ANON_KEY' || k.trim() === 'VITE_SUPABASE_PUBLISHABLE_KEY')) {
+            if (!serviceKey) serviceKey = v.join('=').trim().replace(/^['"]|['"]$/g, '');
+          }
+        });
+      }
+    } catch {}
+    if (!serviceKey) {
+      serviceKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    }
+  }
+
   if (!supabaseUrl || !serviceKey) {
     const err = new Error('CONFIG_ERROR: SUPABASE_SERVICE_ROLE_KEY is required on the backend for privileged operations.');
     err.code = 'CONFIG_MISSING';
@@ -257,6 +275,24 @@ export async function handleCheckout(payload, remoteIp, authHeader = null) {
         status: 400,
         data: { success: false, error: data?.error || 'Order could not be processed.' }
       };
+    }
+
+    // Trigger Admin Email Notification asynchronously (does not block checkout response)
+    try {
+      import('./emailService.js').then(({ sendOrderNotificationEmail }) => {
+        sendOrderNotificationEmail({
+          order_id: data.order_id,
+          order_number: data.order_number || data.order_id,
+          customer: payload.customer,
+          items: payload.items,
+          subtotal: data.subtotal,
+          shipping_fee: data.shipping_fee,
+          total: data.total,
+          paymentMethod: payload.paymentMethod || 'cod'
+        }).catch(err => console.warn('[Email Notification Async Error]:', err?.message));
+      }).catch(importErr => console.warn('[Email Service Import Error]:', importErr?.message));
+    } catch (e) {
+      console.warn('[Email Notification Trigger Error]:', e?.message);
     }
 
     return {

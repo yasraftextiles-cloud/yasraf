@@ -116,7 +116,8 @@ export default function CheckoutModal({
       idempotencyKeyRef.current = null;
 
       const order = {
-        orderId: result.order_id,
+        orderId: result.order_number || result.order_id,
+        rawOrderId: result.order_id,
         trackingToken: result.tracking_token,
         date: new Date().toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' }),
         items: checkoutData.cartItems,
@@ -129,7 +130,8 @@ export default function CheckoutModal({
       if (result.tracking_token) {
         try {
           localStorage.setItem('yasraf_last_order', JSON.stringify({
-            orderId: result.order_id,
+            orderId: result.order_number || result.order_id,
+            rawOrderId: result.order_id,
             trackingToken: result.tracking_token,
             phone: formData.phone
           }));

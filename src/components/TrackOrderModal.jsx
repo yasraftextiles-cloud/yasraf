@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Search, CheckCircle, Clock, Truck, Package, MapPin, Loader2, KeyRound, ShieldAlert } from 'lucide-react';
-import { trackOrder } from '../services/supabaseService.js';
+import { trackOrder, getStatusLabel, getTrackingStep } from '../services/supabaseService.js';
 
 export default function TrackOrderModal({ isOpen, onClose }) {
   const [orderId, setOrderId] = useState('');
@@ -199,7 +199,7 @@ export default function TrackOrderModal({ isOpen, onClose }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', paddingBottom: '0.8rem', borderBottom: '1px solid #eee' }}>
               <div>
                 <span style={{ fontSize: '0.7rem', color: '#8c867f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Order Number</span>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#141414' }}>{trackedOrder.orderId}</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#141414' }}>{trackedOrder.orderNumber || trackedOrder.orderId}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <span style={{ fontSize: '0.7rem', color: '#8c867f', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Date Placed</span>
@@ -211,8 +211,9 @@ export default function TrackOrderModal({ isOpen, onClose }) {
             <div style={{ marginBottom: '1.8rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', position: 'relative' }}>
                 {steps.map((st) => {
-                  const isDone = st.num <= (trackedOrder.currentStep || 1);
-                  const isCurrent = st.num === (trackedOrder.currentStep || 1);
+                  const effectiveStep = trackedOrder.currentStep || getTrackingStep(trackedOrder.status);
+                  const isDone = st.num <= effectiveStep;
+                  const isCurrent = st.num === effectiveStep;
                   return (
                     <div key={st.num} style={{ textAlign: 'center' }}>
                       <div style={{
@@ -247,7 +248,7 @@ export default function TrackOrderModal({ isOpen, onClose }) {
             <div style={{ backgroundColor: '#ffffff', border: '1px solid #ebe6df', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.82rem', marginBottom: '1.2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <Clock size={16} color="#c5a880" />
-                <span><strong>Status:</strong> {trackedOrder.status}</span>
+                <span><strong>Status:</strong> {getStatusLabel(trackedOrder.status)}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <Truck size={16} color="#c5a880" />

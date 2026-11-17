@@ -612,6 +612,7 @@ export async function createOrder({ customer, items, paymentMethod = 'cod', idem
     return {
       success: true,
       order_id: data.order_id,
+      order_number: data.order_number || data.order_id,
       tracking_token: data.tracking_token,
       total: data.total,
       subtotal: data.subtotal,
@@ -628,23 +629,400 @@ export async function createOrder({ customer, items, paymentMethod = 'cod', idem
 }
 
 /**
+ * Order Status Definitions & Step Mapping
+ * Uses consistent lowercase database values (e.g. 'confirmed', 'order_received')
+ * with readable UI labels.
+ */
+export const ORDER_STATUSES = [
+  { id: 'order_received', value: 'order_received', label: 'Order Received', step: 1, trackingStep: 1, badgeClass: 'bg-neutral-100 text-neutral-800 border-neutral-300' },
+  { id: 'confirmed', value: 'confirmed', label: 'Confirmed', step: 2, trackingStep: 1, badgeClass: 'bg-blue-50 text-blue-800 border-blue-200' },
+  { id: 'processing', value: 'processing', label: 'Processing', step: 3, trackingStep: 2, badgeClass: 'bg-amber-50 text-amber-800 border-amber-200' },
+  { id: 'packed', value: 'packed', label: 'Packed', step: 4, trackingStep: 2, badgeClass: 'bg-purple-50 text-purple-800 border-purple-200' },
+  { id: 'shipped', value: 'shipped', label: 'Shipped', step: 5, trackingStep: 3, badgeClass: 'bg-cyan-50 text-cyan-800 border-cyan-200' },
+  { id: 'out_for_delivery', value: 'out_for_delivery', label: 'Out for Delivery', step: 6, trackingStep: 3, badgeClass: 'bg-orange-50 text-orange-800 border-orange-200' },
+  { id: 'delivered', value: 'delivered', label: 'Delivered', step: 7, trackingStep: 4, badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+  { id: 'cancelled', value: 'cancelled', label: 'Cancelled', step: 8, trackingStep: 1, badgeClass: 'bg-rose-50 text-rose-800 border-rose-200' },
+  { id: 'returned', value: 'returned', label: 'Returned', step: 9, trackingStep: 1, badgeClass: 'bg-stone-100 text-stone-700 border-stone-300' }
+];
+
+export function normalizeStatus(status) {
+  if (!status) return 'order_received';
+  const s = String(status).trim().toLowerCase();
+  if (s === 'order received' || s === 'order_received') return 'order_received';
+  if (s === 'confirmed') return 'confirmed';
+  if (s === 'processing' || s === 'artisan inspection' || s === 'artisan_inspection') return 'processing';
+  if (s === 'packed') return 'packed';
+  if (s === 'shipped' || s === 'dispatched') return 'shipped';
+  if (s === 'out for delivery' || s === 'out_for_delivery') return 'out_for_delivery';
+  if (s === 'delivered') return 'delivered';
+  if (s === 'cancelled') return 'cancelled';
+  if (s === 'returned') return 'returned';
+  return s.replace(/[\s-]+/g, '_');
+}
+
+export function getStatusLabel(status) {
+  const norm = normalizeStatus(status);
+  const match = ORDER_STATUSES.find(st => st.id === norm || st.value === norm);
+  return match ? match.label : (status || 'Order Received');
+}
+
+export function getStatusBadgeClass(status) {
+  const norm = normalizeStatus(status);
+  const match = ORDER_STATUSES.find(st => st.id === norm || st.value === norm);
+  return match ? match.badgeClass : 'bg-neutral-100 text-neutral-800 border-neutral-300';
+}
+
+export function getStatusStep(status) {
+  const norm = normalizeStatus(status);
+  const match = ORDER_STATUSES.find(st => st.id === norm || st.value === norm);
+  return match ? match.step : 1;
+}
+
+export function getTrackingStep(status) {
+  const norm = normalizeStatus(status);
+  const match = ORDER_STATUSES.find(st => st.id === norm || st.value === norm);
+  return match ? match.trackingStep : 1;
+}
+
+/**
  * Fetch all orders and line items for admin dashboard
  */
-export async function getAdminOrders() {
+export async function getAdminOrders(options = {}) {
   if (!isSupabaseConfigured) return [];
+  const { includeArchived = false } = options;
+
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('orders')
-      .select('*, order_items(*)')
+      .select('*, order_items(*), order_status_history(*)')
       .order('created_at', { ascending: false });
+
+    // Handle is_archived filtering safely
+    if (includeArchived === true) {
+      query = query.eq('is_archived', true);
+    } else if (includeArchived === false) {
+      // Show non-archived orders (or NULL for legacy rows before migration)
+      query = query.or('is_archived.is.null,is_archived.eq.false');
+    }
+
+    const { data, error } = await query;
     if (error) {
-      console.warn('[SupabaseService] getAdminOrders warning:', error.message);
-      return [];
+      // If order_status_history table isn't created yet or relation missing, fallback to standard query
+      console.warn('[SupabaseService] getAdminOrders detailed query notice, falling back:', error.message);
+      const fallbackQuery = supabase
+        .from('orders')
+        .select('*, order_items(*)')
+        .order('created_at', { ascending: false });
+      
+      const { data: fallbackData, error: fallbackError } = await fallbackQuery;
+      if (fallbackError) {
+        console.warn('[SupabaseService] getAdminOrders fallback warning:', fallbackError.message);
+        return [];
+      }
+      return fallbackData || [];
     }
     return data || [];
   } catch (err) {
     console.warn('[SupabaseService] getAdminOrders exception:', err);
     return [];
+  }
+}
+
+/**
+ * Fetch Order Summary KPIs (Total, Pending, Shipped, Delivered)
+ */
+export async function getOrderSummaryStats() {
+  if (!isSupabaseConfigured) {
+    return { total: 0, pending: 0, shipped: 0, delivered: 0, archived: 0 };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('id, status, is_archived');
+
+    if (error || !data) {
+      return { total: 0, pending: 0, shipped: 0, delivered: 0, archived: 0 };
+    }
+
+    const activeOrders = data.filter(o => !o.is_archived);
+    const archivedOrders = data.filter(o => o.is_archived);
+
+    const pending = activeOrders.filter(o => {
+      const s = normalizeStatus(o.status);
+      return ['order_received', 'confirmed', 'processing', 'packed'].includes(s);
+    }).length;
+
+    const shipped = activeOrders.filter(o => {
+      const s = normalizeStatus(o.status);
+      return ['shipped', 'out_for_delivery'].includes(s);
+    }).length;
+
+    const delivered = activeOrders.filter(o => {
+      return normalizeStatus(o.status) === 'delivered';
+    }).length;
+
+    return {
+      total: activeOrders.length,
+      pending,
+      shipped,
+      delivered,
+      archived: archivedOrders.length
+    };
+  } catch (err) {
+    console.warn('Failed to calculate order stats:', err);
+    return { total: 0, pending: 0, shipped: 0, delivered: 0, archived: 0 };
+  }
+}
+
+/**
+ * Update an order's status and record in status history
+ * Uses consistent lowercase database values ('confirmed', 'processing', etc.)
+ */
+export async function updateOrderStatus(orderId, newStatus, notes = '', adminEmail = '') {
+  if (!isSupabaseConfigured || !orderId || !newStatus) {
+    throw new Error('Order ID and new status are required.');
+  }
+
+  const canonicalStatus = normalizeStatus(newStatus);
+  const currentStep = getTrackingStep(canonicalStatus);
+
+  // 1. Fetch current status to record in history
+  let previousStatus = null;
+  try {
+    const { data: currentOrder } = await supabase
+      .from('orders')
+      .select('status')
+      .eq('order_id', orderId)
+      .maybeSingle();
+    previousStatus = currentOrder?.status ? normalizeStatus(currentOrder.status) : null;
+  } catch {}
+
+  // 2. Update orders row
+  const { data, error } = await supabase
+    .from('orders')
+    .update({
+      status: canonicalStatus,
+      current_step: currentStep,
+      updated_at: new Date().toISOString()
+    })
+    .eq('order_id', orderId)
+    .select();
+
+  if (error) {
+    console.error('[SupabaseService] Update order status error:', error.message);
+    if (/orders_status_check/i.test(error.message)) {
+      throw new Error(`Database Check Constraint Notice: The status "${canonicalStatus}" is restricted by an existing check constraint in your Supabase database. Please apply the migration "supabase/migrations/20261117010000_fix_orders_status_check_constraint.sql" in your Supabase SQL Editor to allow all updated statuses.`);
+    }
+    throw new Error(error.message || 'Failed to update order status');
+  }
+
+  // 3. Record in order_status_history table
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from('order_status_history').insert({
+      order_id: orderId,
+      previous_status: previousStatus,
+      new_status: canonicalStatus,
+      changed_by_user_id: user?.id || null,
+      changed_by_email: adminEmail || user?.email || 'admin@yasrafcouture.com',
+      notes: notes || null
+    });
+  } catch (histErr) {
+    console.warn('[SupabaseService] Notice writing order status history:', histErr.message);
+  }
+
+  return data?.[0] || true;
+}
+
+/**
+ * Soft delete / Archive an order
+ */
+export async function archiveOrder(orderId, shouldArchive = true) {
+  if (!isSupabaseConfigured || !orderId) {
+    throw new Error('Order ID is required.');
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const updatePayload = {
+    is_archived: shouldArchive,
+    archived_at: shouldArchive ? new Date().toISOString() : null,
+    archived_by: shouldArchive ? user?.id : null
+  };
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update(updatePayload)
+    .eq('order_id', orderId)
+    .select();
+
+  if (error) {
+    console.error('[SupabaseService] Archive order error:', error.message);
+    throw new Error(error.message || 'Failed to update order archive status');
+  }
+
+  return data?.[0] || true;
+}
+
+/**
+ * Permanently delete a test/duplicate order (restricted to admins)
+ */
+export async function deleteOrderPermanently(orderId) {
+  if (!isSupabaseConfigured || !orderId) {
+    throw new Error('Order ID is required.');
+  }
+
+  const { error } = await supabase
+    .from('orders')
+    .delete()
+    .eq('order_id', orderId);
+
+  if (error) {
+    console.error('[SupabaseService] Delete order error:', error.message);
+    throw new Error(error.message || 'Failed to delete order.');
+  }
+
+  return true;
+}
+
+/**
+ * Fetch Order Status History audit trail
+ */
+export async function getOrderStatusHistory(orderId) {
+  if (!isSupabaseConfigured || !orderId) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('order_status_history')
+      .select('*')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn('[SupabaseService] getOrderStatusHistory error:', error.message);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    return [];
+  }
+}
+
+/**
+ * Fetch Admin Notifications
+ */
+export async function getAdminNotifications({ limit = 30, unreadOnly = false } = {}) {
+  if (!isSupabaseConfigured) return [];
+
+  try {
+    let query = supabase
+      .from('admin_notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (unreadOnly) {
+      query = query.eq('is_read', false);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.warn('[SupabaseService] getAdminNotifications warning:', error.message);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    return [];
+  }
+}
+
+/**
+ * Mark a single notification as read
+ */
+export async function markNotificationRead(notificationId) {
+  if (!isSupabaseConfigured || !notificationId) return;
+
+  try {
+    await supabase
+      .from('admin_notifications')
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq('id', notificationId);
+  } catch (err) {
+    console.warn('Failed to mark notification read:', err);
+  }
+}
+
+/**
+ * Mark all admin notifications as read
+ */
+export async function markAllNotificationsRead() {
+  if (!isSupabaseConfigured) return;
+
+  try {
+    await supabase
+      .from('admin_notifications')
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq('is_read', false);
+  } catch (err) {
+    console.warn('Failed to mark all notifications read:', err);
+  }
+}
+
+/**
+ * Realtime subscription to Admin Notifications
+ */
+export function subscribeToAdminNotifications(onNotification) {
+  if (!isSupabaseConfigured) return () => {};
+
+  try {
+    const channel = supabase
+      .channel('admin_notifications_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'admin_notifications' },
+        (payload) => {
+          if (payload && payload.new && typeof onNotification === 'function') {
+            onNotification(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch (err) {
+    console.warn('Realtime subscription error:', err);
+    return () => {};
+  }
+}
+
+/**
+ * Realtime subscription to Orders
+ */
+export function subscribeToAdminOrders(onOrderChange) {
+  if (!isSupabaseConfigured) return () => {};
+
+  try {
+    const channel = supabase
+      .channel('admin_orders_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        (payload) => {
+          if (typeof onOrderChange === 'function') {
+            onOrderChange(payload);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch (err) {
+    console.warn('Realtime orders subscription error:', err);
+    return () => {};
   }
 }
 
@@ -681,6 +1059,7 @@ export async function trackOrder({ orderId, trackingToken }) {
 
     return {
       orderId: data.order_id,
+      orderNumber: data.order_number || data.order_id,
       status: data.status,
       currentStep: data.current_step,
       courierTracking: data.courier_tracking,

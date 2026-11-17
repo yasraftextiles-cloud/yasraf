@@ -22,6 +22,12 @@ export default function AdminPage({ onBackToStore }) {
   const [productView, setProductView] = useState('list'); // 'list' | 'new' | 'edit'
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [blogSubView, setBlogSubView] = useState('list'); // 'list' | 'new'
+  const [targetOrderId, setTargetOrderId] = useState(null);
+
+  const handleOpenOrder = (orderIdentifier) => {
+    setTargetOrderId(orderIdentifier);
+    setCurrentTab('orders');
+  };
 
   // Data state
   const [products, setProducts] = useState([]);
@@ -149,6 +155,7 @@ export default function AdminPage({ onBackToStore }) {
       user={user}
       onLogout={handleLogout}
       onViewStore={onBackToStore}
+      onOpenOrder={handleOpenOrder}
     >
       {/* Tab: Products */}
       {currentTab === 'products' && (
@@ -189,7 +196,11 @@ export default function AdminPage({ onBackToStore }) {
 
       {/* Tab: Orders */}
       {currentTab === 'orders' && (
-        <OrdersTab />
+        <OrdersTab 
+          initialOrderId={targetOrderId} 
+          onClearInitialOrder={() => setTargetOrderId(null)}
+          currentUser={user}
+        />
       )}
 
       {/* Tab: Collections */}
